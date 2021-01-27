@@ -10,6 +10,7 @@ Solver::Solver(int N, int num_alphas, int MC){
     energies_ = new double[num_alphas_];               //Array to hold energies for different values of alpha
     variances_ = new double[num_alphas_];              //Array to hold variances for different values of alpha
 
+    MonteCarlo();
 }
 
 
@@ -82,7 +83,7 @@ void Solver::write_to_file(string outfilename){
     ofile.open(outfilename);
     ofile << alpha << " " << energy << " " << variance << endl;
     for (int i = 0; i < num_alphas_; i++){
-        ofile << alphas_[i] << " " << energies_[j] << " " << variances_ << endl;
+        ofile << alphas_[i] << " " << energies_[i] << " " << variances_[i] << endl;
     }
     ofile.close();
 }
