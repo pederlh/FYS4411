@@ -17,6 +17,7 @@ class Solver {
 private:
 
 int N_, num_alphas_, MC_;
+double h_;
 double* alphas_, *energies_, *variances_;
 
 double trial_func_1D(double alpha, double* r); //Test wave function
