@@ -25,12 +25,12 @@ void MonteCarlo();
 
 
 
-double local_energy_1D(double alpha, double r);
+double local_energy_1D(double alpha, double *r);
 
 public:
 
 //Constructor
-Solver(int N);
+Solver(int N, int num_alphas, int MC);
 
 void write_to_file(string outfilename);
 
