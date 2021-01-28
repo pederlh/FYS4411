@@ -20,7 +20,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D){
         cout << energies_[i]<<endl;
     }
     */
-    MonteCarlo();
+    // MonteCarlo();
 }
 
 
@@ -49,34 +49,31 @@ void Solver::MonteCarlo(){
         tf_old = trial_func_1D(alpha, r_old_);       //Initial trial wave function
         for (int cycle = 0; cycle < MC_; cycle++){
 
-            for (int i = 0; i<D_*N_;i++) r_new_[i] = r_old_[i] + h_ * (RDG(gen) - 0.5);             //Proposed move to new posistion
+            for (int k = 0; i<D_*N_;i++) r_new_[i] = r_old_[i] + h_ * (RDG(gen) - 0.5);             //Proposed move to new posistion
             tf_new = trial_func_1D(alpha, r_new_);           //Trial wave function of new position
             P = (tf_new*tf_new)/(tf_old*tf_old);
             if (P > 1){
                 for (i = 0; i<D_*N_;i++) r_old_[i] = r_new_[i];
-                tf_old = tf_new;
-            }
-            else if (RDG(gen) <= P){
-                for (i = 0; i<D_*N_;i++) r_old_[i] = r_new_[i];
-                tf_old = tf_new;
-            }
+                tf_old = tf_new;|
 
             DeltaE = local_energy_1D_brute_force(alpha,r_old_);
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
         }
         energy /= MC_;
+
         energy_squared /= MC_;
         variance = energy_squared - energy*energy;
         energies_[i] = energy;
         variances_[i] = variance;
-    }
-
-    /*
-    for (int i =0; i<num_alphas_;i++){
         cout << energies_[i] << endl;
     }
-    */
+
+    
+    // for (int i =0; i<num_alphas_;i++){
+    //     cout << energies_[i] << endl;
+    // }
+    
 }
 
 double Solver::trial_func_1D(double alpha, double*r){

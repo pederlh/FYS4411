@@ -25,7 +25,7 @@ double *r_forward_, *r_backward_;
 
 double trial_func_1D(double alpha, double* r); //Test wave function
 double local_energy_1D_analytical(double alpha, double *r); //Local energy in one dimension
-void MonteCarlo();
+
 
 double local_energy_1D_brute_force(double alpha, double *r);
 
@@ -33,7 +33,7 @@ public:
 
 //Constructor
 Solver(int N, int num_alphas, int MC, int D);
-
+void MonteCarlo();
 void write_to_file(string outfilename);
 
 };
