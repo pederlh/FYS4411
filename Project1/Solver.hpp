@@ -16,22 +16,23 @@ using namespace std;
 class Solver {
 private:
 
-int N_, num_alphas_, MC_;
-double h_;
+int N_, num_alphas_, MC_, D_;
+double h_, sum_;
 double* alphas_, *energies_, *variances_;
 
+double tf_forward_, tf_backward_, tf_middle_, laplace_tf_;
+double *r_forward_, *r_backward_;
+
 double trial_func_1D(double alpha, double* r); //Test wave function
-double local_energy_1D_analytical(); //Local energy in one dimension
+double local_energy_1D_analytical(double alpha, double *r); //Local energy in one dimension
 void MonteCarlo();
 
-
-
-double local_energy_1D(double alpha, double *r);
+double local_energy_1D_brute_force(double alpha, double *r);
 
 public:
 
 //Constructor
-Solver(int N, int num_alphas, int MC);
+Solver(int N, int num_alphas, int MC, int D);
 
 void write_to_file(string outfilename);
 
