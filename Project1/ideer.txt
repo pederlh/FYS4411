@@ -1,0 +1,40 @@
+hvor mange dim?{
+
+tf_1d {
+med eller uten repulsion?
+}
+
+tf_2d{
+med eller uten repulsion?
+}
+
+tf_3d{
+med eller uten repulsion?
+}
+
+}
+
+
+hvilken energi{
+
+brute f_1d{
+}
+ana_1d{
+}
+
+brute f_2d{
+}
+ana_2D{
+}
+
+
+brute f_3d{
+}
+ana_3D{
+}
+
+}
+
+- Kan man ha metropolis som funk (med eller uten importance sampling?) (i solver klassen)
+- SgD implementert hvor?
+- Python program for bootstrapping/statistiske utregninger
