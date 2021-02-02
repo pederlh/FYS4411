@@ -21,11 +21,9 @@ int N_, num_alphas_, MC_, D_;
 double h_, sum_, tmp_;
 double *alphas_,*energies_, *variances_;
 
-double rp_x_, rp_y_, rp_z_, rm_x_, rm_y_, rm_z_;
-
-
-double tf_forward_, tf_backward_, tf_middle_, laplace_tf_;
+double tf_middle_, laplace_tf_;
 double **r_old_, *r_new_;
+double **numerical_matrix_;
 
 
 //Pointer to member function
@@ -41,9 +39,8 @@ void MonteCarlo();
 double init_r_sum(double **r);                                  //Calculates the sum of the square of all posistions
 double update_r_sum(double sum, double r_init, double r_move);  //Updates the sum of the square of all positions
 
-double local_energy_1D_brute_force(double alpha, double **r, double r_sum, int idx);
-double local_energy_2D_brute_force(double alpha, double **r, double r_sum, int idx);
-double local_energy_3D_brute_force(double alpha, double **r, double r_sum, int idx);
+double local_energy_brute_force(double alpha, double **r, double r_sum, int idx);
+
 
 
 public:

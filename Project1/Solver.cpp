@@ -13,29 +13,24 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy){
     sum_ = 0;
 
 
+
     if (D_ == 1){
         if (type_energy == 0){
             energy_calculation = &Solver::local_energy_1D_analytical;
         }
         if (type_energy == 1){
-            energy_calculation = &Solver::local_energy_1D_brute_force;
+            energy_calculation = &Solver::local_energy_brute_force;
         }
-        rp_x_ = 0;
-        rm_x_ = 0;
     }
+
 
     if (D_ == 2){
         if (type_energy == 0){
             energy_calculation = &Solver::local_energy_2D_analytical;
         }
         if (type_energy == 1){
-            energy_calculation = &Solver::local_energy_2D_brute_force;
+            energy_calculation = &Solver::local_energy_brute_force;
         }
-        rp_x_ = 0;
-        rp_y_ = 0;
-        rm_x_ = 0;
-        rm_y_ = 0;
-
     }
 
     if (D_ == 3){
@@ -43,14 +38,8 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy){
             energy_calculation = &Solver::local_energy_3D_analytical;
         }
         if (type_energy == 1){
-            energy_calculation = &Solver::local_energy_3D_brute_force;
+            energy_calculation = &Solver::local_energy_brute_force;
         }
-        rp_x_ = 0;
-        rp_y_ = 0;
-        rp_z_ = 0;
-        rm_x_ = 0;
-        rm_y_ = 0;
-        rm_z_ = 0;
     }
 
     MonteCarlo();
@@ -178,63 +167,35 @@ double Solver::local_energy_3D_analytical(double alpha, double **r, double r_sum
 
 }
 
-double Solver::local_energy_1D_brute_force(double alpha, double **r, double r_sum, int idx){
+double Solver::local_energy_brute_force(double alpha, double **r, double r_sum, int idx){
+    double dr_p, dr_m;
+    double step = h_*pow(10,-2);
+    laplace_tf_ = 0.0;
+    /*
+    for (int pm = 0; pm < 2; pm++){
+        if(pm==1) step*=-1;
+        for (int coord = 0; coord < D_; coord++){
+            dr = update_r_sum(r_sum,r[idx][coord], r[idx][coord]+step);
+            laplace_tf_ += trial_func(alpha,dr);
+        }
+    }
+    */
+    for (int dd = 0; dd < D_; dd++){
+        dr_p = r_sum;
+        dr_m = r_sum;
+        for (int nn = 0; nn < N_; nn++){
+            dr_p = update_r_sum(dr_p, r[nn][dd], r[nn][dd] + step);
+            dr_m = update_r_sum(dr_m, r[nn][dd], r[nn][dd] - step);
+        }
+        laplace_tf_  += trial_func(alpha,dr_p) + trial_func(alpha, dr_m);
+    }
 
-    rp_x_ = update_r_sum(r_sum, r[idx][0], r[idx][0]+ h_);
-    rm_x_ = update_r_sum(r_sum, r[idx][0], r[idx][0]- h_);
 
-    tf_forward_ = trial_func(alpha,rp_x_);
-    tf_backward_ = trial_func(alpha,rm_x_);
     tf_middle_ = trial_func(alpha,r_sum);
+    laplace_tf_ -= 2*D_*tf_middle_;
+    laplace_tf_ /= (step*step*tf_middle_);
 
-    laplace_tf_ = (tf_forward_ - 2*tf_middle_ + tf_backward_)/(h_*h_*tf_middle_);
     return (1./2)*(-laplace_tf_ + r_sum);
-}
-
-
-double Solver::local_energy_2D_brute_force(double alpha, double **r, double r_sum, int idx){
-
-    double tf_f_x, tf_f_y, tf_b_x, tf_b_y, tf_m;
-    rp_x_ = update_r_sum(r_sum, r[idx][0], r[idx][0]+ h_);
-    rm_x_ = update_r_sum(r_sum, r[idx][0], r[idx][0]- h_);
-    tf_f_x = trial_func(alpha, rp_x_);
-    tf_b_x = trial_func(alpha, rm_x_);
-
-    rp_y_ = update_r_sum(r_sum, r[idx][1], r[idx][1]+ h_);
-    rm_y_ = update_r_sum(r_sum, r[idx][1], r[idx][1]- h_);
-    tf_f_y = trial_func(alpha, rp_y_);
-    tf_b_y = trial_func(alpha, rm_y_);
-
-    tf_m = trial_func(alpha,r_sum);
-
-    laplace_tf_ = (tf_f_x+tf_b_x+tf_f_y+tf_b_y-4*tf_m)/(h_*h_*tf_m);
-
-    return laplace_tf_ + (1./2)*r_sum;
-}
-
-double Solver::local_energy_3D_brute_force(double alpha, double **r, double r_sum, int idx){
-
-    double tf_f_x, tf_f_y, tf_b_x, tf_b_y,tf_f_z, tf_b_z ,tf_m;
-    rp_x_ = update_r_sum(r_sum, r[idx][0], r[idx][0]+ h_);
-    rm_x_ = update_r_sum(r_sum, r[idx][0], r[idx][0]- h_);
-    tf_f_x = trial_func(alpha, rp_x_);
-    tf_b_x = trial_func(alpha, rm_x_);
-
-    rp_y_ = update_r_sum(r_sum, r[idx][1], r[idx][1]+ h_);
-    rm_y_ = update_r_sum(r_sum, r[idx][1], r[idx][1]- h_);
-    tf_f_y = trial_func(alpha, rp_y_);
-    tf_b_y = trial_func(alpha, rm_y_);
-
-    rp_z_ = update_r_sum(r_sum, r[idx][2], r[idx][2]+ h_);
-    rm_z_ = update_r_sum(r_sum, r[idx][2], r[idx][2]- h_);
-    tf_f_z = trial_func(alpha, rp_z_);
-    tf_b_z = trial_func(alpha, rm_z_);
-
-    tf_m = trial_func(alpha,r_sum);
-
-    laplace_tf_ = (tf_f_x+tf_b_x+tf_f_y+tf_b_y+tf_f_z+tf_b_z-6*tf_m)/(h_*h_*tf_m);
-
-    return laplace_tf_+(1./2)*r_sum;
 }
 
 void Solver::write_to_file(string outfilename){
