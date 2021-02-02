@@ -38,3 +38,4 @@ ana_3D{
 - Kan man ha metropolis som funk (med eller uten importance sampling?) (i solver klassen)
 - SgD implementert hvor?
 - Python program for bootstrapping/statistiske utregninger
+- Sette arg til 0 i fnuk dersom de ikke trengs

@@ -4,7 +4,7 @@ int main(int argc, char const *argv[]) {
 
     int num_alphas = 10;
     int num_particles = 10;
-    int mc_cycles = 1000000;
+    int mc_cycles = 100000;
     int dimentions = 3;
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
     int type_energy = 1;

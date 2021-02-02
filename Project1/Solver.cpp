@@ -63,14 +63,13 @@ void Solver::MonteCarlo(){
     random_device rd;
     mt19937_64 gen(rd());
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
-    uniform_real_distribution<int> RIG(0,N_);    //Random integer genererator (0,1)
+    uniform_int_distribution<int> RIG(0,N_-1);    //Random integer genererator (0,1)
 
     double alpha, energy, energy_squared, P, DeltaE, variance;
-    r_old_ = new double*[N_];             //New and old posistion
-    r_new_ = new double*[N_];
+    r_old_ = new double*[N_];
+    r_new_ = new double[D_];
     for (int i= 0; i< N_ ; i++){
         r_old_[i] = new double[D_];
-        r_new_[i] = new double[D_];
     }
     double tf_old, tf_new, r2_old, r2_new;            //New and old trial wave function (and r^2 sums)
     int move_idx;
@@ -82,13 +81,8 @@ void Solver::MonteCarlo(){
         energy_squared = 0;
 
         for (int j = 0; j < N_; j++){                       //Initial posistion
-            for (int k =0 ; k< D_;  k++){
+            for (int k = 0; k < D_; k++){
                 r_old_[j][k] = h_ * (RDG(gen) - 0.5);
-            }
-        }
-        for (int j = 0; j < N_; j++){                       //Initial posistion
-            for (int k =0 ; k< D_;  k++){
-                r_new_[j][k] = r_old_[j][k];
             }
         }
 
@@ -96,30 +90,30 @@ void Solver::MonteCarlo(){
         tf_old = trial_func(alpha, r2_old);       //Initial trial wave function
 
         for (int cycle = 0; cycle < MC_; cycle++){
-
-            move_idx = RIG(gen);                      //Index of proposed moved particle
-            r2_new = r2_old;
-            for (int k = 0; k < D_; k++){
-                r_new_[move_idx][k] += h_ * (RDG(gen) - 0.5);
-                r2_new = update_r_sum(r2_new, r_old_[move_idx][k], r_new_[move_idx][k]);
-            }
-
-            tf_new = trial_func(alpha, r2_new);           //Trial wave function of new position
-            P = (tf_new*tf_new)/(tf_old*tf_old);            //Metropolis test
-            if (RDG(gen)<= P){
-                for (int k =0 ; k< D_;  k++){                   //Update initial posistion
-                    r_old_[move_idx][k] = r_new_[move_idx][k];
+            for (int n = 0; n < N_; n++){
+                move_idx = RIG(gen);                      //Index of proposed moved particle
+                r2_new = r2_old;
+                for (int k = 0; k < D_; k++){
+                    r_new_[k] = r_old_[move_idx][k] + h_ * (RDG(gen) - 0.5);
+                    r2_new = update_r_sum(r2_new, r_old_[move_idx][k], r_new_[k]);
                 }
-                tf_old = tf_new;
-                r2_old = r2_new;
-            }
-            DeltaE = (this->*energy_calculation)(alpha,r_old_,r2_old, move_idx); //Points to either analytical expression for local energy or numerical
-            energy += DeltaE;
-            energy_squared += DeltaE*DeltaE;
-        }
-        energy /= MC_;
 
-        energy_squared /= MC_;
+                tf_new = trial_func(alpha, r2_new);           //Trial wave function of new position
+                P = (tf_new*tf_new)/(tf_old*tf_old);            //Metropolis test
+                if (RDG(gen)<= P){
+                    for (int k =0 ; k< D_;  k++){                   //Update initial posistion
+                        r_old_[move_idx][k] = r_new_[k];
+                    }
+                    tf_old = tf_new;
+                    r2_old = r2_new;
+                }
+                DeltaE = (this->*energy_calculation)(alpha,r_old_,r2_old, move_idx); //Points to either analytical expression for local energy or numerical
+                energy += DeltaE;
+                energy_squared += DeltaE*DeltaE;
+                }
+            }
+        energy /= (MC_*N_);
+        energy_squared /= (MC_*N_);
         variance = energy_squared - energy*energy;
         energies_[a] = energy;
         variances_[a] = variance;
@@ -155,7 +149,6 @@ double Solver::local_energy_1D_analytical(double alpha, double **r, double r_sum
             sum_ += -(4*alpha*alpha*r[i][j]*r[i][j] - 2*alpha) + r[i][j]*r[i][j];
         }
     }
-
     return (1./2)*sum_;
 }
 
@@ -216,7 +209,7 @@ double Solver::local_energy_2D_brute_force(double alpha, double **r, double r_su
 
     laplace_tf_ = (tf_f_x+tf_b_x+tf_f_y+tf_b_y-4*tf_m)/(h_*h_*tf_m);
 
-    return laplace_tf_+(1./2)*r_sum;
+    return laplace_tf_ + (1./2)*r_sum;
 }
 
 double Solver::local_energy_3D_brute_force(double alpha, double **r, double r_sum, int idx){

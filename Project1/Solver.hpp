@@ -25,7 +25,7 @@ double rp_x_, rp_y_, rp_z_, rm_x_, rm_y_, rm_z_;
 
 
 double tf_forward_, tf_backward_, tf_middle_, laplace_tf_;
-double **r_old_, **r_new_;
+double **r_old_, *r_new_;
 
 
 //Pointer to member function
