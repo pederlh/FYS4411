@@ -135,10 +135,10 @@ double Solver::local_energy_1D_analytical(double alpha, double **r, double r_sum
     sum_ = 0;
     for (int i=0; i<N_; i++){
         for (int j = 0; j< D_; j++){
-            sum_ += -(4*alpha*alpha*r[i][j]*r[i][j] - 2*alpha) + r[i][j]*r[i][j];
+            sum_ += -(2*alpha*alpha*r[i][j]*r[i][j] - 1*alpha) + (1./2)*r[i][j]*r[i][j];
         }
     }
-    return (1./2)*sum_;
+    return sum_;
 }
 
 double Solver::local_energy_2D_analytical(double alpha, double **r, double r_sum, int idx){
@@ -171,15 +171,7 @@ double Solver::local_energy_brute_force(double alpha, double **r, double r_sum, 
     double dr_p, dr_m;
     double step = h_*pow(10,-2);
     laplace_tf_ = 0.0;
-    /*
-    for (int pm = 0; pm < 2; pm++){
-        if(pm==1) step*=-1;
-        for (int coord = 0; coord < D_; coord++){
-            dr = update_r_sum(r_sum,r[idx][coord], r[idx][coord]+step);
-            laplace_tf_ += trial_func(alpha,dr);
-        }
-    }
-    */
+
     for (int dd = 0; dd < D_; dd++){
         dr_p = r_sum;
         dr_m = r_sum;
@@ -189,7 +181,6 @@ double Solver::local_energy_brute_force(double alpha, double **r, double r_sum, 
         }
         laplace_tf_  += trial_func(alpha,dr_p) + trial_func(alpha, dr_m);
     }
-
 
     tf_middle_ = trial_func(alpha,r_sum);
     laplace_tf_ -= 2*D_*tf_middle_;
