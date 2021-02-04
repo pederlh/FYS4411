@@ -9,5 +9,5 @@ alpha energy variance
 0.45 251.415 2.7781
 0.5 250 0
 0.55 251.14 2.33295
- 
-Time used : 1901.5sec
+
+Timeused: 1901.5

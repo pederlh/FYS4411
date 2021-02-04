@@ -17,6 +17,8 @@ using namespace std;
 class Solver {
 private:
 
+friend class WaveFunction; //Class "Wavefunction" can access private members from Solver
+
 int N_, num_alphas_, MC_, D_;
 double h_, sum_, tmp_, step_;
 double *alphas_,*energies_, *variances_;
