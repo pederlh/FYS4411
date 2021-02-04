@@ -11,41 +11,15 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy){
     variances_ = new double[num_alphas_];              //Array to hold variances for different values of alpha
     h_ = 1.0;                                          //Stepsize
     sum_ = 0;
+    step_ = h_*pow(10,-2);
 
-
-
-    if (D_ == 1){
-        if (type_energy == 0){
-            energy_calculation = &Solver::local_energy_1D_analytical;
-        }
-        if (type_energy == 1){
-            energy_calculation = &Solver::local_energy_brute_force;
-        }
+    if (type_energy == 0){
+        energy_calculation = &Solver::local_energy_analytical;
     }
-
-
-    if (D_ == 2){
-        if (type_energy == 0){
-            energy_calculation = &Solver::local_energy_2D_analytical;
-        }
-        if (type_energy == 1){
-            energy_calculation = &Solver::local_energy_brute_force;
-        }
+    if (type_energy == 1){
+        energy_calculation = &Solver::local_energy_brute_force;
     }
-
-    if (D_ == 3){
-        if (type_energy == 0){
-            energy_calculation = &Solver::local_energy_3D_analytical;
-        }
-        if (type_energy == 1){
-            energy_calculation = &Solver::local_energy_brute_force;
-        }
-    }
-
-    MonteCarlo();
-
 }
-
 
 void Solver::MonteCarlo(){
 
@@ -75,7 +49,7 @@ void Solver::MonteCarlo(){
             }
         }
 
-        r2_old = init_r_sum(r_old_);
+        r2_old = init_r_sum(r_old_);               //Inital sum of all r_i^2
         tf_old = trial_func(alpha, r2_old);       //Initial trial wave function
 
         for (int cycle = 0; cycle < MC_; cycle++){
@@ -96,7 +70,7 @@ void Solver::MonteCarlo(){
                     tf_old = tf_new;
                     r2_old = r2_new;
                 }
-                DeltaE = (this->*energy_calculation)(alpha,r_old_,r2_old, move_idx); //Points to either analytical expression for local energy or numerical
+                DeltaE = (this->*energy_calculation)(alpha,r_old_,r2_old); //Points to either analytical expression for local energy or numerical
                 energy += DeltaE;
                 energy_squared += DeltaE*DeltaE;
                 }
@@ -131,70 +105,50 @@ double Solver::trial_func(double alpha, double sum_r_squared){
 }
 
 
-double Solver::local_energy_1D_analytical(double alpha, double **r, double r_sum, int idx){
-    sum_ = 0;
-    for (int i=0; i<N_; i++){
-        for (int j = 0; j< D_; j++){
-            sum_ += -(2*alpha*alpha*r[i][j]*r[i][j] - 1*alpha) + (1./2)*r[i][j]*r[i][j];
-        }
-    }
-    return sum_;
-}
 
-double Solver::local_energy_2D_analytical(double alpha, double **r, double r_sum, int idx){
+double Solver::local_energy_analytical(double alpha, double **r, double r_sum){
     sum_ = 0;
     for (int i=0; i<N_; i++){
         tmp_= 0;
         for (int j = 0; j< D_; j++){
             tmp_ += r[i][j]*r[i][j];
         }
-        sum_ += -2*alpha*alpha*tmp_ + 2*alpha + (1./2)*tmp_;
+        sum_ += -2*alpha*alpha*tmp_ + D_*alpha + (1./2)*tmp_;
     }
     return sum_;
 
 }
 
-double Solver::local_energy_3D_analytical(double alpha, double **r, double r_sum, int idx){
-    sum_ = 0;
-    for (int i=0; i<N_; i++){
-        tmp_= 0;
-        for (int j = 0; j< D_; j++){
-            tmp_ += r[i][j]*r[i][j];
-        }
-        sum_ += -2*alpha*alpha*tmp_ + 3*alpha + (1./2)*tmp_;
-    }
-    return sum_;
 
-}
-
-double Solver::local_energy_brute_force(double alpha, double **r, double r_sum, int idx){
+double Solver::local_energy_brute_force(double alpha, double **r, double r_sum){
     double dr_p, dr_m;
-    double step = h_*pow(10,-2);
     laplace_tf_ = 0.0;
 
     for (int dd = 0; dd < D_; dd++){
         dr_p = r_sum;
         dr_m = r_sum;
         for (int nn = 0; nn < N_; nn++){
-            dr_p = update_r_sum(dr_p, r[nn][dd], r[nn][dd] + step);
-            dr_m = update_r_sum(dr_m, r[nn][dd], r[nn][dd] - step);
+            dr_p = update_r_sum(dr_p, r[nn][dd], r[nn][dd] + step_);
+            dr_m = update_r_sum(dr_m, r[nn][dd], r[nn][dd] - step_);
         }
         laplace_tf_  += trial_func(alpha,dr_p) + trial_func(alpha, dr_m);
     }
 
     tf_middle_ = trial_func(alpha,r_sum);
     laplace_tf_ -= 2*D_*tf_middle_;
-    laplace_tf_ /= (step*step*tf_middle_);
+    laplace_tf_ /= (step_*step_*tf_middle_);
 
     return (1./2)*(-laplace_tf_ + r_sum);
 }
 
-void Solver::write_to_file(string outfilename){
+void Solver::write_to_file(string outfilename, double time){
     ofstream ofile;
     ofile.open(outfilename);
     ofile << "alpha" << " " << "energy" << " " << "variance" << endl;
     for (int i = 0; i < num_alphas_; i++){
         ofile << alphas_[i] << " " << energies_[i] << " " << variances_[i] << endl;
     }
+    ofile<<" "<<endl;
+    ofile << "Time used : " << time <<"sec" <<endl;
     ofile.close();
 }
