@@ -11,7 +11,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy){
     variances_ = new double[num_alphas_];              //Array to hold variances for different values of alpha
     h_ = 1.0;                                          //Stepsize
     sum_ = 0;
-    step_ = h_*pow(10,-2);
+    step_ = h_*pow(10,-4);
 
     if (type_energy == 0){
         energy_calculation = &Solver::local_energy_analytical;
@@ -107,7 +107,9 @@ double Solver::trial_func(double alpha, double sum_r_squared){
 
 
 double Solver::local_energy_analytical(double alpha, double **r, double r_sum){
-    sum_ = 0;
+    return D_*N_*alpha + (1-4*alpha*alpha)*r_sum;
+
+    /*
     for (int i=0; i<N_; i++){
         tmp_= 0;
         for (int j = 0; j< D_; j++){
@@ -116,6 +118,7 @@ double Solver::local_energy_analytical(double alpha, double **r, double r_sum){
         sum_ += -2*alpha*alpha*tmp_ + D_*alpha + (1./2)*tmp_;
     }
     return sum_;
+    */
 
 }
 
@@ -149,6 +152,6 @@ void Solver::write_to_file(string outfilename, double time){
         ofile << alphas_[i] << " " << energies_[i] << " " << variances_[i] << endl;
     }
     ofile<<" "<<endl;
-    ofile << "Time used : " << time <<"sec" <<endl;
+    ofile << "Timeused: " << time <<endl;
     ofile.close();
 }

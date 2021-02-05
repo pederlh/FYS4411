@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 N = 24
-path = "./Results/spherical_HO_"
+path = "./Results/1b_low_MC/spherical_HO_"
 dims = ["1D_", "2D_", "3D_"]
 methods = ["ana_","num_"]
 particles = [1,10,100,500]
-
+"""
 num_e_1d = []
 num_e_2d = []
 num_e_3d = []
@@ -143,7 +143,7 @@ t_rel_1d = t_num_1d/t_ana_1d
 t_rel_2d = t_num_2d/t_ana_2d
 t_rel_3d = t_num_3d/t_ana_3d
 
-"""
+
 #Plot 1D energy
 plt.plot(particles,num_e_1d,"*", label= "Brute force")
 plt.plot(particles,ana_e_1d,"*", label= "Analytical")
@@ -169,7 +169,6 @@ plt.legend()
 plt.xlabel("Number of particles")
 plt.ylabel("Relative error")
 plt.show()
-"""
 
 #Plot 1D time
 plt.plot(particles,t_rel_1d ,label= "1D")
@@ -180,7 +179,7 @@ plt.xlabel("Number of particles")
 plt.ylabel(r"$\frac{t_{num}}{t_{ana}}$", fontsize = 20)
 plt.show()
 
-"""
+
 #Plot 2D time
 plt.plot(particles,t_rel_2d,"*", label= "Time difference between brute force and analytical")
 plt.legend()
@@ -195,3 +194,42 @@ plt.xlabel("Number of particles")
 plt.ylabel(r"$\frac{t_{num}}{t_{ana}}$", fontsize = 20)
 plt.show()
 """
+
+
+
+#Relativ feil i energi som funksjon av alpha med N=10 particler i 3D
+alphas = []
+energies = []
+variance = []
+
+filename = "./Results/1b_used/spherical_HO_3D_num_N_10_MC_10000000.txt"
+with open(filename,"r") as file:
+    lines = file.readlines()[1:-2]
+    for line in lines:
+        val = line.split()
+        alphas.append(float(val[0]))
+        energies.append(float(val[1]))
+        variance.append(float(val[2]))
+
+alphas = np.array(alphas)
+energies = np.array(energies)
+variance = np.array(variance)
+
+e_ana = (3/2)*10
+
+rel_e = abs((energies-e_ana)/e_ana)
+min_idx = np.where(rel_e == np.min(rel_e))
+plt.plot(alphas, rel_e, label = "Relative error in energy")
+plt.plot(alphas[min_idx], rel_e[min_idx], "*", label = "Minimum relative error")
+plt.legend()
+plt.xlabel("Alphas")
+plt.ylabel("Relative error")
+plt.show()
+
+min_idx = np.where(variance == np.min(variance))
+plt.plot(alphas,variance, label = "Variance")
+plt.plot(alphas[min_idx],variance[min_idx], "*",label = "Minimum variance")
+plt.legend()
+plt.xlabel("Alphas")
+plt.ylabel("Variance")
+plt.show()
