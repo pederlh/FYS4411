@@ -33,6 +33,13 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
         metropolis_sampling = &Solver::Metropolis_importance;
     }
 
+    if (type_sampling == 2){
+        MC_method = &Solver::Gradient_descent;
+        init_positions = &Solver::Initialize_positions;
+        metropolis_sampling = &Solver::Metropolis_importance;
+
+    }
+
     r_old_ = new double*[N_];
     quantum_force_old_ = new double*[N_];
     quantum_force_new_ = new double[D_];
@@ -45,6 +52,63 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
     (this->*MC_method)();
 
 
+}
+
+void Solver::Gradient_descent(){
+    double E, V, dalpha;
+    double Alphaa = 0.9;        //Initial guess for alpha
+    double eta = 0.01;
+    int iterations = 50;
+    cout <<"Alpha " << "Energy " << "Variance " << endl;
+    for (int it = 0; it < iterations; it++){
+        E, V, dalpha = MonteCarlo_SGD(Alphaa);
+        Alphaa -= eta*dalpha;
+        cout <<Alphaa<<" " << E << " " << V<< " " << endl;
+
+    }
+}
+
+double Solver::MonteCarlo_SGD(double alpha){
+    mt19937_64 gen(rd_());
+    uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
+    uniform_int_distribution<int> RIG(0,N_-1);    //Random integer genererator (0,1)
+    double energy, energy_squared, DeltaE, variance, mp, ap, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
+    double r2_sum_old, r2_sum_new;            //New and old r^2 sums (to go in the expression trial function)
+    int idx;
+    int burn_cycles = 10000;
+
+    energy = 0;
+    energy_squared = 0;
+
+    r2_sum_old = Initialize_positions(r2_sum_old);   //Initialize random starting posistions of particle
+    Initialize_quantum_force(alpha, r_old_, quantum_force_old_);
+
+    for (int cycle = 0; cycle < MC_; cycle++){
+        for (int n = 0; n < N_; n++){
+            r2_sum_new = r2_sum_old;
+
+            idx = RIG(gen);   //Index of proposed moved particle
+            mp = RDG(gen);    //Magnitude of move
+            ap = RDG(gen);    //Acceptance probability
+
+            r2_sum_old = (this->*metropolis_sampling)(r2_sum_new, r2_sum_old, alpha, idx, mp, ap); //Metropolis test, updates position according to accepted/non accepted move
+
+            DeltaE = (this->*energy_calculation)(alpha,r2_sum_old); //Points to either analytical expression for local energy or numerical
+            energy += DeltaE;
+            energy_squared += DeltaE*DeltaE;
+            sum_r = -Init_r_sum(r_old_);
+            Derivate_WF += sum_r;
+            Derivate_WF_E += sum_r*DeltaE;
+            }
+        }
+    energy /= (MC_*N_);
+    energy_squared /= (MC_*N_);
+    Derivate_WF/=(MC_*N_);
+    Derivate_WF_E/=(MC_*N_);
+    variance = energy_squared - energy*energy;
+    DerivateE = 2*(Derivate_WF_E - Derivate_WF*energy);
+
+    return energy, variance, DerivateE;
 }
 
 void Solver::MonteCarlo(){
@@ -172,81 +236,7 @@ void Solver::MonteCarlo_importance(){
     }
 }
 
-double Solver::Initialize_positions_importance(double r2_sum){
-    mt19937_64 gen(rd_());
-    uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
 
-    for (int j = 0; j < N_; j++){                       //Initial posistion
-        for (int k = 0; k < D_; k++){
-            r_old_[j][k] = h_ * (RDG(gen) - 0.5);
-        }
-    }
-    r2_sum = Init_r_sum(r_old_);               //Inital sum of all r_i^2
-
-    return r2_sum;
-}
-
-
-void Solver::Initialize_quantum_force(double alpha, double **positions, double **q_force){
-    for (int j = 0; j < N_; j++){                       //Initial posistion
-        for (int k = 0; k < D_; k++){
-            q_force[j][k] = -4*alpha*positions[j][k];
-        }
-    }
-}
-
-void Solver::Update_quantum_force(double alpha){
-    for (int dd =0; dd< D_; dd++){
-        quantum_force_new_[dd] = -4*alpha*r_new_[dd];
-    }
-}
-
-double Solver::Greens_function(){
-    return 1.0;
-}
-
-
-double Solver::Initialize_positions(double r2_sum){
-    mt19937_64 gen(rd_());
-    uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
-
-    for (int j = 0; j < N_; j++){                       //Initial posistion
-        for (int k = 0; k < D_; k++){
-            r_old_[j][k] = h_ * (RDG(gen) - 0.5);
-        }
-    }
-    r2_sum = Init_r_sum(r_old_);               //Inital sum of all r_i^2
-
-    return r2_sum;
-}
-
-double Solver::Metropolis_importance(double r2_new, double r2_old, double alpha, int move_idx, double move_P, double acc_P){
-    double tf_old, tf_new, P, greensfunc, tmp1, tmp2;
-
-    for (int k = 0; k < D_; k++){
-        r_new_[k] = r_old_[move_idx][k] + h_ * (move_P - 0.5);
-        r2_new = Update_r_sum(r2_new, r_old_[move_idx][k], r_new_[k]);
-    }
-    Update_quantum_force(alpha);
-    greensfunc = 0.0;
-    for (int dd = 0; dd < D_; dd++){
-        tmp1 += pow((r_new_[dd]-r_old_[move_idx][dd]- D_diff_*step_*quantum_force_old_[move_idx][dd]),2);
-        tmp2 += pow((r_old_[move_idx][dd]-r_new_[dd]- D_diff_*step_*quantum_force_new_[dd]),2);
-    }
-    greensfunc = exp(tmp1/tmp2);
-
-    tf_old = Trial_func(alpha, r2_old);             //Trial wave function of old position
-    tf_new = Trial_func(alpha, r2_new);           //Trial wave function of new position
-    P = greensfunc*(tf_new*tf_new)/(tf_old*tf_old);            //Metropolis test
-    if (acc_P <= P){
-        for (int k =0 ; k< D_;  k++){                   //Update initial posistion
-            r_old_[move_idx][k] = r_new_[k];
-            quantum_force_old_[move_idx][k] = quantum_force_new_[k];
-        }
-        r2_old = r2_new;
-    }
-    return r2_old;
-}
 
 double Solver::Metropolis(double r2_new, double r2_old, double alpha, int move_idx, double move_P, double acc_P){
 
@@ -269,6 +259,70 @@ double Solver::Metropolis(double r2_new, double r2_old, double alpha, int move_i
     return r2_old;
 }
 
+double Solver::Metropolis_importance(double r2_new, double r2_old, double alpha, int move_idx, double move_P, double acc_P){
+    double tf_old, tf_new, P, greensfunc;
+
+    for (int k = 0; k < D_; k++){
+        r_new_[k] = r_old_[move_idx][k] + h_ * (move_P - 0.5);
+        r2_new = Update_r_sum(r2_new, r_old_[move_idx][k], r_new_[k]);
+    }
+    Update_quantum_force(alpha);
+    greensfunc = Greens_function(move_idx);
+
+    tf_old = Trial_func(alpha, r2_old);             //Trial wave function of old position
+    tf_new = Trial_func(alpha, r2_new);           //Trial wave function of new position
+    P = greensfunc*(tf_new*tf_new)/(tf_old*tf_old);            //Metropolis test
+    if (acc_P <= P){
+        for (int k =0 ; k< D_;  k++){                   //Update initial posistion
+            r_old_[move_idx][k] = r_new_[k];
+            quantum_force_old_[move_idx][k] = quantum_force_new_[k];
+        }
+        r2_old = r2_new;
+    }
+    return r2_old;
+}
+
+
+
+void Solver::Initialize_quantum_force(double alpha, double **positions, double **q_force){
+    for (int j = 0; j < N_; j++){                       //Initial posistion
+        for (int k = 0; k < D_; k++){
+            q_force[j][k] = -4*alpha*positions[j][k];
+        }
+    }
+}
+
+void Solver::Update_quantum_force(double alpha){
+    for (int dd =0; dd< D_; dd++){
+        quantum_force_new_[dd] = -4*alpha*r_new_[dd];
+    }
+}
+
+double Solver::Greens_function(int idx){
+    double tmp1, tmp2;
+    for (int dd = 0; dd < D_; dd++){
+        tmp1 += pow((r_new_[dd]-r_old_[idx][dd]- D_diff_*step_*quantum_force_old_[idx][dd]),2);
+        tmp2 += pow((r_old_[idx][dd]-r_new_[dd]- D_diff_*step_*quantum_force_new_[dd]),2);
+    }
+
+    return exp(tmp1/tmp2);;
+}
+
+double Solver::Initialize_positions(double r2_sum){
+    mt19937_64 gen(rd_());
+    uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
+
+    for (int j = 0; j < N_; j++){                       //Initial posistion
+        for (int k = 0; k < D_; k++){
+            r_old_[j][k] = h_ * (RDG(gen) - 0.5);
+        }
+    }
+    r2_sum = Init_r_sum(r_old_);               //Inital sum of all r_i^2
+
+    return r2_sum;
+}
+
+
 double Solver::Init_r_sum(double **r){
     sum_ = 0;
     for (int i=0; i<N_; i++){
@@ -285,16 +339,15 @@ double Solver::Update_r_sum(double sum, double r_init, double r_move){
     return sum;
 }
 
+
+
 double Solver::Trial_func(double alpha, double sum_r_squared){
     return exp(-alpha*sum_r_squared);
 }
 
-
-
 double Solver::Local_energy_analytical(double alpha, double r_sum){
-    return D_*N_*alpha + (1-4*alpha*alpha)*r_sum;
+    return D_*N_*alpha + (1-4*alpha*alpha)*(1./2)*r_sum;
 }
-
 
 double Solver::Local_energy_brute_force(double alpha, double r_sum){
     double dr_p, dr_m;
@@ -316,6 +369,9 @@ double Solver::Local_energy_brute_force(double alpha, double r_sum){
 
     return (1./2)*(-laplace_tf_ + r_sum);
 }
+
+
+
 
 void Solver::Write_to_file(string outfilename, double time){
     ofstream ofile;

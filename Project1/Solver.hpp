@@ -48,11 +48,10 @@ double Local_energy_brute_force(double alpha, double r_sum);
 double Local_energy_analytical(double alpha, double r_sum);     //Local energy analytical
 
 double Initialize_positions(double r2_sum);
-double Initialize_positions_importance(double r2_sum);
 
 void Initialize_quantum_force(double alpha, double **positions, double **q_force);
 void Update_quantum_force(double alpha);
-double Greens_function();
+double Greens_function(int idx);
 
 public:
 
@@ -61,6 +60,8 @@ Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling)
 void Write_to_file(string outfilename, double time);
 void MonteCarlo();
 void MonteCarlo_importance();
+double MonteCarlo_SGD(double alpha);
+void Gradient_descent();
 
 };
 
