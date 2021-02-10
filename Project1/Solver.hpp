@@ -31,6 +31,7 @@ random_device rd_;
 
 //Pointer to member function
 double (Solver::*energy_calculation)(double alpha, double r_sum);
+void (Solver::*QF)(double alpha, double **positions, double **q_force);
 void (Solver::*MC_method)();
 double (Solver::*init_positions)(double r2_sum);
 double(Solver::*metropolis_sampling)(double r2_new, double r2_old, double alpha, int move_idx, double move_P, double acc_P);
@@ -50,6 +51,7 @@ double Local_energy_analytical(double alpha, double r_sum);     //Local energy a
 double Initialize_positions(double r2_sum);
 
 void Initialize_quantum_force(double alpha, double **positions, double **q_force);
+void No_quantum_force(double alpha, double **positions, double **q_force);
 void Update_quantum_force(double alpha);
 double Greens_function(int idx);
 
@@ -58,8 +60,8 @@ public:
 //Constructor
 Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling);
 void Write_to_file(string outfilename, double time);
+void MonteCarlo_burn();
 void MonteCarlo();
-void MonteCarlo_importance();
 double MonteCarlo_SGD(double alpha);
 void Gradient_descent();
 

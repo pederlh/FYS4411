@@ -25,35 +25,41 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
         MC_method = &Solver::MonteCarlo;
         init_positions = &Solver::Initialize_positions;
         metropolis_sampling = &Solver::Metropolis;
+        QF = &Solver::No_quantum_force;
     }
 
     if (type_sampling == 1){
-        MC_method = &Solver::MonteCarlo_importance;
-        init_positions = &Solver::Initialize_positions;
-        metropolis_sampling = &Solver::Metropolis_importance;
+        MC_method = &Solver::MonteCarlo;
     }
 
     if (type_sampling == 2){
         MC_method = &Solver::Gradient_descent;
-        init_positions = &Solver::Initialize_positions;
-        metropolis_sampling = &Solver::Metropolis_importance;
 
     }
 
+    if (type_sampling != 0){
+        init_positions = &Solver::Initialize_positions;
+        metropolis_sampling = &Solver::Metropolis_importance;
+        QF = &Solver::Initialize_quantum_force;
+
+        quantum_force_old_ = new double*[N_];
+        quantum_force_new_ = new double[D_];
+        for (int i = 0; i <N_; i++){
+            quantum_force_old_[i] = new double[D_];
+        }
+    }
+
     r_old_ = new double*[N_];
-    quantum_force_old_ = new double*[N_];
-    quantum_force_new_ = new double[D_];
     r_new_ = new double[D_];
     for (int i= 0; i< N_ ; i++){
         r_old_[i] = new double[D_];
-        quantum_force_old_[i] = new double[D_];
     }
 
     (this->*MC_method)();
 
-
 }
 
+//monte carlo som GD, kjør ytre alpha loop som håndterer både importance og ikke
 void Solver::Gradient_descent(){
     double E, V, dalpha;
     double Alphaa = 0.9;        //Initial guess for alpha
@@ -67,6 +73,7 @@ void Solver::Gradient_descent(){
 
     }
 }
+
 
 double Solver::MonteCarlo_SGD(double alpha){
     mt19937_64 gen(rd_());
@@ -111,7 +118,8 @@ double Solver::MonteCarlo_SGD(double alpha){
     return energy, variance, DerivateE;
 }
 
-void Solver::MonteCarlo(){
+//DENNE ER IKKE I BRUK PEDER :-) Skal forhåoentligvis brukes når jeg får svar på varianse problemet, så bare ignorer den for nå
+void Solver::MonteCarlo_burn(){
     mt19937_64 gen(rd_());
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
     uniform_int_distribution<int> RIG(0,N_-1);    //Random integer genererator (0,1)
@@ -180,7 +188,7 @@ void Solver::MonteCarlo(){
                 mp = RDG(gen);    //Magnitude of move
                 ap = RDG(gen);    //Acceptance probability
 
-                r2_sum_old = Metropolis(r2_sum_new, r2_sum_old, alpha, idx, mp, ap); //Metropolis test, updates position according to accepted/non accepted move
+                r2_sum_old = (this->*metropolis_sampling)(r2_sum_new, r2_sum_old, alpha, idx, mp, ap); //Metropolis test, updates position according to accepted/non accepted move
 
                 DeltaE = (this->*energy_calculation)(alpha,r2_sum_old); //Points to either analytical expression for local energy or numerical
                 energy += DeltaE;
@@ -196,7 +204,7 @@ void Solver::MonteCarlo(){
 
 }
 
-void Solver::MonteCarlo_importance(){
+void Solver::MonteCarlo(){
     mt19937_64 gen(rd_());
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator (0,1)
     uniform_int_distribution<int> RIG(0,N_-1);    //Random integer genererator (0,1)
@@ -210,8 +218,8 @@ void Solver::MonteCarlo_importance(){
         energy = 0;
         energy_squared = 0;
 
-        r2_sum_old = Initialize_positions(r2_sum_old);   //Initialize random starting posistions of particle
-        Initialize_quantum_force(alpha, r_old_, quantum_force_old_);
+        r2_sum_old = Initialize_positions(r2_sum_old);          //Initialize random starting posistions of particle
+        (this->*QF)(alpha,r_old_,quantum_force_old_);          //Initialize quantum force if importance sampling, does nothing if brute force
 
         for (int cycle = 0; cycle < MC_; cycle++){
             for (int n = 0; n < N_; n++){
@@ -235,7 +243,6 @@ void Solver::MonteCarlo_importance(){
         variances_[a] = variance;
     }
 }
-
 
 
 double Solver::Metropolis(double r2_new, double r2_old, double alpha, int move_idx, double move_P, double acc_P){
@@ -304,9 +311,13 @@ double Solver::Greens_function(int idx){
         tmp1 += pow((r_new_[dd]-r_old_[idx][dd]- D_diff_*step_*quantum_force_old_[idx][dd]),2);
         tmp2 += pow((r_old_[idx][dd]-r_new_[dd]- D_diff_*step_*quantum_force_new_[dd]),2);
     }
-
-    return exp(tmp1/tmp2);;
+    //return exp((1/(4*D_*step_))*(-tmp1+tmp2));
+    return exp(tmp1/tmp2);
 }
+
+//If brute force, this function (which does nothing) is called instead of Initialize quantum force
+void Solver::No_quantum_force(double alpha, double **positions, double **q_force){}
+
 
 double Solver::Initialize_positions(double r2_sum){
     mt19937_64 gen(rd_());
@@ -321,7 +332,6 @@ double Solver::Initialize_positions(double r2_sum){
 
     return r2_sum;
 }
-
 
 double Solver::Init_r_sum(double **r){
     sum_ = 0;
@@ -369,8 +379,6 @@ double Solver::Local_energy_brute_force(double alpha, double r_sum){
 
     return (1./2)*(-laplace_tf_ + r_sum);
 }
-
-
 
 
 void Solver::Write_to_file(string outfilename, double time){
