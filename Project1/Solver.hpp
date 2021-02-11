@@ -62,7 +62,7 @@ Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling)
 void Write_to_file(string outfilename, double time);
 void MonteCarlo_burn();
 void MonteCarlo();
-double MonteCarlo_SGD(double alpha);
+void MonteCarlo_SGD(double *values, double alpha);
 void Gradient_descent();
 
 };
