@@ -39,3 +39,13 @@ ana_3D{
 - SgD implementert hvor?
 - Python program for bootstrapping/statistiske utregninger
 - Sette arg til 0 i fnuk dersom de ikke trengs
+
+
+
+
+
+monte carlo BF
+
+
+monte carlo importance
+-energy analytical 

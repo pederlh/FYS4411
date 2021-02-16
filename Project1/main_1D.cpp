@@ -8,15 +8,15 @@ int main(int argc, char const *argv[]) {
 
     string outfilename, calc;
     clock_t start, stop;
-    int num_alphas = 12;
-    int num_particles = 1;
-    int mc_cycles = 100000;
+    int num_alphas = 15;
+    int num_particles = 10;
+    int mc_cycles = 1000;
     int dimentions = 2;
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
     int type_energy = 0;
 
     //type_sampling = 0 for no importance sampling, type_sampling = 1 for importance sampling, =2 for SGD.
-    int type_sampling = 0;
+    int type_sampling = 1;
 
 
     Solver mysolver(num_particles, num_alphas, mc_cycles, dimentions, type_energy, type_sampling);

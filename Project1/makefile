@@ -1,7 +1,7 @@
 all: compile execute
 
 compile:
-	c++ -o main_1D.out $(wildcard *.cpp) -larmadillo -std=c++11
+	c++ -o main.out Solver.cpp Psi.cpp main_1D.cpp -larmadillo -std=c++11
 
 execute:
-	./main_1D.out
+	./main.out
