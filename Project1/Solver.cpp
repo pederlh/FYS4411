@@ -1,12 +1,15 @@
 #include "Solver.hpp"
-//#include "Psi.hpp"
+#include "Psi.hpp"
 
 Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sampling){
     D_ = D;
     N_ = N;
+    h_ = 1.0;                                          //Stepsize
+    sum_ = 0;
+    step_ = h_*pow(10,-4);
     type_energy_ = type_energy;
     type_sampling_ = type_sampling;
-    wave.Declare_positions(N_, D_);
+    wave.Declare_positions(N_, D_,h_, step_);
 
     num_alphas_ = num_alphas;
     MC_ = MC;
@@ -15,9 +18,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
     for (int i = 0; i < num_alphas_; i++) alphas_[i] = 0.1 + 0.05*i;
     energies_ = new double[num_alphas_];               //Array to hold energies for different values of alpha
     variances_ = new double[num_alphas_];              //Array to hold variances for different values of alpha
-    h_ = 1.0;                                          //Stepsize
-    sum_ = 0;
-    step_ = h_*pow(10,-4);
+
 
     if (type_sampling_ == 0){
         MC_method = &Solver::MonteCarlo;
@@ -25,7 +26,8 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
     }
 
     if (type_sampling_ != 0){
-        wave.Declare_quantum_force();
+        D_diff_ = 0.5;                      //Diffusion constant in Greens function
+        wave.Declare_quantum_force(D_diff_);
         MC_method = &Solver::MonteCarlo;
         metropolis_sampling = &Solver::Metropolis_importance;
 
@@ -43,7 +45,7 @@ void Solver::MonteCarlo(){
         energy = 0;
         energy_squared = 0;
 
-        wave.Initialize_positions();
+        wave.r2_sum_old_ = wave.Initialize_positions();
 
         if (type_sampling_ != 0){
             wave.Initialize_quantum_force(alpha);
@@ -84,10 +86,7 @@ void Solver::Metropolis(double alpha){
     double tf_old, tf_new, P;
     int idx = RIG(gen);
 
-    for (int k = 0; k < D_; k++){
-        wave.r_new_[k] = wave.r_old_[idx][k] + h_ * (RDG(gen) - 0.5);
-        wave.r2_sum_new_ = wave.Update_r_sum(wave.r2_sum_new_, wave.r_old_[idx][k], wave.r_new_[k]);
-    }
+    wave.r2_sum_new_ = wave.Proposed_move(idx);    //Moves particle with index "idx" and calculates new sum of r^2
 
     tf_old = wave.Trial_func(alpha, wave.r2_sum_old_);             //Trial wave function of old position
     tf_new = wave.Trial_func(alpha, wave.r2_sum_new_);           //Trial wave function of new position
@@ -108,13 +107,9 @@ void Solver::Metropolis_importance(double alpha){
     double tf_old, tf_new, P, greensfunc;
     int idx = RIG(gen);
 
-    for (int k = 0; k < D_; k++){
-        wave.r_new_[k] = wave.r_old_[idx][k] + h_ * (RDG(gen) - 0.5);
-        wave.r2_sum_new_ = wave.Update_r_sum(wave.r2_sum_new_, wave.r_old_[idx][k], wave.r_new_[k]);
-    }
-
+    wave.r2_sum_new_ = wave.Proposed_move_importance(idx);
     wave.Update_quantum_force(alpha);
-    greensfunc = wave.Greens_function(idx);
+    greensfunc = Greens_function(idx);
 
     tf_old = wave.Trial_func(alpha, wave.r2_sum_old_);             //Trial wave function of old position
     tf_new = wave.Trial_func(alpha, wave.r2_sum_new_);           //Trial wave function of new position
@@ -126,6 +121,21 @@ void Solver::Metropolis_importance(double alpha){
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
     }
+}
+
+
+double Solver::Greens_function(int idx){
+    double old_2_new, new_2_old;
+    for (int dd = 0; dd < D_; dd++){
+        old_2_new += pow((wave.r_old_[idx][dd]-wave.r_new_[dd]- D_diff_*step_*wave.quantum_force_new_[dd]),2)/(4*D_diff_*step_);
+
+        new_2_old += pow((wave.r_new_[dd]-wave.r_old_[idx][dd]- D_diff_*step_*wave.quantum_force_old_[idx][dd]),2)/(4*D_diff_*step_);
+
+    }
+    old_2_new = exp(-old_2_new);
+    new_2_old = exp(-new_2_old);
+    
+    return old_2_new/new_2_old;
 }
 
 

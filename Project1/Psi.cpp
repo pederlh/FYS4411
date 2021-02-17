@@ -1,14 +1,17 @@
 #include "Psi.hpp"
 
+/*
 Psi::Psi(){
-    h_ = 1.0;
-    step_ = h_*pow(10,-4);
-}
 
-void Psi::Declare_positions(int N, int D){
+}
+*/
+
+void Psi::Declare_positions(int N, int D, double h, double step){
 
     D_ = D;
     N_ = N;
+    h_ = h;
+    step_ = step;
 
     r_new_ = new double[D_];
     r_old_ = new double*[N_];
@@ -18,19 +21,18 @@ void Psi::Declare_positions(int N, int D){
 
 }
 
-void Psi::Declare_quantum_force(){
+void Psi::Declare_quantum_force(double D_diff){
 
-    D_diff_ = 0.5; //Diffusion constant in Greens function
-
+    D_diff_ = D_diff;
     quantum_force_new_ = new double[D_];
     quantum_force_old_ = new double*[N_];
-    for (int i= 0; i< N_ ; i++){
+    for (int i = 0; i < N_ ; i++){
         quantum_force_old_[i] = new double[D_];
     }
 
 }
 
-void Psi::Initialize_positions(){
+double Psi::Initialize_positions(){
     mt19937_64 gen(rd_());
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
 
@@ -47,6 +49,7 @@ void Psi::Initialize_positions(){
             r2_sum_old_ += r_old_[i][j]*r_old_[i][j];
         }
     }
+    return r2_sum_old_;
 }
 
 
@@ -55,28 +58,16 @@ void Psi::Initialize_quantum_force(double alpha){
     for (int j = 0; j < N_; j++){
         for (int k = 0; k < D_; k++){
             quantum_force_old_[j][k] = -4*alpha*r_old_[j][k];
+            //quantum_force_old_[j][k] = 0.0;
         }
     }
 }
 
 void Psi::Update_quantum_force(double alpha){
-    for (int dd =0; dd< D_; dd++){
-        quantum_force_new_[dd] = -4*alpha*r_new_[dd];
+    for (int dim = 0; dim < D_; dim++){
+        quantum_force_new_[dim] = -4*alpha*r_new_[dim];
+        //quantum_force_new_[dim] = 0.0;
     }
-}
-
-double Psi::Greens_function(int idx){
-    double tmp1, tmp2;
-    for (int dd = 0; dd < D_; dd++){
-        tmp1 += pow((r_old_[idx][dd]-r_new_[dd]- D_diff_*step_*quantum_force_new_[dd]),2)*(1/(4*D_diff_*step_));
-        tmp2 += pow((r_new_[dd]-r_old_[idx][dd]- D_diff_*step_*quantum_force_old_[idx][dd]),2)*(1/(4*D_diff_*step_));
-
-    }
-    tmp1 = exp(-tmp1);
-    tmp2 = exp(-tmp2);
-    return tmp1/tmp2;
-    //return exp(tmp1/tmp2);
-    //return 1.0;
 }
 
 
@@ -85,6 +76,33 @@ double Psi::Update_r_sum(double sum, double r_init, double r_move){
     sum += r_move*r_move;
     return sum;
 }
+
+
+double Psi::Proposed_move(int idx){
+    mt19937_64 gen(rd_());
+    uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
+
+    for (int k = 0; k < D_; k++){
+        r_new_[k] = r_old_[idx][k] + h_ * (RDG(gen) - 0.5);
+        r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[k]);
+    }
+    return r2_sum_new_;
+}
+
+double Psi::Proposed_move_importance(int idx){
+    mt19937_64 gen(rd_());
+    normal_distribution<double> NDG(0.0,1.0);   //Random number generated from gaussian distribution with mean = 0, std = 1;
+    uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
+
+    double move_step = 0.005;
+    for (int k = 0; k < D_; k++){
+        r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[idx][k]*move_step + NDG(gen)*sqrt(move_step);
+        //r_new_[k] = r_old_[idx][k] + h_ * (RDG(gen) - 0.5);
+        r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[k]);
+    }
+    return r2_sum_new_;
+}
+
 
 double Psi::Trial_func(double alpha, double sum_r_squared){
     return exp(-alpha*sum_r_squared);
