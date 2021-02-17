@@ -132,9 +132,11 @@ void Solver::Metropolis_importance(double alpha){
 void Solver::Write_to_file(string outfilename, double time){
     ofstream ofile;
     ofile.open(outfilename);
-    ofile << "alpha" << " " << "energy" << " " << "variance" << endl;
+    ofile << setw(5) << "alpha" << setw(15) << "energy" << setw(15) << "variance" << endl;
     for (int i = 0; i < num_alphas_; i++){
-        ofile << alphas_[i] << " " << energies_[i] << " " << variances_[i] << endl;
+        ofile << setw(5) << setprecision(8) << alphas_[i];
+        ofile << setw(15) << setprecision(8) << energies_[i];
+        ofile << setw(15) << setprecision(8) << variances_[i] << endl;
     }
     ofile<<" "<<endl;
     ofile << "Timeused: " << time <<endl;
