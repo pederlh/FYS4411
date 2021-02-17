@@ -45,11 +45,12 @@ Psi wave;
 void Metropolis(double alpha);
 void Metropolis_importance(double alpha);
 void Write_to_file(string outfilename, double time);
-void MonteCarlo_burn();
+//void MonteCarlo_burn();
 void MonteCarlo();
 void MonteCarlo_SGD(double *values, double alpha);
 void Gradient_descent();
 double Greens_function(int idx);
+void ADAM();
 
 };
 

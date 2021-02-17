@@ -25,13 +25,24 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
         metropolis_sampling = &Solver::Metropolis;
     }
 
+    if (type_sampling_ == 1){
+        MC_method = &Solver::MonteCarlo;
+    }
+
+    if (type_sampling_ == 2){
+        MC_method = &Solver::Gradient_descent;
+    }
+
+    if (type_sampling_ == 3){
+        MC_method = &Solver::ADAM;
+    }
+
     if (type_sampling_ != 0){
         D_diff_ = 0.5;                      //Diffusion constant in Greens function
         wave.Declare_quantum_force(D_diff_);
-        MC_method = &Solver::MonteCarlo;
         metropolis_sampling = &Solver::Metropolis_importance;
-
     }
+
     (this->*MC_method)();
 
 }
@@ -75,6 +86,49 @@ void Solver::MonteCarlo(){
         energies_[a] = energy;
         variances_[a] = variance;
     }
+}
+
+
+void Solver::MonteCarlo_SGD(double *values, double alpha){
+    double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
+
+    energy = 0;
+    energy_squared = 0;
+
+    wave.r2_sum_old_ = wave.Initialize_positions();
+    wave.Initialize_quantum_force(alpha);
+
+    for (int cycle = 0; cycle < MC_; cycle++){
+        for (int n = 0; n < N_; n++){
+
+            wave.r2_sum_new_ = wave.r2_sum_old_;
+
+            (this->*metropolis_sampling)(alpha); //Metropolis test
+
+            if (type_energy_ == 0){
+                DeltaE = wave.Local_energy_analytical(alpha);
+            }
+            if (type_energy_==1){
+                DeltaE = wave.Local_energy_brute_force(alpha);
+            }
+            energy += DeltaE;
+            energy_squared += DeltaE*DeltaE;
+            sum_r = -wave.r2_sum_old_;
+            Derivate_WF += sum_r;
+            Derivate_WF_E += sum_r*DeltaE;
+            }
+        }
+    energy /= (MC_*N_);
+    energy_squared /= (MC_*N_);
+    Derivate_WF/=(MC_*N_);
+    Derivate_WF_E/=(MC_*N_);
+    variance = energy_squared - energy*energy;
+    DerivateE = 2*(Derivate_WF_E - Derivate_WF*energy);
+
+    values[0] = energy;
+    values[1] = variance;
+    values[2] = DerivateE;
+
 }
 
 
@@ -134,7 +188,7 @@ double Solver::Greens_function(int idx){
     }
     old_2_new = exp(-old_2_new);
     new_2_old = exp(-new_2_old);
-    
+
     return old_2_new/new_2_old;
 }
 
@@ -151,4 +205,57 @@ void Solver::Write_to_file(string outfilename, double time){
     ofile<<" "<<endl;
     ofile << "Timeused: " << time <<endl;
     ofile.close();
+}
+
+
+//Gradient Descent w/Importance sampling
+void Solver::Gradient_descent(){
+    double *values;
+    values = new double[3];
+    double Alphaa = 0.9;        //Initial guess for alpha
+    double eta = 0.01;
+    int iterations = 50;
+    cout <<"Alpha " << "Energy " << "Variance " << endl;
+    for (int it = 0; it < iterations; it++){
+        MonteCarlo_SGD(values, Alphaa);
+        Alphaa -= eta*values[2];
+        cout <<Alphaa<<" " << values[0] << " " << values[1]<< " " << endl;
+        if (values[1]< pow(10,-9)){
+            break;
+        }
+
+
+    }
+}
+
+void Solver::ADAM(){
+    double *values;
+    double avg_1_mom = 0.0;
+    double avg_2_mom = 0.0;
+    double B_1 = 0.99;
+    double B_2 = 0.99;
+    double scaled_eta, update, eps;
+    values = new double[3];
+    double Alphaa = 0.9;        //Initial guess for alpha
+    double eta = 0.01;
+    int iterations = 50;
+    cout <<"Alpha " << "Energy " << "Variance " << endl;
+    for (int it = 0; it < iterations; it++){
+        MonteCarlo_SGD(values, Alphaa);
+        values[2] *= eta;
+        avg_1_mom = B_1*avg_1_mom + (1-B_1)*values[2];
+        avg_2_mom = B_2*avg_2_mom + (1-B_2)*values[2]*values[2];
+        scaled_eta = eta*sqrt(1-pow(B_2,it+1))/(1-pow(B_1,it+1));
+        eps = pow(10,-8)*sqrt(1-pow(B_2,it+1));
+
+        update = scaled_eta*avg_1_mom/(sqrt(avg_2_mom)+eps);
+        Alphaa -= update;
+        cout <<Alphaa<<" " << values[0] << " " << values[1]<< " " << endl;
+        if (values[1]< pow(10,-9)){
+            break;
+        }
+
+
+    }
+
 }
