@@ -230,14 +230,15 @@ void Solver::Gradient_descent(){
 
 void Solver::ADAM(){
     double *values;
-    double avg_1_mom = 0.0;
-    double avg_2_mom = 0.0;
-    double B_1 = 0.99;
-    double B_2 = 0.99;
-    double scaled_eta, update, eps;
     values = new double[3];
+    double avg_1_mom = 0.0;         //Average first momentum
+    double avg_2_mom = 0.0;         //Average second momentum
+    double B_1 = 0.9;               //Decay rate for average first momentum
+    double B_2 = 0.999;             //Decay rate for average second momentum
+    double scaled_eta, update, eps;  //Scaled_eta = adaptive learning rate
     double Alphaa = 0.9;        //Initial guess for alpha
-    double eta = 0.01;
+    double eta = 0.01;          //Initial learning rate
+
     int iterations = 50;
     cout <<"Alpha " << "Energy " << "Variance " << endl;
     for (int it = 0; it < iterations; it++){
