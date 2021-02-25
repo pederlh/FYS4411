@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""Requires that you have run Solver w/GD to produce data """
+
 
 def Bootstrap_Local_Energy(B,filename):
 
@@ -69,7 +71,7 @@ for i in range(len(alphas)):
 
 
 
-expectation_E = 15
+expectation_E = 15   #When N = 10
 rel_error = np.zeros(len(alphas))
 for i in range(len(alphas)):
     rel_error[i] = np.abs((expectation_E-local_energy_b[i])/expectation_E)
