@@ -47,11 +47,11 @@ void Metropolis_importance(double alpha);
 void Write_to_file(string outfilename, double time);
 //void MonteCarlo_burn();
 void MonteCarlo();
-void MonteCarlo_SGD(double *values, double alpha);
+void MonteCarlo_GD(double *values, double alpha, string path);
 void Gradient_descent();
 double Greens_function(int idx);
 void ADAM();
-
+void Write_array_to_file(string outfilename, double *array, int len);
 };
 
 #endif

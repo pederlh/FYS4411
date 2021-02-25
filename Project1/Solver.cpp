@@ -79,6 +79,7 @@ void Solver::MonteCarlo(){
                 energy += DeltaE;
                 energy_squared += DeltaE*DeltaE;
                 }
+
             }
         energy /= (MC_*N_);
         energy_squared /= (MC_*N_);
@@ -89,9 +90,11 @@ void Solver::MonteCarlo(){
 }
 
 
-void Solver::MonteCarlo_SGD(double *values, double alpha){
+void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
+    double *E_L_to_file;
+    E_L_to_file = new double[N_*MC_];
     energy = 0;
     energy_squared = 0;
 
@@ -111,6 +114,7 @@ void Solver::MonteCarlo_SGD(double *values, double alpha){
             if (type_energy_==1){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
+            E_L_to_file[n + cycle] = DeltaE;
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
             sum_r = -wave.r2_sum_old_;
@@ -118,6 +122,8 @@ void Solver::MonteCarlo_SGD(double *values, double alpha){
             Derivate_WF_E += sum_r*DeltaE;
             }
         }
+
+    Write_array_to_file(path, E_L_to_file, N_*MC_);
     energy /= (MC_*N_);
     energy_squared /= (MC_*N_);
     Derivate_WF/=(MC_*N_);
@@ -207,30 +213,56 @@ void Solver::Write_to_file(string outfilename, double time){
     ofile.close();
 }
 
+void Solver::Write_array_to_file(string outfilename, double *array, int len){
+    ofstream ofile1;
+    ofile1.open(outfilename);
+    for (int i = 0; i < len; i++){
+        ofile1 <<array[i]<<endl;
+    }
+    ofile1.close();
+}
 
 //Gradient Descent w/Importance sampling
 void Solver::Gradient_descent(){
-    double *values;
-    values = new double[3];
-    double Alphaa = 0.9;        //Initial guess for alpha
-    double eta = 0.01;
+    string file;   //path to where files should be stored
     int iterations = 50;
+    double *alp_vals =  new double[iterations]; //Array to store alpha values
+    for (int z = 0; z < iterations; z++){
+        alp_vals[z] = 0;
+    }
+    double *values = new double[3];
+    double Alphaa = 0.9;        //Initial guess for alpha
+    double eta = 0.015;
+    int counter = 0;
+
+
     cout <<"Alpha " << "Energy " << "Variance " << endl;
     for (int it = 0; it < iterations; it++){
-        MonteCarlo_SGD(values, Alphaa);
+        counter += 1;
+        alp_vals[it] = Alphaa;
+        //file = "./Results/StatisticalAnalysis/" + to_string(N_) + "_part/alpha_" + to_string(Alphaa) + "/E_L_samples.txt";
+        file = to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
+        MonteCarlo_GD(values, Alphaa, file);
         Alphaa -= eta*values[2];
         cout <<Alphaa<<" " << values[0] << " " << values[1]<< " " << endl;
         if (values[1]< pow(10,-9)){
             break;
         }
-
-
     }
+
+    ofstream ofile2;
+    ofile2.open("alpha_values_GD.txt");
+    for (int p = 0; p < counter; p++){
+        ofile2 <<alp_vals[p]<<endl;
+    }
+    ofile2.close();
+
 }
 
 void Solver::ADAM(){
     double *values;
     values = new double[3];
+    string path;
     double avg_1_mom = 0.0;         //Average first momentum
     double avg_2_mom = 0.0;         //Average second momentum
     double B_1 = 0.9;               //Decay rate for average first momentum
@@ -242,7 +274,8 @@ void Solver::ADAM(){
     int iterations = 50;
     cout <<"Alpha " << "Energy " << "Variance " << endl;
     for (int it = 0; it < iterations; it++){
-        MonteCarlo_SGD(values, Alphaa);
+        path = "./Results/StatisticalAnalysis/" + to_string(N_) + "_part/alpha_" + to_string(Alphaa) + "/E_L_samples.txt";
+        MonteCarlo_GD(values, Alphaa, path);
         values[2] *= eta;
         avg_1_mom = B_1*avg_1_mom + (1-B_1)*values[2];
         avg_2_mom = B_2*avg_2_mom + (1-B_2)*values[2]*values[2];
