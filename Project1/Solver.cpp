@@ -114,7 +114,7 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
             if (type_energy_==1){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
-            E_L_to_file[n + cycle] = DeltaE;
+            E_L_to_file[cycle*N_ + n] = DeltaE;
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
             sum_r = -wave.r2_sum_old_;
