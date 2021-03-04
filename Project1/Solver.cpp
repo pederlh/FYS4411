@@ -101,6 +101,9 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     wave.r2_sum_old_ = wave.Initialize_positions();
     wave.Initialize_quantum_force(alpha);
 
+    int equi_cycles = 10000;
+
+
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int n = 0; n < N_; n++){
 
@@ -250,6 +253,15 @@ void Solver::Gradient_descent(){
         }
     }
 
+    MC_ = pow(2,19);
+    file ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
+    MonteCarlo_GD(values, Alphaa, file);
+
+
+
+
+
+
     ofstream ofile2;
     ofile2.open("alpha_values_GD.txt");
     for (int p = 0; p < counter; p++){
@@ -291,5 +303,7 @@ void Solver::ADAM(){
 
 
     }
+
+
 
 }

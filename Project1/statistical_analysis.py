@@ -25,14 +25,12 @@ def Bootstrap_Local_Energy(B,filename):
     reg_M = mean
     reg_V = mean_2 - mean*mean
 
-    #reg_M =0
-    #reg_V = 0
     k = 10000;
 
-    boot_M = np.zeros(k)
-    boot_V = np.zeros(k)
-    for b in range(k):
-        idx = np.random.randint(0, len(energies), size = B);
+    boot_M = np.zeros(B)
+    boot_V = np.zeros(B)
+    for b in range(B):
+        idx = np.random.randint(0, len(energies), size = len(energies));
         energies_copy = energies[idx]
         mean = np.mean(energies_copy)
         energy_squared = energies_copy*energies_copy;
@@ -40,13 +38,21 @@ def Bootstrap_Local_Energy(B,filename):
         boot_M[b] = mean
         boot_V[b]= mean_2 - mean*mean
 
-    boot_M = np.mean(boot_M)
-    boot_V = np.mean(boot_V)
+    boot_Mean = np.mean(boot_M)
+    boot_Var = np.mean(boot_V)
+
+    """
+    hist, bins = np.histogram(boot_M, bins=50)
+    width = 0.7 * (bins[1] - bins[0])
+    center = (bins[:-1] + bins[1:]) / 2
+    plt.bar(center, hist, align='center', width=width)
+    plt.show()
+    """
 
 
 
 
-    return boot_M, boot_V, reg_M, reg_V
+    return boot_Mean, boot_Var, reg_M, reg_V
 
 
 N = [10]
@@ -68,7 +74,7 @@ variance = np.zeros(len(alphas))
 N = 10
 for i in range(len(alphas)):
     readfile = str(N)+"_part_alpha_"+ str(alphas[i]) + "_E_L_samples.txt"
-    local_energy_b[i], variance_b[i], local_energy[i], variance[i] = Bootstrap_Local_Energy(9800, readfile);
+    local_energy_b[i], variance_b[i], local_energy[i], variance[i] = Bootstrap_Local_Energy(1000, readfile);
 
 
 
