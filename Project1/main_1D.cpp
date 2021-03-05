@@ -49,14 +49,6 @@ int main(int argc, char const *argv[]) {
         mysolver.Write_to_file(outfilename,timeused);
     }
 
-    if (type_sampling == 2){
-        outfilename = "SGD_spherical_HO_" + to_string(dimentions)+ "D_" +calc+"_N_"+to_string(num_particles)+"_MC_"+ to_string(mc_cycles)+".txt";
-
-        //mysolver.Write_to_file_SGD(outfilename,timeused);
-    }
-
-
-
 
 
 

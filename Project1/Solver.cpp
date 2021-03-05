@@ -43,6 +43,8 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
         metropolis_sampling = &Solver::Metropolis_importance;
     }
 
+
+
     (this->*MC_method)();
 
 }
@@ -60,6 +62,16 @@ void Solver::MonteCarlo(){
 
         if (type_sampling_ != 0){
             wave.Initialize_quantum_force(alpha);
+        }
+
+        //Equilibration step: runs metropolis algorithm without sampling to equibrate system
+        int equi_cycles = 10000;
+        for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+            for (int n = 0; n< N_; n++){
+                wave.r2_sum_new_ = wave.r2_sum_old_;
+
+                (this->*metropolis_sampling)(alpha); //Metropolis test
+            }
         }
 
         for (int cycle = 0; cycle < MC_; cycle++){
@@ -99,10 +111,22 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     energy_squared = 0;
 
     wave.r2_sum_old_ = wave.Initialize_positions();
-    wave.Initialize_quantum_force(alpha);
+    //wave.Initialize_quantum_force(alpha);
 
+
+    //Equilibration step: runs metropolis algorithm without sampling to equibrate system
     int equi_cycles = 10000;
+    for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+        for (int n = 0; n< N_; n++){
+            wave.r2_sum_new_ = wave.r2_sum_old_;
 
+            (this->*metropolis_sampling)(alpha); //Metropolis test
+        }
+    }
+
+
+    energy = 0;
+    energy_squared = 0;
 
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int n = 0; n < N_; n++){
@@ -111,12 +135,15 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
 
+            DeltaE = wave.Local_energy_brute_force(alpha);
+            /*
             if (type_energy_ == 0){
                 DeltaE = wave.Local_energy_analytical(alpha);
             }
             if (type_energy_==1){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
+            */
             E_L_to_file[cycle*N_ + n] = DeltaE;
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
@@ -227,7 +254,7 @@ void Solver::Write_array_to_file(string outfilename, double *array, int len){
 
 //Gradient Descent w/Importance sampling
 void Solver::Gradient_descent(){
-    string file;   //path to where files should be stored
+    string file, file2;   //path to where files should be stored
     int iterations = 50;
     double *alp_vals =  new double[iterations]; //Array to store alpha values
     for (int z = 0; z < iterations; z++){
@@ -239,11 +266,11 @@ void Solver::Gradient_descent(){
     int counter = 0;
 
 
+    //Eller parallellsier dette også for forskjellige alphaer
     cout <<"Alpha " << "Energy " << "Variance " << endl;
     for (int it = 0; it < iterations; it++){
         counter += 1;
         alp_vals[it] = Alphaa;
-        //file = "./Results/StatisticalAnalysis/" + to_string(N_) + "_part/alpha_" + to_string(Alphaa) + "/E_L_samples.txt";
         file = to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
         MonteCarlo_GD(values, Alphaa, file);
         Alphaa -= eta*values[2];
@@ -253,14 +280,11 @@ void Solver::Gradient_descent(){
         }
     }
 
+    //Paralelliser dette!! Fra her
     MC_ = pow(2,19);
-    file ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
-    MonteCarlo_GD(values, Alphaa, file);
-
-
-
-
-
+    file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
+    MonteCarlo_GD(values, Alphaa, file2);
+    //Til her!
 
     ofstream ofile2;
     ofile2.open("alpha_values_GD.txt");

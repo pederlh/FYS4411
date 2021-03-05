@@ -41,19 +41,14 @@ def Bootstrap_Local_Energy(B,filename):
     boot_Mean = np.mean(boot_M)
     boot_Var = np.mean(boot_V)
 
-    """
+
     hist, bins = np.histogram(boot_M, bins=50)
     width = 0.7 * (bins[1] - bins[0])
     center = (bins[:-1] + bins[1:]) / 2
     plt.bar(center, hist, align='center', width=width)
     plt.show()
-    """
-
-
-
 
     return boot_Mean, boot_Var, reg_M, reg_V
-
 
 N = [10]
 alphas = []
@@ -64,6 +59,7 @@ with open("alpha_values_GD.txt", "r") as afile:
         alphas.append(float(vals[0]))
 
 alphas = np.array(alphas)
+"""
 
 local_energy_b = np.zeros(len(alphas))
 variance_b = np.zeros(len(alphas))
@@ -107,3 +103,7 @@ ax2.set_ylabel("Variance")
 
 fig.tight_layout()
 plt.show()
+
+"""
+readfile = "OPTIMAL_ALPHA"+str(N[0])+"_part_alpha_"+ str(alphas[-1]) + "_E_L_samples.txt"
+Bootstrap_Local_Energy(1000,readfile)
