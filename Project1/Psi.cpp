@@ -1,18 +1,34 @@
 #include "Psi.hpp"
 
-/*
-Psi::Psi(){
 
-}
-*/
-
-void Psi::Declare_positions(int N, int D, double h, double step){
+void Psi::Declare_position(int N, int D, double h, double step, int case_type){
 
     D_ = D;
     N_ = N;
     h_ = h;
     step_ = step;
+    case_ = case_type;
 
+    //Declaring position
+    r_new_ = new double[D_];
+    r_old_ = new double*[N_];
+    for (int i= 0; i< N_ ; i++){
+        r_old_[i] = new double[D_];
+    }
+
+}
+
+void Psi::Declare_position_interaction(int N, int D, double h, double step, int case_type, double beta){
+
+    D_ = D;
+    N_ = N;
+    h_ = h;
+    step_ = step;
+    beta_ = beta;
+    case_ = case_type;
+    a_ = 0.0043;
+
+    //Declaring position
     r_new_ = new double[D_];
     r_old_ = new double*[N_];
     for (int i= 0; i< N_ ; i++){
@@ -44,13 +60,29 @@ double Psi::Initialize_positions(){
         }
     }
 
-    for (int i = 0; i < N_; i++){
-        for (int j =0; j <D_; j++){
-            r2_sum_old_ += r_old_[i][j]*r_old_[i][j];
+    if (case_ == 1){
+        for (int i = 0; i < N_; i++){
+            for (int j =0; j <D_; j++){
+                if(j==2){
+                    r2_sum_old_ += r_old_[i][j]*r_old_[i][j]*beta_*beta_;
+                }
+                else{
+                    r2_sum_old_ += r_old_[i][j]*r_old_[i][j];
+                }
+            }
         }
     }
+    else{
+        for (int i = 0; i < N_; i++){
+            for (int j =0; j <D_; j++){
+                r2_sum_old_ += r_old_[i][j]*r_old_[i][j];
+            }
+        }
+    }
+
     return r2_sum_old_;
 }
+
 
 
 
@@ -58,10 +90,37 @@ void Psi::Initialize_quantum_force(double alpha){
     for (int j = 0; j < N_; j++){
         for (int k = 0; k < D_; k++){
             quantum_force_old_[j][k] = -4*alpha*r_old_[j][k];
-            //quantum_force_old_[j][k] = 0.0;
         }
     }
 }
+
+void Psi::Initialize_quantum_force_interaction(double alpha){
+
+
+    for (int j = 0; j < N_; j++){
+        double *rkl = new double[N_];  //MÅ FYLLES MED 0
+        for (int z = 0; z < N_; z++){
+            rkl[z] = 0.0;
+        }
+        for(int t= 0; t< N_; t++){
+            if(t != j){
+            for (int d = 0; d < D_; d++){
+                    rkl[t] += pow(r_old_[j][d] - r_old_[t][d],2);
+                }
+                rkl[t] = sqrt(rkl[t]);
+            }
+        }
+        for (int k = 0; k <D_; k++){
+            if ( k==2){
+                quantum_force_old_[j][k] = 2*(-2*alpha*r_old_[j][k]*beta_);
+            }
+            else{
+                quantum_force_old_[j][k] = 2*(-2*alpha*r_old_[j][k]);
+            }
+        }
+    }
+}
+
 
 void Psi::Update_quantum_force(double alpha){
     for (int dim = 0; dim < D_; dim++){
@@ -74,6 +133,18 @@ void Psi::Update_quantum_force(double alpha){
 double Psi::Update_r_sum(double sum, double r_init, double r_move){
     sum -= r_init*r_init;
     sum += r_move*r_move;
+    return sum;
+}
+
+double Psi::Update_r_sum_interaction(double sum, double r_init, double r_move, double coord){
+    if (coord == 2){
+        sum -= r_init*r_init*beta_*beta_;
+        sum += r_move*r_move*beta_*beta_;
+    }
+    else{
+        sum -= r_init*r_init;
+        sum += r_move*r_move;
+    }
     return sum;
 }
 
@@ -108,6 +179,29 @@ double Psi::Trial_func(double alpha, double sum_r_squared){
     return exp(-alpha*sum_r_squared);
 }
 
+double Psi::Trial_func_interaction(double alpha, double sum_r_squared){
+    double exp_prod = -alpha*sum_r_squared;
+    double u = 0;
+    double diff;
+
+    for (int l = 0; l < N_; l++){
+        for (int m = l+1; m < N_; m++){
+            for (int dim = 0; dim <D_; dim ++){
+                diff += pow(r_old_[l][dim]-r_old_[m][dim],2);
+            }
+            diff = sqrt(diff);
+            if (diff <= a_){
+                u += 0;
+            }
+            else{
+                u += 1-(a_/diff);
+            }
+        }
+    }
+
+    return exp_prod*u;
+}
+
 double Psi::Local_energy_analytical(double alpha){
     return D_*N_*alpha + (1-4*alpha*alpha)*(1./2)*r2_sum_old_;
 }
@@ -125,6 +219,32 @@ double Psi::Local_energy_brute_force(double alpha){
     }
 
     tf_middle_ = Trial_func(alpha,r2_sum_old_);
+    laplace_tf_ -= 2*D_*N_*tf_middle_;
+    laplace_tf_ /= (step_*step_*tf_middle_);
+
+    return (1./2)*(-laplace_tf_ + r2_sum_old_);
+}
+
+
+double Psi::Local_energy_interaction_analytical(double alpha){
+    double d2_phi = 4*alpha*alpha;
+
+    return 0.0;
+}
+
+double Psi::Local_energy_interaction_brute_force(double alpha){
+    double dr_p, dr_m;
+    laplace_tf_ = 0.0;
+
+    for (int nn = 0; nn < N_; nn++){
+        for (int dd = 0; dd < D_; dd++){
+            dr_p = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] + step_, dd);
+            dr_m = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] - step_, dd);
+            laplace_tf_  += Trial_func_interaction(alpha,dr_p) + Trial_func_interaction(alpha, dr_m);
+        }
+    }
+
+    tf_middle_ = Trial_func_interaction(alpha,r2_sum_old_);
     laplace_tf_ -= 2*D_*N_*tf_middle_;
     laplace_tf_ /= (step_*step_*tf_middle_);
 

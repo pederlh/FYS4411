@@ -29,8 +29,8 @@ void No_quantum_force(double alpha, double **positions, double **q_force);
 */
 public:
 
-    double h_, step_, D_diff_;
-    int N_, D_;
+    double h_, step_, D_diff_, beta_, a_;
+    int N_, D_, case_;
     random_device rd_;
 
     double **r_old_, *r_new_;
@@ -39,21 +39,30 @@ public:
     double tf_middle_, laplace_tf_;
 
 
-//Constructor
-    //Psi();
 
-    void Declare_positions(int N, int D, double h, double step);
+    void Declare_position(int N, int D, double h, double step, int case_type);
+    void Declare_position_interaction(int N, int D, double h, double step, int case_type, double beta);
+
     void Declare_quantum_force(double D_diff);
     double Initialize_positions();
     void Initialize_quantum_force(double alpha);
+    void Initialize_quantum_force_interaction(double alpha);
 
     double Proposed_move(int idx);
     double Proposed_move_importance(int idx);
 
     double Local_energy_analytical(double alpha);
     double Local_energy_brute_force(double alpha);
+    double Local_energy_interaction_analytical(double alpha);
+    double Local_energy_interaction_brute_force(double alpha);
+
+
     double Update_r_sum(double sum, double r_init, double r_move);
+    double Update_r_sum_interaction(double sum, double r_init, double r_move, double coord);
+
+
     double Trial_func(double alpha, double sum_r_squared);
+    double Trial_func_interaction(double alpha, double sum_r_squared);
     void Update_quantum_force(double alpha);
 
 };
