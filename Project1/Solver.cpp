@@ -306,7 +306,7 @@ void Solver::Metropolis_importance_interaction(double alpha){
     int idx = RIG(gen);
 
     wave.r2_sum_new_ = wave.Proposed_move_importance(idx);
-    wave.Update_quantum_force(alpha);
+    wave.Update_quantum_force_interaction(alpha);
     greensfunc = Greens_function(idx);
 
     tf_old = wave.Trial_func_interaction(alpha, wave.r2_sum_old_);             //Trial wave function of old position

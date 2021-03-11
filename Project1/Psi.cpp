@@ -95,40 +95,70 @@ void Psi::Initialize_quantum_force(double alpha){
 }
 
 void Psi::Initialize_quantum_force_interaction(double alpha){
-
-
-    for (int j = 0; j < N_; j++){
-        double *rkl = new double[N_];  //MÅ FYLLES MED 0
-        for (int z = 0; z < N_; z++){
-            rkl[z] = 0.0;
+    double ** distances = new double*[N_];
+    for (int j =0; j <N_; j++){
+        distances[j] = new double[D_];
+        for (int dim = 0; dim <D_; dim++){
+            distances[j][dim] = 0.0;
         }
-        for(int t= 0; t< N_; t++){
+    }
+
+    double **rkl = new double*[N_];  //MÅ FYLLES MED 0
+    for (int z = 0; z < N_; z++){
+        rkl[z] = new double[N_];
+        for (int p =0; p < N_; p++){
+            rkl[z][p] = 0.0;
+        }
+    }
+
+    for(int j = 0; j < N_; j++){
+        for(int t = 0; t< N_; t++){
             if(t != j){
-            for (int d = 0; d < D_; d++){
-                    rkl[t] += pow(r_old_[j][d] - r_old_[t][d],2);
+                for (int d = 0; d < D_; d++){
+                    rkl[j][t] += pow(r_old_[j][d] - r_old_[t][d],2);
                 }
-                rkl[t] = sqrt(rkl[t]);
-            }
-        }
-        for (int k = 0; k <D_; k++){
-            if ( k==2){
-                quantum_force_old_[j][k] = 2*(-2*alpha*r_old_[j][k]*beta_);
-            }
-            else{
-                quantum_force_old_[j][k] = 2*(-2*alpha*r_old_[j][k]);
+            rkl[j][t] = sqrt(rkl[j][t]);
             }
         }
     }
+
+    for (int k = 0; k < N_;k++){
+        for (int dim= 0; dim<D_;dim++){
+            for (int l = 0; l<N_ ; l++){
+                if (l!=k){
+                    distances[k][dim] += ((r_old_[k][dim]-r_old_[l][dim])/rkl[k][l])*(a_/(rkl[k][l]*(rkl[k][l]-a_)));
+                }
+            }
+            distances[j][dim] = distances[j][dim]*2;
+        }
+    }
+
+    for (int j = 0; j < N_ ; j++){
+        for (int k = 0; k <D_; k++){
+            if ( k==2){
+                quantum_force_old_[j][k] = -4*alpha*r_old_[j][k]*beta_ + distances[j][k];
+            }
+            else{
+                quantum_force_old_[j][k] = -4*alpha*r_old_[j][k] + distances[j][k];
+            }
+        }
+    }
+
 }
 
 
 void Psi::Update_quantum_force(double alpha){
     for (int dim = 0; dim < D_; dim++){
         quantum_force_new_[dim] = -4*alpha*r_new_[dim];
-        //quantum_force_new_[dim] = 0.0;
     }
 }
 
+
+void Psi::Update_quantum_force_interaction(double alpha){
+    for (int dim = 0; dim < D_; dim++){
+        quantum_force_new_[dim] = -4*alpha*r_new_[dim];
+    }
+}
 
 double Psi::Update_r_sum(double sum, double r_init, double r_move){
     sum -= r_init*r_init;

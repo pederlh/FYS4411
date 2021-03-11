@@ -64,6 +64,7 @@ public:
     double Trial_func(double alpha, double sum_r_squared);
     double Trial_func_interaction(double alpha, double sum_r_squared);
     void Update_quantum_force(double alpha);
+    void Update_quantum_force_interaction(double alpha);
 
 };
 
