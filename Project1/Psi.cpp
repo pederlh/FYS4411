@@ -129,7 +129,7 @@ void Psi::Initialize_quantum_force_interaction(double alpha){
                     distances[k][dim] += ((r_old_[k][dim]-r_old_[l][dim])/rkl[k][l])*(a_/(rkl[k][l]*(rkl[k][l]-a_)));
                 }
             }
-            distances[j][dim] = distances[j][dim]*2;
+            distances[k][dim] = distances[k][dim]*2;
         }
     }
 

@@ -1,15 +1,16 @@
 #include "Solver.hpp"
 #include "Psi.hpp"
 
-Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sampling){
+Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling, int num_threads){
     D_ = D;
     N_ = N;
-    h_ = 1.0;                                          //Stepsize
+    h_ = 1.0;                                          // Stepsize
     sum_ = 0;
     step_ = h_*pow(10,-4);
 
     type_energy_ = type_energy;
     type_sampling_ = type_sampling;
+    num_threads_ = num_threads;
 
     if (type_sampling_ ==3){
         double beta = 2.82843;
@@ -19,12 +20,10 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
         wave.Declare_position(N_, D_,h_, step_, 0);
     }
 
-
-
     num_alphas_ = num_alphas;
     MC_ = MC;
 
-    alphas_ = new double[num_alphas_];                  //Variational parameter
+    alphas_ = new double[num_alphas_];                 //Variational parameter
     for (int i = 0; i < num_alphas_; i++) alphas_[i] = 0.1 + 0.05*i;
     energies_ = new double[num_alphas_];               //Array to hold energies for different values of alpha
     variances_ = new double[num_alphas_];              //Array to hold variances for different values of alpha
@@ -53,10 +52,6 @@ Solver::Solver(int N, int num_alphas, int MC, int D,int type_energy, int type_sa
         MC_method = &Solver::Gradient_descent_interaction;
         metropolis_sampling = &Solver::Metropolis_importance_interaction;
     }
-
-
-
-
 
     (this->*MC_method)();
 
@@ -127,7 +122,7 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     energy_squared = 0;
 
     wave.r2_sum_old_ = wave.Initialize_positions();
-    //wave.Initialize_quantum_force(alpha);
+    wave.Initialize_quantum_force(alpha);
 
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
@@ -388,12 +383,19 @@ void Solver::Gradient_descent(){
         }
     }
 
-    //Paralelliser dette!! Fra her
-    MC_ = pow(2,19);
-    file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
-    MonteCarlo_GD(values, Alphaa, file2);
-    //Til her!
+    // Start parallellisering 
+    omp_set_num_threads(num_threads_);
 
+    MC_ = pow(2,18);
+
+    #pragma omp parallel
+    {
+        int ID = omp_get_thread_num();
+        file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples_string_" + to_string(ID) + ".txt";
+        MonteCarlo_GD(values, Alphaa, file2);
+    }
+
+    
     ofstream ofile2;
     ofile2.open("alpha_values_GD.txt");
     for (int p = 0; p < counter; p++){
@@ -448,7 +450,7 @@ void Solver::Gradient_descent_interaction(){
 
 
 
-
+/*
 void Solver::ADAM(){
     double *values;
     values = new double[3];
@@ -479,9 +481,8 @@ void Solver::ADAM(){
             break;
         }
 
-
     }
-
-
-
 }
+*/
+
+
