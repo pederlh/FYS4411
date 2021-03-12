@@ -1,18 +1,18 @@
 #include "Solver.hpp"
 #include "Psi.hpp"
 
-Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling, int num_threads){
+Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling, int thread_ID){
     D_ = D;
     N_ = N;
     h_ = 1.0;                                          // Stepsize
     sum_ = 0;
     step_ = h_*pow(10,-4);
+    thread_ID_ = thread_ID;
 
     type_energy_ = type_energy;
     type_sampling_ = type_sampling;
-    num_threads_ = num_threads;
 
-    if (type_sampling_ ==3){
+    if (type_sampling_ == 3){
         double beta = 2.82843;
         wave.Declare_position_interaction(N_, D_,h_, step_, type_sampling_, beta);
     }
@@ -20,7 +20,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
         wave.Declare_position(N_, D_,h_, step_, 0);
     }
 
-    num_alphas_ = num_alphas;
+    num_alphas_ = num_alphas;                          // 
     MC_ = MC;
 
     alphas_ = new double[num_alphas_];                 //Variational parameter
@@ -56,9 +56,6 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
     (this->*MC_method)();
 
 }
-
-
-
 
 
 void Solver::MonteCarlo(){
@@ -111,7 +108,6 @@ void Solver::MonteCarlo(){
         variances_[a] = variance;
     }
 }
-
 
 void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
@@ -244,9 +240,6 @@ void Solver::MonteCarlo_GD_interaction(double *values, double alpha, string path
 }
 
 
-
-
-
 void Solver::Metropolis(double alpha){
 
     mt19937_64 gen(rd_());
@@ -332,6 +325,111 @@ double Solver::Greens_function(int idx){
 }
 
 
+//Gradient Descent w/Importance sampling
+void Solver::Gradient_descent(){
+    string file, file2;                                 // path to where files should be stored
+    int iterations = 50;                                // Max number iterations gradient descent
+    double *alpha_vals_GD = new double[iterations];     // Array to store alpha values
+    for (int z = 0; z < iterations; z++){
+        alpha_vals_GD[z] = 0;
+    }
+    double *values = new double[3];
+    double alpha_guess = 0.9;                           // Initial guess for alpha
+    double eta = 0.015;                                 // Learning rate gradient descent
+    int counter = 0;                                    // Counter to keep track of actual number of iterations
+
+    #pragma omp master
+    {
+        if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
+        else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
+
+        cout << "Alpha " << "Energy " << "Variance " << endl;
+    }
+
+    for (int i = 0; i < iterations; i++){
+        counter++;
+        alpha_vals_GD[i] = alpha_guess;
+
+        // HVORFOR TRENGER VI LINJA UNDER (ALTSÅ SKRIVE TIL FIL)?
+        file =  to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +"_alpha_" + 
+                to_string(alpha_guess) + "_E_L_samples.txt";
+
+        MonteCarlo_GD(values, alpha_guess, file);
+        alpha_guess -= eta*values[2];
+
+        // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
+        // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
+
+        # pragma omp master
+        {cout << alpha_guess <<" " << values[0] << " " << values[1] << " " << endl;}
+
+        if (values[1]< pow(10,-9)){
+            break;
+        }
+    }
+
+    # pragma omp master
+    {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
+
+    MC_ = pow(2,17);
+
+    file2 = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) + 
+            "_alpha_" + to_string(alpha_guess) + "_E_L_samples_string_" + to_string(thread_ID_) + ".txt";
+            
+    MonteCarlo_GD(values, alpha_guess, file2);
+
+
+    // Hvorfor ha det under????
+
+    // ofstream ofile2;
+    // ofile2.open("alpha_values_GD.txt");
+    // for (int p = 0; p < counter; p++){
+    //     ofile2 <<alpha_vals_GD[p]<<endl;
+    // }
+    // ofile2.close();
+
+}
+
+//Gradient Descent w/Importance sampling for interacting case
+void Solver::Gradient_descent_interaction(){
+    string file, file2;   //path to where files should be stored
+    int iterations = 50;
+    double *alpha_vals_GD =  new double[iterations]; //Array to store alpha values
+    for (int z = 0; z < iterations; z++){
+        alpha_vals_GD[z] = 0;
+    }
+    double *values = new double[3];
+    double alpha_guess = 0.9;        //Initial guess for alpha
+    double eta = 0.015;
+    int counter = 0;
+
+
+    cout <<"Alpha " << "Energy " << "Variance " << endl;
+    for (int i = 0; i < iterations; i++){
+        counter += 1;
+        alpha_vals_GD[i] = alpha_guess;
+        file = to_string(N_) + "_part_alpha_" + to_string(alpha_guess) + "_E_L_samples_INTERACTION.txt";
+        MonteCarlo_GD_interaction(values, alpha_guess, file);
+        alpha_guess -= eta*values[2];
+        cout <<alpha_guess<<" " << values[0] << " " << values[1]<< " " << endl;
+        if (values[1]< pow(10,-9)){
+            break;
+        }
+    }
+
+    MC_ = pow(2,19);
+    file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(alpha_guess) + "_E_L_samples_INTERACTION.txt";
+    MonteCarlo_GD_interaction(values, alpha_guess, file2);
+
+    ofstream ofile2;
+    ofile2.open("alpha_values_GD.txt");
+    for (int p = 0; p < counter; p++){
+        ofile2 <<alpha_vals_GD[p]<<endl;
+    }
+    ofile2.close();
+
+}
+
 void Solver::Write_to_file(string outfilename, double time){
     ofstream ofile;
     ofile.open(outfilename);
@@ -341,8 +439,9 @@ void Solver::Write_to_file(string outfilename, double time){
         ofile << setw(15) << setprecision(8) << energies_[i];
         ofile << setw(15) << setprecision(8) << variances_[i] << endl;
     }
-    ofile<<" "<<endl;
-    ofile << "Timeused: " << time <<endl;
+    ofile << " " <<endl;
+    ofile << "Cycles this thread: " << MC_ << endl;
+    ofile << "Time used: " << time << " s" << endl;
     ofile.close();
 }
 
@@ -354,101 +453,6 @@ void Solver::Write_array_to_file(string outfilename, double *array, int len){
     }
     ofile1.close();
 }
-
-//Gradient Descent w/Importance sampling
-void Solver::Gradient_descent(){
-    string file, file2;   //path to where files should be stored
-    int iterations = 50;
-    double *alp_vals =  new double[iterations]; //Array to store alpha values
-    for (int z = 0; z < iterations; z++){
-        alp_vals[z] = 0;
-    }
-    double *values = new double[3];
-    double Alphaa = 0.9;        //Initial guess for alpha
-    double eta = 0.015;
-    int counter = 0;
-
-
-    //Eller parallellsier dette også for forskjellige alphaer
-    cout <<"Alpha " << "Energy " << "Variance " << endl;
-    for (int it = 0; it < iterations; it++){
-        counter += 1;
-        alp_vals[it] = Alphaa;
-        file = to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples.txt";
-        MonteCarlo_GD(values, Alphaa, file);
-        Alphaa -= eta*values[2];
-        cout <<Alphaa<<" " << values[0] << " " << values[1]<< " " << endl;
-        if (values[1]< pow(10,-9)){
-            break;
-        }
-    }
-
-    // Start parallellisering 
-    omp_set_num_threads(num_threads_);
-
-    MC_ = pow(2,18);
-
-    #pragma omp parallel
-    {
-        int ID = omp_get_thread_num();
-        file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples_string_" + to_string(ID) + ".txt";
-        MonteCarlo_GD(values, Alphaa, file2);
-    }
-
-    
-    ofstream ofile2;
-    ofile2.open("alpha_values_GD.txt");
-    for (int p = 0; p < counter; p++){
-        ofile2 <<alp_vals[p]<<endl;
-    }
-    ofile2.close();
-
-}
-
-//Gradient Descent w/Importance sampling for interacting case
-void Solver::Gradient_descent_interaction(){
-    string file, file2;   //path to where files should be stored
-    int iterations = 50;
-    double *alp_vals =  new double[iterations]; //Array to store alpha values
-    for (int z = 0; z < iterations; z++){
-        alp_vals[z] = 0;
-    }
-    double *values = new double[3];
-    double Alphaa = 0.9;        //Initial guess for alpha
-    double eta = 0.015;
-    int counter = 0;
-
-
-    //Eller parallelliser dette også for forskjellige alphaer
-    cout <<"Alpha " << "Energy " << "Variance " << endl;
-    for (int it = 0; it < iterations; it++){
-        counter += 1;
-        alp_vals[it] = Alphaa;
-        file = to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples_INTERACTION.txt";
-        MonteCarlo_GD_interaction(values, Alphaa, file);
-        Alphaa -= eta*values[2];
-        cout <<Alphaa<<" " << values[0] << " " << values[1]<< " " << endl;
-        if (values[1]< pow(10,-9)){
-            break;
-        }
-    }
-
-    //Paralelliser dette!! Fra her
-    MC_ = pow(2,19);
-    file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(Alphaa) + "_E_L_samples_INTERACTION.txt";
-    MonteCarlo_GD_interaction(values, Alphaa, file2);
-    //Til her!
-
-    ofstream ofile2;
-    ofile2.open("alpha_values_GD.txt");
-    for (int p = 0; p < counter; p++){
-        ofile2 <<alp_vals[p]<<endl;
-    }
-    ofile2.close();
-
-}
-
-
 
 /*
 void Solver::ADAM(){

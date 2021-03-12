@@ -20,7 +20,7 @@ class Solver {
 
 private:
 
-int N_, num_alphas_, MC_, D_, type_energy_, type_sampling_, num_threads_;
+int N_, num_alphas_, MC_, D_, type_energy_, type_sampling_, thread_ID_;
 double h_, sum_, step_, D_diff_;
 double *alphas_,*energies_, *variances_;
 random_device rd_;
