@@ -112,7 +112,7 @@ void Solver::MonteCarlo(){
 void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
-    E_L_to_file = new double[N_*MC_];
+    E_L_to_file_ = new double[N_*MC_];
     energy = 0;
     energy_squared = 0;
 
@@ -150,7 +150,7 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
             */
-            E_L_to_file[cycle*N_ + n] = DeltaE;
+            E_L_to_file_[cycle*N_ + n] = DeltaE;
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
             sum_r = -wave.r2_sum_old_;
@@ -354,8 +354,6 @@ void Solver::Gradient_descent(){
                 to_string(alpha_guess) + "_E_L_samples.txt";
 
         MonteCarlo_GD(values, alpha_guess, file);
-        alpha_guess -= eta*values[2];
-
         // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
         // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
 
@@ -365,6 +363,7 @@ void Solver::Gradient_descent(){
         if (values[1]< pow(10,-9)){
             break;
         }
+        alpha_guess -= eta*values[2];
     }
     # pragma omp master
     {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
