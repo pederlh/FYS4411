@@ -9,8 +9,8 @@ int main(int argc, char const *argv[]) {
     string outfilename, calc;
     int num_alphas = 15;
     int num_particles = 10;
-    int mc_cycles = 1000;
-    int dimentions = 1;
+    int mc_cycles = 10000;
+    int dimentions = 3;
 
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
     int type_energy = 0;
@@ -33,18 +33,18 @@ int main(int argc, char const *argv[]) {
     #pragma omp parallel
     {
         int ID = omp_get_thread_num();
-    
-        
+
+
 
         // ------------------------------------------------
-        // OBS OBS Når skal vi starte og slutte å måle tid?    
+        // OBS OBS Når skal vi starte og slutte å måle tid?
         start_time = omp_get_wtime();                          // Start recording time
         // ------------------------------------------------
 
 
         // Initialize Solver object and perform calculations
         Solver mysolver(num_particles, num_alphas, mc_cycles, dimentions, type_energy, type_sampling, ID);
-    
+
 
         end_time = omp_get_wtime();
         double timeused = end_time - start_time;
@@ -53,7 +53,7 @@ int main(int argc, char const *argv[]) {
         if (type_energy==1) calc = "num";
 
         if (type_sampling == 0){
-            outfilename =   "spherical_HO_" + to_string(dimentions) + "D_" + calc + 
+            outfilename =   "spherical_HO_" + to_string(dimentions) + "D_" + calc +
                             "_N_"+ to_string(num_particles) + "_MC_"+ to_string(mc_cycles) +
                             "_stringID_" + to_string(ID) + ".txt";
 
@@ -61,8 +61,8 @@ int main(int argc, char const *argv[]) {
         }
 
         if (type_sampling == 1){
-            outfilename =   "importance_spherical_HO_" + to_string(dimentions) + "D_" + calc + 
-                            "_N_" + to_string(num_particles) + "_MC_" + to_string(mc_cycles) + 
+            outfilename =   "importance_spherical_HO_" + to_string(dimentions) + "D_" + calc +
+                            "_N_" + to_string(num_particles) + "_MC_" + to_string(mc_cycles) +
                             "_stringID_" + to_string(ID) + ".txt";
 
             mysolver.Write_to_file(outfilename,timeused);

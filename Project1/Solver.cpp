@@ -20,7 +20,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
         wave.Declare_position(N_, D_,h_, step_, 0);
     }
 
-    num_alphas_ = num_alphas;                          // 
+    num_alphas_ = num_alphas;                          //
     MC_ = MC;
 
     if (type_sampling_ == 0){
@@ -110,7 +110,7 @@ void Solver::MonteCarlo(){
 
 void Solver::MonteCarlo2(double alpha, double *energies){
     double DeltaE;
-    
+
     wave.r2_sum_old_ = wave.Initialize_positions();
 
     if (type_sampling_ != 0){
@@ -370,7 +370,7 @@ void Solver::Gradient_descent(){
     }
     double *values = new double[3];
     double alpha_guess = 0.9;                           // Initial guess for alpha
-    double eta = 0.015;                                 // Learning rate gradient descent
+    double eta = 0.04;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
     #pragma omp master
@@ -386,7 +386,7 @@ void Solver::Gradient_descent(){
         alpha_vals_GD[i] = alpha_guess;
 
         // // HVORFOR TRENGER VI LINJA UNDER (ALTSÅ SKRIVE TIL FIL)?
-        // file =  to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +"_alpha_" + 
+        // file =  to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +"_alpha_" +
         //         to_string(alpha_guess) + "_E_L_samples.txt";
 
         MonteCarlo_GD(values, alpha_guess);
@@ -409,9 +409,9 @@ void Solver::Gradient_descent(){
 
     double *optimal_energies = new double[N_*MC_];
 
-    file = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) + 
+    file = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
             "_alpha_" + to_string(alpha_guess) + "_E_L_samples_string_" + to_string(thread_ID_) + ".txt";
-            
+
     MonteCarlo2(alpha_guess, optimal_energies);
 
     ofstream ofile;
@@ -433,7 +433,7 @@ void Solver::Gradient_descent_interaction(){
     }
     double *values = new double[3];
     double alpha_guess = 0.9;        //Initial guess for alpha
-    double eta = 0.015;
+    double eta = 0.01;
     int counter = 0;
 
 
@@ -521,5 +521,3 @@ void Solver::ADAM(){
     }
 }
 */
-
-
