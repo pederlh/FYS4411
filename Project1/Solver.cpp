@@ -67,9 +67,11 @@ void Solver::MonteCarlo(){
 
         wave.r2_sum_old_ = wave.Initialize_positions();
 
+        /*
         if (type_sampling_ != 0){
             wave.Initialize_quantum_force(alpha);
         }
+        */
 
         //Equilibration step: runs metropolis algorithm without sampling to equibrate system
         int equi_cycles = 10000;
@@ -113,9 +115,11 @@ void Solver::MonteCarlo2(double alpha, double *energies){
 
     wave.r2_sum_old_ = wave.Initialize_positions();
 
+    /*
     if (type_sampling_ != 0){
         wave.Initialize_quantum_force(alpha);
     }
+    */
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
     int equi_cycles = 10000;
@@ -148,6 +152,48 @@ void Solver::MonteCarlo2(double alpha, double *energies){
     }
 }
 
+void Solver::MonteCarlo2_interaction(double alpha, double *energies){
+    double DeltaE;
+
+    wave.r2_sum_old_ = wave.Initialize_positions();
+
+    /*
+    if (type_sampling_ != 0){
+        wave.Initialize_quantum_force(alpha);
+    }
+    */
+
+    //Equilibration step: runs metropolis algorithm without sampling to equibrate system
+    int equi_cycles = 10000;
+    for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+        for (int n = 0; n< N_; n++){
+            wave.r2_sum_new_ = wave.r2_sum_old_;
+
+            (this->*metropolis_sampling)(alpha); //Metropolis test
+        }
+    }
+
+    for (int cycle = 0; cycle < MC_; cycle++){
+        for (int n = 0; n < N_; n++){
+
+            wave.r2_sum_new_ = wave.r2_sum_old_;
+
+            (this->*metropolis_sampling)(alpha); //Metropolis test
+            DeltaE = wave.Local_energy_interaction_brute_force(alpha);
+            /*
+            if (type_energy_ == 0){
+                DeltaE = wave.Local_energy_analytical(alpha);
+            }
+            if (type_energy_ == 1){
+                DeltaE = wave.Local_energy_brute_force(alpha);
+            }
+            */
+
+            energies[cycle*N_ + n] += DeltaE;
+        }
+    }
+}
+
 void Solver::MonteCarlo_GD(double *values, double alpha){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
@@ -156,7 +202,6 @@ void Solver::MonteCarlo_GD(double *values, double alpha){
     energy_squared = 0;
 
     wave.r2_sum_old_ = wave.Initialize_positions();
-    wave.Initialize_quantum_force(alpha);
 
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
@@ -212,17 +257,13 @@ void Solver::MonteCarlo_GD(double *values, double alpha){
 
 }
 
-void Solver::MonteCarlo_GD_interaction(double *values, double alpha, string path){
+void Solver::MonteCarlo_GD_interaction(double *values, double alpha){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
-    double *E_L_to_file;
-    E_L_to_file = new double[N_*MC_];
     energy = 0;
     energy_squared = 0;
 
     wave.r2_sum_old_ = wave.Initialize_positions();
-    wave.Initialize_quantum_force_interaction(alpha);
-
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
     int equi_cycles = 1000;
@@ -254,7 +295,6 @@ void Solver::MonteCarlo_GD_interaction(double *values, double alpha, string path
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
             */
-            E_L_to_file[cycle*N_ + n] = DeltaE;
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
             sum_r = -wave.r2_sum_old_;
@@ -306,6 +346,7 @@ void Solver::Metropolis_importance(double alpha){
     double tf_old, tf_new, P, greensfunc;
     int idx = RIG(gen);
 
+    wave.Initialize_quantum_force(alpha,idx);
     wave.r2_sum_new_ = wave.Proposed_move_importance(idx);
     wave.Update_quantum_force(alpha);
     greensfunc = Greens_function(idx);
@@ -316,7 +357,6 @@ void Solver::Metropolis_importance(double alpha){
     if (RDG(gen) <= P){
         for (int k =0 ; k < D_;  k++){                   //Update initial posistion
             wave.r_old_[idx][k] = wave.r_new_[k];
-            wave.quantum_force_old_[idx][k] = wave.quantum_force_new_[k];
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
     }
@@ -330,17 +370,17 @@ void Solver::Metropolis_importance_interaction(double alpha){
     double tf_old, tf_new, P, greensfunc;
     int idx = RIG(gen);
 
-    wave.r2_sum_new_ = wave.Proposed_move_importance(idx);
-    wave.Update_quantum_force_interaction(alpha);
+    wave.Initialize_quantum_force_interaction(alpha, idx);
+    wave.r2_sum_new_ = wave.Proposed_move_interaction(idx);
+    wave.Update_quantum_force_interaction(alpha, idx);
     greensfunc = Greens_function(idx);
 
-    tf_old = wave.Trial_func_interaction(alpha, wave.r2_sum_old_);             //Trial wave function of old position
-    tf_new = wave.Trial_func_interaction(alpha, wave.r2_sum_new_);           //Trial wave function of new position
+    tf_old = wave.Trial_func_interaction(alpha, wave.r2_sum_old_, "old",idx);             //Trial wave function of old position
+    tf_new = wave.Trial_func_interaction(alpha, wave.r2_sum_new_, "new",idx);           //Trial wave function of new position
     P = greensfunc*(tf_new*tf_new)/(tf_old*tf_old);            //Metropolis test
     if (RDG(gen) <= P){
         for (int k =0 ; k < D_;  k++){                   //Update initial posistion
             wave.r_old_[idx][k] = wave.r_new_[k];
-            wave.quantum_force_old_[idx][k] = wave.quantum_force_new_[k];
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
     }
@@ -351,9 +391,7 @@ double Solver::Greens_function(int idx){
     double old_2_new, new_2_old;
     for (int dd = 0; dd < D_; dd++){
         old_2_new += pow((wave.r_old_[idx][dd]-wave.r_new_[dd]- D_diff_*step_*wave.quantum_force_new_[dd]),2)/(4*D_diff_*step_);
-
-        new_2_old += pow((wave.r_new_[dd]-wave.r_old_[idx][dd]- D_diff_*step_*wave.quantum_force_old_[idx][dd]),2)/(4*D_diff_*step_);
-
+        new_2_old += pow((wave.r_new_[dd]-wave.r_old_[idx][dd]- D_diff_*step_*wave.quantum_force_old_[dd]),2)/(4*D_diff_*step_);
     }
     old_2_new = exp(-old_2_new);
     new_2_old = exp(-new_2_old);
@@ -427,21 +465,27 @@ void Solver::Gradient_descent(){
 
 //Gradient Descent w/Importance sampling for interacting case
 void Solver::Gradient_descent_interaction(){
-    string file, file2;   //path to where files should be stored
-    int iterations = 50;
-    double *alpha_vals_GD =  new double[iterations]; //Array to store alpha values
+    string file;                                        // path to where files should be stored
+    int iterations = 50;                                // Max number iterations gradient descent
+    double *alpha_vals_GD = new double[iterations];     // Array to store alpha values
     for (int z = 0; z < iterations; z++){
         alpha_vals_GD[z] = 0;
     }
     double *values = new double[3];
-    double alpha_guess = 0.9;        //Initial guess for alpha
-    double eta = 0.01;
-    int counter = 0;
+    double alpha_guess = 0.9;                           // Initial guess for alpha
+    double eta = 0.01;                                 // Learning rate gradient descent
+    int counter = 0;                                    // Counter to keep track of actual number of iterations
 
+     #pragma omp master
+     {
+         if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
+         else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
 
-    cout <<"Alpha " << "Energy " << "Variance " << endl;
+         cout << "Alpha " << "Energy " << "Variance " << endl;
+     }
+
     for (int i = 0; i < iterations; i++){
-        counter += 1;
+        counter++;
         alpha_vals_GD[i] = alpha_guess;
         file = to_string(N_) + "_part_alpha_" + to_string(alpha_guess) + "_E_L_samples_INTERACTION.txt";
         MonteCarlo_GD_interaction(values, alpha_guess, file);
@@ -452,18 +496,28 @@ void Solver::Gradient_descent_interaction(){
         if (values[1]< pow(10,-9)){
             break;
         }
+        alpha_guess -= eta*values[2];
     }
+    # pragma omp master
+    {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
-    MC_ = pow(2,19);
-    file2 ="OPTIMAL_ALPHA"+ to_string(N_) + "_part_alpha_" + to_string(alpha_guess) + "_E_L_samples_INTERACTION.txt";
-    MonteCarlo_GD_interaction(values, alpha_guess, file2);
+    cout <<"Number of iterations of gradient descent = " << counter<<endl;
+    // Optimal run
+    MC_ = pow(2,17);
 
-    ofstream ofile2;
-    ofile2.open("alpha_values_GD.txt");
-    for (int p = 0; p < counter; p++){
-        ofile2 <<alpha_vals_GD[p]<<endl;
+    double *optimal_energies = new double[N_*MC_];
+
+    file = "INTERACTION_OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
+            "_alpha_" + to_string(alpha_guess) + "_E_L_samples_string_" + to_string(thread_ID_) + ".txt";
+
+    MonteCarlo2_interaction(alpha_guess, optimal_energies);
+
+    ofstream ofile;
+    ofile.open(file);
+    for (int i = 0; i < N_*MC_; i++){
+        ofile << optimal_energies[i] << endl;
     }
-    ofile2.close();
+    ofile.close();
 
 }
 
