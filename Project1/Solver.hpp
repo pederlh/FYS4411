@@ -43,7 +43,8 @@ void Metropolis_importance(double alpha);
 void Metropolis_importance_interaction(double alpha);
 //void MonteCarlo_burn();
 void MonteCarlo();
-void MonteCarlo_GD(double *values, double alpha, string path);
+void MonteCarlo2(double alpha, double *energies);
+void MonteCarlo_GD(double *values, double alpha);
 void MonteCarlo_GD_interaction(double *values, double alpha, string path);
 void Gradient_descent();
 void Gradient_descent_interaction();
@@ -51,7 +52,7 @@ double Greens_function(int idx);
 // void ADAM();
 
 void Write_to_file(string outfilename, double time);
-void Write_array_to_file(string outfilename, double *array, int len);
+// void Write_array_to_file(string outfilename, double *array, int len);
 };
 
 #endif

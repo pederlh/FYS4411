@@ -10,7 +10,7 @@ int main(int argc, char const *argv[]) {
     int num_alphas = 15;
     int num_particles = 10;
     int mc_cycles = 1000;
-    int dimentions = 3;
+    int dimentions = 1;
 
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
     int type_energy = 0;
@@ -19,8 +19,7 @@ int main(int argc, char const *argv[]) {
     int type_sampling = 2;
 
     // Number of threads
-    int num_threads = 2;
-
+    int num_threads = 1;
     double start_time, end_time;
 
     // Start parallelization
@@ -34,12 +33,7 @@ int main(int argc, char const *argv[]) {
     #pragma omp parallel
     {
         int ID = omp_get_thread_num();
-        int cycles_per_thread = mc_cycles/num_threads;         // Remainder will be added to master thread later
-        #pragma omp master
-        {
-            if(num_threads > omp_get_num_threads()) cout << "Warning: Number of threads actually set to be" << omp_get_num_threads() << endl;
-            cycles_per_thread += mc_cycles % num_threads;      // Add remaining cycles
-        }
+    
         
 
         // ------------------------------------------------
@@ -49,7 +43,7 @@ int main(int argc, char const *argv[]) {
 
 
         // Initialize Solver object and perform calculations
-        Solver mysolver(num_particles, num_alphas, cycles_per_thread, dimentions, type_energy, type_sampling, ID);
+        Solver mysolver(num_particles, num_alphas, mc_cycles, dimentions, type_energy, type_sampling, ID);
     
 
         end_time = omp_get_wtime();
