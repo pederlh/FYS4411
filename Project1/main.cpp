@@ -19,7 +19,7 @@ int main(int argc, char const *argv[]) {
     int type_sampling = 2;
 
     // Number of threads
-    int num_threads = 1;
+    int num_threads = 3;
     double start_time, end_time;
 
     // Start parallelization

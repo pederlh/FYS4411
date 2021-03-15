@@ -133,13 +133,15 @@ void Solver::MonteCarlo2(double alpha, double *energies){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
-
+            DeltaE = wave.Local_energy_brute_force(alpha);
+            /*
             if (type_energy_ == 0){
                 DeltaE = wave.Local_energy_analytical(alpha);
             }
             if (type_energy_ == 1){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
+            */
 
             energies[cycle*N_ + n] += DeltaE;
         }
@@ -373,38 +375,34 @@ void Solver::Gradient_descent(){
     double eta = 0.015;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
-    // #pragma omp master
-    // {
-    //     if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
-    //     else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
+     #pragma omp master
+     {
+         if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
+         else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
 
-    //     cout << "Alpha " << "Energy " << "Variance " << endl;
-    // }
+         cout << "Alpha " << "Energy " << "Variance " << endl;
+     }
 
     for (int i = 0; i < iterations; i++){
         counter++;
         alpha_vals_GD[i] = alpha_guess;
 
-        // // HVORFOR TRENGER VI LINJA UNDER (ALTSÅ SKRIVE TIL FIL)?
-        // file =  to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +"_alpha_" +
-        //         to_string(alpha_guess) + "_E_L_samples.txt";
-
         MonteCarlo_GD(values, alpha_guess);
         // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
         // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
 
-        // # pragma omp master
-        // {
+         # pragma omp master
+         {
             cout << alpha_guess <<" " << values[0] << " " << values[1] << " " << endl;
-        // }
+         }
 
         if (values[1]< pow(10,-9)){
             break;
         }
         alpha_guess -= eta*values[2];
     }
-    // # pragma omp master
-    // {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
+    # pragma omp master
+    {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
     cout <<"Number of iterations of gradient descent = " << counter<<endl;
     // Optimal run
