@@ -380,7 +380,8 @@ void Solver::Gradient_descent(){
          if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
          else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
 
-         cout << "Alpha " << "Energy " << "Variance " << endl;
+         cout << setw(10) << "Alpha" << setw(12) << "Energy" << setw(16) << "Variance" << endl;
+         cout << "--------------------------------------" << endl;
      }
 
     for (int i = 0; i < iterations; i++){
@@ -393,7 +394,7 @@ void Solver::Gradient_descent(){
 
          # pragma omp master
          {
-            cout << alpha_guess <<" " << values[0] << " " << values[1] << " " << endl;
+            cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
          }
 
         if (values[1]< pow(10,-9)){
@@ -445,7 +446,9 @@ void Solver::Gradient_descent_interaction(){
         file = to_string(N_) + "_part_alpha_" + to_string(alpha_guess) + "_E_L_samples_INTERACTION.txt";
         MonteCarlo_GD_interaction(values, alpha_guess, file);
         alpha_guess -= eta*values[2];
-        cout <<alpha_guess<<" " << values[0] << " " << values[1]<< " " << endl;
+
+        cout << setw(15) << alpha_guess << setw(15) << energies_[i] << setw(15) << variances_[i] << endl;
+
         if (values[1]< pow(10,-9)){
             break;
         }
