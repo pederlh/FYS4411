@@ -370,7 +370,7 @@ void Solver::Gradient_descent(){
     }
     double *values = new double[3];
     double alpha_guess = 0.9;                           // Initial guess for alpha
-    double eta = 0.04;                                 // Learning rate gradient descent
+    double eta = 0.015;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
     // #pragma omp master
@@ -406,6 +406,7 @@ void Solver::Gradient_descent(){
     // # pragma omp master
     // {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
+    cout <<"Number of iterations of gradient descent = " << counter<<endl;
     // Optimal run
     MC_ = pow(2,17);
 
