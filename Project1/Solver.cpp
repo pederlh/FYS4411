@@ -112,7 +112,6 @@ void Solver::MonteCarlo(){
 void Solver::MonteCarlo_GD(double *values, double alpha, string path){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
-    double *E_L_to_file;
     E_L_to_file = new double[N_*MC_];
     energy = 0;
     energy_squared = 0;
@@ -160,7 +159,7 @@ void Solver::MonteCarlo_GD(double *values, double alpha, string path){
             }
         }
 
-    Write_array_to_file(path, E_L_to_file, N_*MC_);
+    // Write_array_to_file(path, E_L_to_file, N_*MC_);
     energy /= (MC_*N_);
     energy_squared /= (MC_*N_);
     Derivate_WF/=(MC_*N_);
@@ -367,7 +366,6 @@ void Solver::Gradient_descent(){
             break;
         }
     }
-
     # pragma omp master
     {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
@@ -376,7 +374,8 @@ void Solver::Gradient_descent(){
     file2 = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) + 
             "_alpha_" + to_string(alpha_guess) + "_E_L_samples_string_" + to_string(thread_ID_) + ".txt";
             
-    MonteCarlo_GD(values, alpha_guess, file2);
+    MonteCarlo();
+
 
 
     // Hvorfor ha det under????

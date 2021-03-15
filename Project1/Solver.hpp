@@ -22,7 +22,7 @@ private:
 
 int N_, num_alphas_, MC_, D_, type_energy_, type_sampling_, thread_ID_;
 double h_, sum_, step_, D_diff_;
-double *alphas_,*energies_, *variances_;
+double *alphas_,*energies_, *variances_, *E_L_to_file_;
 random_device rd_;
 
 //Pointer to member function
