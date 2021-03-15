@@ -23,22 +23,22 @@ int main(int argc, char const *argv[]) {
     double start_time, end_time;
 
     // Start parallelization
-    if(num_threads > omp_get_max_threads()){
-        cout << "Warning: requested number of threads (" << num_threads << ") is greater than omp_get_max_threads (" << omp_get_max_threads() << ")" << endl;
-        cout << "Changing number of threads to omp_get_max_threads..." << endl;
-        num_threads = omp_get_max_threads();
-    }
-    omp_set_num_threads(num_threads);
+    // if(num_threads > omp_get_max_threads()){
+    //     cout << "Warning: requested number of threads (" << num_threads << ") is greater than omp_get_max_threads (" << omp_get_max_threads() << ")" << endl;
+    //     cout << "Changing number of threads to omp_get_max_threads..." << endl;
+    //     num_threads = omp_get_max_threads();
+    // }
+    // omp_set_num_threads(num_threads);
 
-    #pragma omp parallel
-    {
-        int ID = omp_get_thread_num();
+    // #pragma omp parallel
+    // {
+        int ID = 0; //omp_get_thread_num();
 
 
 
         // ------------------------------------------------
         // OBS OBS Når skal vi starte og slutte å måle tid?
-        start_time = omp_get_wtime();                          // Start recording time
+        // start_time = omp_get_wtime();                          // Start recording time
         // ------------------------------------------------
 
 
@@ -46,8 +46,8 @@ int main(int argc, char const *argv[]) {
         Solver mysolver(num_particles, num_alphas, mc_cycles, dimentions, type_energy, type_sampling, ID);
 
 
-        end_time = omp_get_wtime();
-        double timeused = end_time - start_time;
+        // end_time = omp_get_wtime();
+        double timeused = 1.1; end_time - start_time;
 
         if (type_energy==0) calc = "ana";
         if (type_energy==1) calc = "num";
@@ -67,6 +67,6 @@ int main(int argc, char const *argv[]) {
 
             mysolver.Write_to_file(outfilename,timeused);
         }
-    }
+    // }
     return 0;
 }

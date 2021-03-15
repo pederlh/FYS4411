@@ -373,13 +373,13 @@ void Solver::Gradient_descent(){
     double eta = 0.04;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
-    #pragma omp master
-    {
-        if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
-        else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
+    // #pragma omp master
+    // {
+    //     if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
+    //     else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
 
-        cout << "Alpha " << "Energy " << "Variance " << endl;
-    }
+    //     cout << "Alpha " << "Energy " << "Variance " << endl;
+    // }
 
     for (int i = 0; i < iterations; i++){
         counter++;
@@ -393,16 +393,18 @@ void Solver::Gradient_descent(){
         // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
         // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
 
-        # pragma omp master
-        {cout << alpha_guess <<" " << values[0] << " " << values[1] << " " << endl;}
+        // # pragma omp master
+        // {
+            cout << alpha_guess <<" " << values[0] << " " << values[1] << " " << endl;
+        // }
 
         if (values[1]< pow(10,-9)){
             break;
         }
         alpha_guess -= eta*values[2];
     }
-    # pragma omp master
-    {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
+    // # pragma omp master
+    // {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
     // Optimal run
     MC_ = pow(2,17);
