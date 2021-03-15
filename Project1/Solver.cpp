@@ -14,7 +14,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
 
     if (type_sampling_ == 3){
         double beta = 2.82843;
-        wave.Declare_position_interaction(N_, D_,h_, step_, type_sampling_, beta);
+        wave.Declare_position_interaction(N_, D_,h_, step_, 1, beta);
     }
     else{
         wave.Declare_position(N_, D_,h_, step_, 0);
