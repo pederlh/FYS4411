@@ -34,7 +34,7 @@ public:
     random_device rd_;
 
     double **r_old_, *r_new_;
-    double **quantum_force_old_, *quantum_force_new_;
+    double *quantum_force_old_, *quantum_force_new_, *rkl_;
     double r2_sum_old_, r2_sum_new_;
     double tf_middle_, laplace_tf_;
 
@@ -45,11 +45,12 @@ public:
 
     void Declare_quantum_force(double D_diff);
     double Initialize_positions();
-    void Initialize_quantum_force(double alpha);
-    void Initialize_quantum_force_interaction(double alpha);
+    void Initialize_quantum_force(double alpha, int idx);
+    void Initialize_quantum_force_interaction(double alpha, int idx);
 
     double Proposed_move(int idx);
     double Proposed_move_importance(int idx);
+    double Proposed_move_interaction(int idx);
 
     double Local_energy_analytical(double alpha);
     double Local_energy_brute_force(double alpha);
@@ -62,9 +63,9 @@ public:
 
 
     double Trial_func(double alpha, double sum_r_squared);
-    double Trial_func_interaction(double alpha, double sum_r_squared);
+    double Trial_func_interaction(double alpha, double sum_r_squared, string version, int idx);
     void Update_quantum_force(double alpha);
-    void Update_quantum_force_interaction(double alpha);
+    void Update_quantum_force_interaction(double alpha, int idx);
 
 };
 
