@@ -4,17 +4,16 @@
 Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling, int thread_ID){
     D_ = D;
     N_ = N;
-    h_ = 1.0;                                          // Stepsize
+    h_ = 1.0;                       // Stepsize used for proposed move
     sum_ = 0;
-    step_ = h_*pow(10,-4);
+    step_ = h_*pow(10,-4);         //Stepsize used in differentiation
     thread_ID_ = thread_ID;
 
     type_energy_ = type_energy;
     type_sampling_ = type_sampling;
 
     if (type_sampling_ == 3){
-        double beta = 2.82843;
-        wave.Declare_position_interaction(N_, D_,h_, step_, 1, beta);
+        wave.Declare_position_interaction(N_, D_,h_, step_, 1);
     }
     else{
         wave.Declare_position(N_, D_,h_, step_, 0);
@@ -197,7 +196,6 @@ void Solver::MonteCarlo2_interaction(double alpha, double *energies){
 void Solver::MonteCarlo_GD(double *values, double alpha){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
-    E_L_to_file_ = new double[N_*MC_];
     energy = 0;
     energy_squared = 0;
 
@@ -234,7 +232,6 @@ void Solver::MonteCarlo_GD(double *values, double alpha){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
             */
-            E_L_to_file_[cycle*N_ + n] = DeltaE;
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
             sum_r = -wave.r2_sum_old_;
@@ -243,7 +240,6 @@ void Solver::MonteCarlo_GD(double *values, double alpha){
             }
         }
 
-    // Write_array_to_file(path, E_L_to_file, N_*MC_);
     energy /= (MC_*N_);
     energy_squared /= (MC_*N_);
     Derivate_WF/=(MC_*N_);
@@ -473,7 +469,7 @@ void Solver::Gradient_descent_interaction(){
     }
     double *values = new double[3];
     double alpha_guess = 0.9;                           // Initial guess for alpha
-    double eta = 0.01;                                 // Learning rate gradient descent
+    double eta = 0.015;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
      #pragma omp master
@@ -481,17 +477,22 @@ void Solver::Gradient_descent_interaction(){
          if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
          else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
 
-         cout << "Alpha " << "Energy " << "Variance " << endl;
+         cout << setw(10) << "Alpha" << setw(12) << "Energy" << setw(16) << "Variance" << endl;
+         cout << "--------------------------------------" << endl;
      }
 
     for (int i = 0; i < iterations; i++){
         counter++;
         alpha_vals_GD[i] = alpha_guess;
-        file = to_string(N_) + "_part_alpha_" + to_string(alpha_guess) + "_E_L_samples_INTERACTION.txt";
-        MonteCarlo_GD_interaction(values, alpha_guess, file);
-        alpha_guess -= eta*values[2];
 
-        cout << setw(15) << alpha_guess << setw(15) << energies_[i] << setw(15) << variances_[i] << endl;
+        MonteCarlo_GD_interaction(values, alpha_guess);
+        // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
+        // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
+
+         # pragma omp master
+         {
+            cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
+         }
 
         if (values[1]< pow(10,-9)){
             break;

@@ -18,14 +18,14 @@ void Psi::Declare_position(int N, int D, double h, double step, int case_type){
 
 }
 
-void Psi::Declare_position_interaction(int N, int D, double h, double step, int case_type, double beta){
+void Psi::Declare_position_interaction(int N, int D, double h, double step, int case_type){
 
     D_ = D;
     N_ = N;
     h_ = h;
     step_ = step;
-    beta_ = beta;
-    case_ = case_type;
+    beta_ = 2.82843;
+    case_ = case_type;     // 0 = for non interactive case, = 1 for interaction
     a_ = 0.0043;
 
     //Declaring position
@@ -61,7 +61,7 @@ double Psi::Initialize_positions(){
         for (int i = 0; i < N_; i++){
             for (int j =0; j <D_; j++){
                 if(j==2){
-                    r2_sum_old_ += r_old_[i][j]*r_old_[i][j]*beta_*beta_;
+                    r2_sum_old_ += r_old_[i][j]*r_old_[i][j]*beta_;
                 }
                 else{
                     r2_sum_old_ += r_old_[i][j]*r_old_[i][j];
@@ -89,22 +89,16 @@ void Psi::Initialize_quantum_force(double alpha, int idx){
 
 }
 
-
 void Psi::Initialize_quantum_force_interaction(double alpha, int idx){
     double tmp =0.0;
     rkl_ = new double[N_];
 
     for(int n = 0; n < N_; n++){
-        if (n != idx){
-            for (int d = 0; d < D_; d++){
-                tmp += pow(r_old_[idx][d] - r_old_[n][d],2);
-            }
-            rkl_[n] = sqrt(tmp);
-            tmp = 0.0;
+        for (int d = 0; d < D_; d++){
+            tmp += pow(r_old_[idx][d] - r_old_[n][d],2);
         }
-        else{
-            rkl_[n] = 0.0;
-        }
+        rkl_[n] = sqrt(tmp);
+        tmp = 0.0;
     }
 
 
@@ -120,6 +114,7 @@ void Psi::Initialize_quantum_force_interaction(double alpha, int idx){
                 quantum_force_old_[d] += (r_old_[idx][d]-r_old_[n][d])*(1/(rkl_[n]*rkl_[n])*(a_/(rkl_[n]-a_)));
             }
         }
+        quantum_force_old_[d] = 2*quantum_force_old_[d];
     }
 
 }
@@ -132,21 +127,15 @@ void Psi::Update_quantum_force(double alpha){
     }
 }
 
-
 void Psi::Update_quantum_force_interaction(double alpha, int idx){
     double tmp =0.0;
 
     for(int n = 0; n < N_; n++){
-        if (n != idx){
-            for (int d = 0; d < D_; d++){
-                tmp += pow(r_new_[d] - r_old_[n][d],2);
-            }
-            rkl_[n] = sqrt(tmp);
-            tmp = 0.0;
+        for (int d = 0; d < D_; d++){
+            tmp += pow(r_new_[d] - r_old_[n][d],2);
         }
-        else{
-            rkl_[n] = 0.0;
-        }
+        rkl_[n] = sqrt(tmp);
+        tmp = 0.0;
     }
 
 
@@ -162,8 +151,10 @@ void Psi::Update_quantum_force_interaction(double alpha, int idx){
                 quantum_force_new_[d] += (r_new_[d]-r_old_[n][d])*(1/(rkl_[n]*rkl_[n])*(a_/(rkl_[n]-a_)));
             }
         }
+        quantum_force_new_[d] = 2*quantum_force_new_[d];
     }
 }
+
 
 double Psi::Update_r_sum(double sum, double r_init, double r_move){
     sum -= r_init*r_init;
@@ -173,8 +164,8 @@ double Psi::Update_r_sum(double sum, double r_init, double r_move){
 
 double Psi::Update_r_sum_interaction(double sum, double r_init, double r_move, double coord){
     if (coord == 2){
-        sum -= r_init*r_init*beta_*beta_;
-        sum += r_move*r_move*beta_*beta_;
+        sum -= r_init*r_init*beta_;
+        sum += r_move*r_move*beta_;
     }
     else{
         sum -= r_init*r_init;
@@ -200,7 +191,7 @@ double Psi::Proposed_move_importance(int idx){
     normal_distribution<double> NDG(0.0,1.0);   //Random number generated from gaussian distribution with mean = 0, std = 1;
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
 
-    double move_step = 0.005;
+    double move_step = 0.005;                //Delta t in solution of Langevin equation
     for (int k = 0; k < D_; k++){
         r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step + NDG(gen)*sqrt(move_step);
         r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[k]);
@@ -216,7 +207,7 @@ double Psi::Proposed_move_interaction(int idx){
     double move_step = 0.005;
     for (int k = 0; k < D_; k++){
         r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step + NDG(gen)*sqrt(move_step);
-        r2_sum_new_ = Update_r_sum_interaction(r2_sum_new_, r_old_[idx][k], r_new_[k],k);
+        r2_sum_new_ = Update_r_sum_interaction(r2_sum_new_, r_old_[idx][k], r_new_[k], k);
     }
     return r2_sum_new_;
 
@@ -227,7 +218,7 @@ double Psi::Trial_func(double alpha, double sum_r_squared){
     return exp(-alpha*sum_r_squared);
 }
 
-double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string version, int idx){
+double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string version, int idx = 0){
     double exp_prod = -alpha*sum_r_squared;
     double u = 0;
     double diff;
@@ -237,7 +228,6 @@ double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string ve
         r_copy[i] = new double[D_];
         for (int j = 0; j<D_; j++){
             r_copy[i][j] = r_old_[i][j];
-
         }
     }
 
@@ -254,10 +244,12 @@ double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string ve
             }
             diff = sqrt(diff);
             if (diff <= a_){
-                u += 0;
+                u = 0;
+                exp_prod = 0;
+                return 0.0;
             }
             else{
-                u += 1-(a_/diff);
+                u += log(1-(a_/diff));
             }
         }
     }
@@ -304,11 +296,11 @@ double Psi::Local_energy_interaction_brute_force(double alpha){
         for (int dd = 0; dd < D_; dd++){
             dr_p = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] + step_, dd);
             dr_m = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] - step_, dd);
-            laplace_tf_  += Trial_func_interaction(alpha,dr_p,"old",0) + Trial_func_interaction(alpha, dr_m,"old",0);
+            laplace_tf_  += Trial_func_interaction(alpha,dr_p,"old") + Trial_func_interaction(alpha, dr_m,"old");
         }
     }
 
-    tf_middle_ = Trial_func_interaction(alpha,r2_sum_old_,"old",0);
+    tf_middle_ = Trial_func_interaction(alpha,r2_sum_old_,"old");
     laplace_tf_ -= 2*D_*N_*tf_middle_;
     laplace_tf_ /= (step_*step_*tf_middle_);
 

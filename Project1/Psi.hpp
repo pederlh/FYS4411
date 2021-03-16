@@ -41,7 +41,7 @@ public:
 
 
     void Declare_position(int N, int D, double h, double step, int case_type);
-    void Declare_position_interaction(int N, int D, double h, double step, int case_type, double beta);
+    void Declare_position_interaction(int N, int D, double h, double step, int case_type);
 
     void Declare_quantum_force(double D_diff);
     double Initialize_positions();

@@ -2,10 +2,6 @@
 
 int main(int argc, char const *argv[]) {
 
-    //int particles[] = {1, 10, 100, 500};
-    //int dimentionss[] = {1,2,3};
-    //int type_energies[] = {0,1};
-
     string outfilename, calc;
     int num_alphas = 15;
     int num_particles = 10;
@@ -15,11 +11,11 @@ int main(int argc, char const *argv[]) {
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
     int type_energy = 0;
 
-    //type_sampling = 0 for no importance sampling, type_sampling = 1 for importance sampling, = 2 for Gradient descent + importance sampling.
+    //type_sampling = 0 for no importance sampling, type_sampling = 1 for importance sampling, = 2 for Gradient descent + importance sampling, = 3 for interaction GD
     int type_sampling = 3;
 
     // Number of threads
-    int num_threads = 2;
+    int num_threads = 1;
     double start_time, end_time;
 
     // Start parallelization
