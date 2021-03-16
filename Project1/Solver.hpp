@@ -39,6 +39,7 @@ Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling,
 Psi wave;
 
 void Metropolis(double alpha);
+void Metropolis_interaction(double alpha);
 void Metropolis_importance(double alpha);
 void Metropolis_importance_interaction(double alpha);
 void MonteCarlo();

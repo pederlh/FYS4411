@@ -334,6 +334,27 @@ void Solver::Metropolis(double alpha){
     }
 }
 
+void Solver::Metropolis_interaction(double alpha){
+
+    mt19937_64 gen(rd_());
+    uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
+    uniform_int_distribution<int> RIG(0, N_-1);    //Random integer genererator [0,N_]
+    double tf_old, tf_new, P;
+    int idx = RIG(gen);
+
+    wave.r2_sum_new_ = wave.Proposed_move_interaction(idx);    //Moves particle with index "idx" and calculates new sum of r^2
+
+    tf_old = wave.Trial_func_interaction(alpha, wave.r2_sum_old_,"old",idx);             //Trial wave function of old position
+    tf_new = wave.Trial_func_interaction(alpha, wave.r2_sum_new_,"new",idx);           //Trial wave function of new position
+    P = (tf_new*tf_new)/(tf_old*tf_old);                         //Metropolis test
+    if (RDG(gen) <= P){
+        for (int k =0 ; k < D_;  k++){                   //Update initial posistion
+            wave.r_old_[idx][k] = wave.r_new_[k];
+        }
+        wave.r2_sum_old_ = wave.r2_sum_new_;
+    }
+}
+
 void Solver::Metropolis_importance(double alpha){
     mt19937_64 gen(rd_());
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
@@ -453,7 +474,7 @@ void Solver::Gradient_descent(){
     ofstream ofile;
     ofile.open(file);
     for (int i = 0; i < N_*MC_; i++){
-        ofile << optimal_energies[i] << endl;
+        ofile << setprecision(15) << optimal_energies[i] << endl;
     }
     ofile.close();
 
@@ -469,7 +490,7 @@ void Solver::Gradient_descent_interaction(){
     }
     double *values = new double[3];
     double alpha_guess = 0.9;                           // Initial guess for alpha
-    double eta = 0.015;                                 // Learning rate gradient descent
+    double eta = 0.01;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
      #pragma omp master
@@ -504,7 +525,7 @@ void Solver::Gradient_descent_interaction(){
 
     cout <<"Number of iterations of gradient descent = " << counter<<endl;
     // Optimal run
-    MC_ = pow(2,17);
+    MC_ = pow(2,12);
 
     double *optimal_energies = new double[N_*MC_];
 
@@ -516,7 +537,7 @@ void Solver::Gradient_descent_interaction(){
     ofstream ofile;
     ofile.open(file);
     for (int i = 0; i < N_*MC_; i++){
-        ofile << optimal_energies[i] << endl;
+        ofile << setprecision(15) << optimal_energies[i] << endl;
     }
     ofile.close();
 

@@ -111,7 +111,7 @@ void Psi::Initialize_quantum_force_interaction(double alpha, int idx){
         }
         for (int n = 0; n<N_;n++){
             if (n != idx){
-                quantum_force_old_[d] += (r_old_[idx][d]-r_old_[n][d])*(1/(rkl_[n]*rkl_[n])*(a_/(rkl_[n]-a_)));
+                quantum_force_old_[d] += (r_old_[idx][d] - r_old_[n][d]) * (1/(rkl_[n]*rkl_[n])) * (a_/(rkl_[n] - a_));
             }
         }
         quantum_force_old_[d] = 2*quantum_force_old_[d];
