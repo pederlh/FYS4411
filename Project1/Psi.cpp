@@ -26,7 +26,7 @@ void Psi::Declare_position_interaction(int N, int D, double h, double step, int 
     step_ = step;
     beta_ = 2.82843;
     case_ = case_type;     // 0 = for non interactive case, = 1 for interaction
-    a_ = 0.0043;
+    a_ =  0.0043;
 
     //Declaring position
     r_new_ = new double[D_];
@@ -239,6 +239,7 @@ double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string ve
 
     for (int l = 0; l < N_; l++){
         for (int m = l+1; m < N_; m++){
+            diff= 0.0;                                                  //DETTE MÅ VI SNAKKE OM!!!!
             for (int dim = 0; dim <D_; dim ++){
                 diff += pow(r_copy[l][dim]-r_copy[m][dim],2);
             }
@@ -281,11 +282,94 @@ double Psi::Local_energy_brute_force(double alpha){
     return (1./2)*(-laplace_tf_ + r2_sum_old_);
 }
 
+double Psi::Laplace_phi(int idx, double d2_phi, double alpha){
+    d2_phi = 0.0;
+    for (int d = 0; d< D_; d++){
+        if (d ==2){
+            d2_phi += beta_*beta_*r_old_[idx][d]*r_old_[idx][d];
+        }
+        else{
+            d2_phi += r_old_[idx][d]*r_old_[idx][d];
+        }
+    }
+
+    d2_phi *= 4*alpha*alpha;
+    d2_phi -= 2*alpha*(2+beta_);
+
+    return d2_phi;
+
+}
+
 
 double Psi::Local_energy_interaction_analytical(double alpha){
-    double d2_phi = 4*alpha*alpha;
+    double d2_phi;
 
-    return 0.0;
+    double* nabla_phi = new double[D_];
+    double* distance_vec = new double[D_];
+
+
+    double term2, term3, term4, u_der, d_psi, V_ext, E_L, V_int,tmp;
+
+
+    for (int n = 0; n < N_ ;n++){
+        d2_phi = Laplace_phi(n, d2_phi, alpha);
+        term2 =0.0;
+        term3 = 0.0;
+        V_ext = 0.0;
+        for (int d = 0; d < D_; d++){
+            distance_vec[d] = 0.0;
+            nabla_phi[d] = -4*alpha*r_old_[n][d];
+        }
+        for(int n2 = 0; n2 < N_; n2++){
+            tmp = 0.0;
+            for (int d2 = 0; d2 < D_; d2++){
+                tmp += pow(r_old_[n][d2] - r_old_[n2][d2],2);
+            }
+            rkl_[n2] = sqrt(tmp);
+        }
+        for (int n2 = 0; n2<N_;n2++){
+            if (n2 != n){
+                u_der = (1/(rkl_[n2]*rkl_[n2])) * (a_/(rkl_[n2] - a_));
+                term4 += (a_*a_ - 2*a_*rkl_[n2])/(rkl_[n2]*rkl_[n2]*(rkl_[n2]-a_)*(rkl_[n2]-a_)) + 2*u_der;
+                for (int d = 0; d<D_;d++){
+                    distance_vec[d] += (r_old_[n][d] - r_old_[n2][d]) * u_der;
+                }
+            }
+        }
+
+        for (int d =0; d<D_; d++){
+            term2 += nabla_phi[d]*distance_vec[d];
+            term3 += distance_vec[d]*distance_vec[d];
+            if(d==2) {V_ext += r_old_[n][d]*r_old_[n][d];}
+            else {V_ext += beta_*beta_*r_old_[n][d]*r_old_[n][d];}
+
+        }
+
+        d_psi += d2_phi + term2 + term3 + term4;
+    }
+
+    d_psi /= -2;
+
+
+    double diff;
+    V_int = 0.0;
+    for (int i = 0; i < N_; i++){
+        for (int j = i+1; j <N_; j++){
+            diff = 0.0;
+            for (int d = 0; d < D_; d++){
+                diff += pow(r_old_[i][d]-r_old_[j][d],2);
+            }
+            diff = sqrt(diff);
+            if (diff <= a_){
+                V_int += 1e16;
+                cout <<"Enormt bidrag" <<endl;
+            }
+        }
+    }
+
+    E_L = (1./2)*(-d_psi+V_ext) + V_int;
+
+    return E_L;
 }
 
 double Psi::Local_energy_interaction_brute_force(double alpha){

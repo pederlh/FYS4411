@@ -178,7 +178,7 @@ void Solver::MonteCarlo2_interaction(double alpha, double *energies){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
-            DeltaE = wave.Local_energy_interaction_brute_force(alpha);
+            DeltaE = wave.Local_energy_interaction_analytical(alpha);
             /*
             if (type_energy_ == 0){
                 DeltaE = wave.Local_energy_analytical(alpha);
@@ -282,7 +282,7 @@ void Solver::MonteCarlo_GD_interaction(double *values, double alpha){
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
 
-            DeltaE = wave.Local_energy_interaction_brute_force(alpha);
+            DeltaE = wave.Local_energy_interaction_analytical(alpha);
             /*
             if (type_energy_ == 0){
                 DeltaE = wave.Local_energy_analytical(alpha);
@@ -429,6 +429,7 @@ void Solver::Gradient_descent(){
     double alpha_guess = 0.9;                           // Initial guess for alpha
     double eta = 0.015;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
+    double last_E = 0.0;
 
      #pragma omp master
      {
@@ -452,9 +453,16 @@ void Solver::Gradient_descent(){
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
          }
 
+         if (abs(last_E-values[0])< 1e-7){   //Eller E eller V
+             break;
+         }
+
+         last_E = values[0];
+         /*
         if (values[1]< pow(10,-9)){
             break;
         }
+        */
         alpha_guess -= eta*values[2];
     }
     # pragma omp master
