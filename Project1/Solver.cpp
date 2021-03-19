@@ -8,6 +8,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
     sum_ = 0;
     step_ = h_*pow(10,-4);         //Stepsize used in differentiation
     thread_ID_ = thread_ID;
+    equi_cycles_ = 5000;
 
     type_energy_ = type_energy;
     type_sampling_ = type_sampling;
@@ -73,8 +74,7 @@ void Solver::MonteCarlo(){
         */
 
         //Equilibration step: runs metropolis algorithm without sampling to equibrate system
-        int equi_cycles = 10000;
-        for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+        for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
             for (int n = 0; n< N_; n++){
                 wave.r2_sum_new_ = wave.r2_sum_old_;
 
@@ -121,8 +121,7 @@ void Solver::MonteCarlo2(double alpha, double *energies){
     */
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
-    int equi_cycles = 10000;
-    for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+    for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
         for (int n = 0; n< N_; n++){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
@@ -163,8 +162,8 @@ void Solver::MonteCarlo2_interaction(double alpha, double *energies){
     */
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
-    int equi_cycles = 10000;
-    for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+
+    for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
         for (int n = 0; n< N_; n++){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
@@ -178,15 +177,15 @@ void Solver::MonteCarlo2_interaction(double alpha, double *energies){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
-            DeltaE = wave.Local_energy_interaction_analytical(alpha);
-            /*
+
+
             if (type_energy_ == 0){
-                DeltaE = wave.Local_energy_analytical(alpha);
+                DeltaE = wave.Local_energy_interaction_analytical(alpha);
             }
             if (type_energy_ == 1){
-                DeltaE = wave.Local_energy_brute_force(alpha);
+                DeltaE = wave.Local_energy_interaction_brute_force(alpha);
             }
-            */
+
 
             energies[cycle*N_ + n] += DeltaE;
         }
@@ -203,8 +202,7 @@ void Solver::MonteCarlo_GD(double *values, double alpha){
 
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
-    int equi_cycles = 10000;
-    for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+    for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
         for (int n = 0; n< N_; n++){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
@@ -262,8 +260,7 @@ void Solver::MonteCarlo_GD_interaction(double *values, double alpha){
     wave.r2_sum_old_ = wave.Initialize_positions();
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
-    int equi_cycles = 1000;
-    for (int equi_c= 0; equi_c < equi_cycles; equi_c++){
+    for (int equi_c = 0; equi_c < equi_cycles_; equi_c++){
         for (int n = 0; n< N_; n++){
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
@@ -282,15 +279,14 @@ void Solver::MonteCarlo_GD_interaction(double *values, double alpha){
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
 
-            DeltaE = wave.Local_energy_interaction_analytical(alpha);
-            /*
+
             if (type_energy_ == 0){
-                DeltaE = wave.Local_energy_analytical(alpha);
+                DeltaE = wave.Local_energy_interaction_analytical(alpha);
             }
             if (type_energy_==1){
-                DeltaE = wave.Local_energy_brute_force(alpha);
+                DeltaE = wave.Local_energy_interaction_brute_force(alpha);
             }
-            */
+
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
             sum_r = -wave.r2_sum_old_;
@@ -470,7 +466,7 @@ void Solver::Gradient_descent(){
 
     cout <<"Number of iterations of gradient descent = " << counter<<endl;
     // Optimal run
-    MC_ = pow(2,17);
+    MC_ = pow(2,19);
 
     double *optimal_energies = new double[N_*MC_];
 
@@ -500,6 +496,7 @@ void Solver::Gradient_descent_interaction(){
     double alpha_guess = 0.9;                           // Initial guess for alpha
     double eta = 0.01;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
+    double E_old;
 
      #pragma omp master
      {
@@ -523,17 +520,18 @@ void Solver::Gradient_descent_interaction(){
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
          }
 
-        if (values[1]< pow(10,-9)){
+        if (abs((values[0]-E_old)/E_old) < pow(10,-4)){
             break;
         }
         alpha_guess -= eta*values[2];
+        E_old = values[0];
     }
     # pragma omp master
     {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
     cout <<"Number of iterations of gradient descent = " << counter<<endl;
     // Optimal run
-    MC_ = pow(2,12);
+    MC_ = pow(2,19);
 
     double *optimal_energies = new double[N_*MC_];
 

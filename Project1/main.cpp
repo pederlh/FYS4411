@@ -15,8 +15,10 @@ int main(int argc, char const *argv[]) {
     int type_sampling = 3;
 
     // Number of threads
-    int num_threads = 1;
+    int num_threads = 4;
     double start_time, end_time;
+
+    cout << "LOL"<<to_string(omp_get_max_threads())<<endl;
 
     // Start parallelization
     if(num_threads > omp_get_max_threads()){

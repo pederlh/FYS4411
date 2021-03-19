@@ -302,23 +302,24 @@ double Psi::Laplace_phi(int idx, double d2_phi, double alpha){
 
 
 double Psi::Local_energy_interaction_analytical(double alpha){
-    double d2_phi;
 
     double* nabla_phi = new double[D_];
     double* distance_vec = new double[D_];
 
 
-    double term2, term3, term4, u_der, d_psi, V_ext, E_L, V_int,tmp;
+    double d2_phi, term2, term3, term4, u_der, d2_psi, V_ext, E_L, V_int, tmp;
+    d2_psi = 0.0;
+    V_ext = 0.0;
 
 
     for (int n = 0; n < N_ ;n++){
         d2_phi = Laplace_phi(n, d2_phi, alpha);
-        term2 =0.0;
+        term2 = 0.0;
         term3 = 0.0;
-        V_ext = 0.0;
+        term4 = 0.0;
         for (int d = 0; d < D_; d++){
             distance_vec[d] = 0.0;
-            nabla_phi[d] = -4*alpha*r_old_[n][d];
+            nabla_phi[d] = -2*alpha*r_old_[n][d];
         }
         for(int n2 = 0; n2 < N_; n2++){
             tmp = 0.0;
@@ -338,21 +339,21 @@ double Psi::Local_energy_interaction_analytical(double alpha){
         }
 
         for (int d =0; d<D_; d++){
-            term2 += nabla_phi[d]*distance_vec[d];
+            term2 += 2*nabla_phi[d]*distance_vec[d];
             term3 += distance_vec[d]*distance_vec[d];
-            if(d==2) {V_ext += r_old_[n][d]*r_old_[n][d];}
-            else {V_ext += beta_*beta_*r_old_[n][d]*r_old_[n][d];}
+
+            if(d==2) {V_ext += beta_*beta_*r_old_[n][d]*r_old_[n][d];}
+            else {V_ext += r_old_[n][d]*r_old_[n][d];}
 
         }
 
-        d_psi += d2_phi + term2 + term3 + term4;
+        d2_psi += d2_phi + term2 + term3 + term4;
     }
 
-    d_psi /= -2;
-
-
-    double diff;
     V_int = 0.0;
+
+    //double diff;
+    /*
     for (int i = 0; i < N_; i++){
         for (int j = i+1; j <N_; j++){
             diff = 0.0;
@@ -366,8 +367,9 @@ double Psi::Local_energy_interaction_analytical(double alpha){
             }
         }
     }
+    */
 
-    E_L = (1./2)*(-d_psi+V_ext) + V_int;
+    E_L = (1./2)*(-d2_psi+V_ext) + V_int;
 
     return E_L;
 }
