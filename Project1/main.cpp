@@ -6,6 +6,7 @@ int main(int argc, char const *argv[]) {
     int num_alphas = 15;
     int num_particles = 10;
     int mc_cycles = 1000;
+    int mc_cycles_optimal_run = pow(2,12);
     int dimentions = 3;
 
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
@@ -13,6 +14,11 @@ int main(int argc, char const *argv[]) {
 
     //type_sampling = 0 for no importance sampling, type_sampling = 1 for importance sampling, = 2 for Gradient descent + importance sampling, = 3 for interaction GD
     int type_sampling = 3;
+
+    if(type_energy ==1 && type_sampling==3){
+        cout << "Brute force energy calculation not implemented for interactive case"<<endl;
+        return 1;
+    }
 
     // Number of threads
     int num_threads = 4;
@@ -39,7 +45,7 @@ int main(int argc, char const *argv[]) {
 
 
         // Initialize Solver object and perform calculations
-        Solver mysolver(num_particles, num_alphas, mc_cycles, dimentions, type_energy, type_sampling, ID);
+        Solver mysolver(num_particles, num_alphas, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID);
 
 
         end_time = omp_get_wtime();

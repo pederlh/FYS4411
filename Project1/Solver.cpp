@@ -1,7 +1,7 @@
 #include "Solver.hpp"
 #include "Psi.hpp"
 
-Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_sampling, int thread_ID){
+Solver::Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID){
     D_ = D;
     N_ = N;
     h_ = 1.0;                       // Stepsize used for proposed move
@@ -22,29 +22,40 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
 
     num_alphas_ = num_alphas;                          //
     MC_ = MC;
+    MC_optimal_run_ = MC_optimal_run;
 
     if (type_sampling_ == 0){
-        MC_method = &Solver::MonteCarlo;
+        MC_method = &Solver::MonteCarlo_alpha_list;
         metropolis_sampling = &Solver::Metropolis;
     }
 
     if (type_sampling_ == 1){
-        MC_method = &Solver::MonteCarlo;
-    }
-
-    if (type_sampling_ == 2){
-        MC_method = &Solver::Gradient_descent;
-    }
-
-    if (type_sampling_ != 0){
         D_diff_ = 0.5;                      //Diffusion constant in Greens function
         wave.Declare_quantum_force(D_diff_);
         metropolis_sampling = &Solver::Metropolis_importance;
+        MC_method = &Solver::MonteCarlo_alpha_list;
+    }
+
+    if (type_sampling_ == 2){
+        D_diff_ = 0.5;                      //Diffusion constant in Greens function
+        wave.Declare_quantum_force(D_diff_);
+        metropolis_sampling = &Solver::Metropolis_importance;
+        MC_method = &Solver::Gradient_descent;
+        Interaction_or_not_GD = &Solver::MonteCarlo_GD;
+        Interaction_or_not_optimal = &Solver::MonteCarlo;
+        tol_GD_ = 1e-9;
+        eta_GD_ = 0.015;
     }
 
     if (type_sampling_ == 3){
-        MC_method = &Solver::Gradient_descent_interaction;
-        metropolis_sampling = &Solver::Metropolis_importance_interaction;
+        D_diff_ = 0.5;                      //Diffusion constant in Greens function
+        wave.Declare_quantum_force(D_diff_);
+        MC_method = &Solver::Gradient_descent;
+        metropolis_sampling = &Solver::Metropolis_interaction;
+        Interaction_or_not_GD = &Solver::MonteCarlo_GD_interaction;
+        Interaction_or_not_optimal = &Solver::MonteCarlo_interaction;
+        tol_GD_ = 1e-3;
+        eta_GD_ = 0.01;
     }
 
     (this->*MC_method)();
@@ -52,7 +63,7 @@ Solver::Solver(int N, int num_alphas, int MC, int D, int type_energy, int type_s
 }
 
 
-void Solver::MonteCarlo(){
+void Solver::MonteCarlo_alpha_list(){
     double alpha, energy, energy_squared, DeltaE, variance;
 
     alphas_ = new double[num_alphas_];                 //Variational parameter
@@ -66,12 +77,6 @@ void Solver::MonteCarlo(){
         energy_squared = 0;
 
         wave.r2_sum_old_ = wave.Initialize_positions();
-
-        /*
-        if (type_sampling_ != 0){
-            wave.Initialize_quantum_force(alpha);
-        }
-        */
 
         //Equilibration step: runs metropolis algorithm without sampling to equibrate system
         for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
@@ -109,16 +114,10 @@ void Solver::MonteCarlo(){
     }
 }
 
-void Solver::MonteCarlo2(double alpha, double *energies){
+void Solver::MonteCarlo(double alpha, double *energies){
     double DeltaE;
 
     wave.r2_sum_old_ = wave.Initialize_positions();
-
-    /*
-    if (type_sampling_ != 0){
-        wave.Initialize_quantum_force(alpha);
-    }
-    */
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
     for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
@@ -129,40 +128,32 @@ void Solver::MonteCarlo2(double alpha, double *energies){
         }
     }
 
-    for (int cycle = 0; cycle < MC_; cycle++){
+    for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
 
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
-            DeltaE = wave.Local_energy_brute_force(alpha);
-            /*
+
+
             if (type_energy_ == 0){
                 DeltaE = wave.Local_energy_analytical(alpha);
             }
             if (type_energy_ == 1){
                 DeltaE = wave.Local_energy_brute_force(alpha);
             }
-            */
+
 
             energies[cycle*N_ + n] += DeltaE;
         }
     }
 }
 
-void Solver::MonteCarlo2_interaction(double alpha, double *energies){
+void Solver::MonteCarlo_interaction(double alpha, double *energies){
     double DeltaE;
-
     wave.r2_sum_old_ = wave.Initialize_positions();
 
-    /*
-    if (type_sampling_ != 0){
-        wave.Initialize_quantum_force(alpha);
-    }
-    */
-
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
-
     for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
         for (int n = 0; n< N_; n++){
             wave.r2_sum_new_ = wave.r2_sum_old_;
@@ -171,22 +162,12 @@ void Solver::MonteCarlo2_interaction(double alpha, double *energies){
         }
     }
 
-    for (int cycle = 0; cycle < MC_; cycle++){
+    for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
 
             wave.r2_sum_new_ = wave.r2_sum_old_;
-
             (this->*metropolis_sampling)(alpha); //Metropolis test
-
-
-            if (type_energy_ == 0){
-                DeltaE = wave.Local_energy_interaction_analytical(alpha);
-            }
-            if (type_energy_ == 1){
-                DeltaE = wave.Local_energy_interaction_brute_force(alpha);
-            }
-
-
+            DeltaE = wave.Local_energy_interaction(alpha);
             energies[cycle*N_ + n] += DeltaE;
         }
     }
@@ -268,24 +249,13 @@ void Solver::MonteCarlo_GD_interaction(double *values, double alpha){
         }
     }
 
-
-    energy = 0;
-    energy_squared = 0;
-
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int n = 0; n < N_; n++){
 
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
-
-
-            if (type_energy_ == 0){
-                DeltaE = wave.Local_energy_interaction_analytical(alpha);
-            }
-            if (type_energy_==1){
-                DeltaE = wave.Local_energy_interaction_brute_force(alpha);
-            }
+            DeltaE = wave.Local_energy_interaction(alpha);
 
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
@@ -330,26 +300,6 @@ void Solver::Metropolis(double alpha){
     }
 }
 
-void Solver::Metropolis_interaction(double alpha){
-
-    mt19937_64 gen(rd_());
-    uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
-    uniform_int_distribution<int> RIG(0, N_-1);    //Random integer genererator [0,N_]
-    double tf_old, tf_new, P;
-    int idx = RIG(gen);
-
-    wave.r2_sum_new_ = wave.Proposed_move_interaction(idx);    //Moves particle with index "idx" and calculates new sum of r^2
-
-    tf_old = wave.Trial_func_interaction(alpha, wave.r2_sum_old_,"old",idx);             //Trial wave function of old position
-    tf_new = wave.Trial_func_interaction(alpha, wave.r2_sum_new_,"new",idx);           //Trial wave function of new position
-    P = (tf_new*tf_new)/(tf_old*tf_old);                         //Metropolis test
-    if (RDG(gen) <= P){
-        for (int k =0 ; k < D_;  k++){                   //Update initial posistion
-            wave.r_old_[idx][k] = wave.r_new_[k];
-        }
-        wave.r2_sum_old_ = wave.r2_sum_new_;
-    }
-}
 
 void Solver::Metropolis_importance(double alpha){
     mt19937_64 gen(rd_());
@@ -375,7 +325,7 @@ void Solver::Metropolis_importance(double alpha){
     }
 }
 
-void Solver::Metropolis_importance_interaction(double alpha){
+void Solver::Metropolis_interaction(double alpha){
     mt19937_64 gen(rd_());
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
     uniform_int_distribution<int> RIG(0, N_-1);    //Random integer genererator [0,N_]
@@ -413,7 +363,7 @@ double Solver::Greens_function(int idx){
 }
 
 
-//Gradient Descent w/Importance sampling
+//Gradient Descent w/Importance sampling for interacting and non-interacting case
 void Solver::Gradient_descent(){
     string file;                                        // path to where files should be stored
     int iterations = 50;                                // Max number iterations gradient descent
@@ -423,78 +373,6 @@ void Solver::Gradient_descent(){
     }
     double *values = new double[3];
     double alpha_guess = 0.9;                           // Initial guess for alpha
-    double eta = 0.015;                                 // Learning rate gradient descent
-    int counter = 0;                                    // Counter to keep track of actual number of iterations
-    double last_E = 0.0;
-
-     #pragma omp master
-     {
-         if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
-         else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
-
-         cout << setw(10) << "Alpha" << setw(12) << "Energy" << setw(16) << "Variance" << endl;
-         cout << "--------------------------------------" << endl;
-     }
-
-    for (int i = 0; i < iterations; i++){
-        counter++;
-        alpha_vals_GD[i] = alpha_guess;
-
-        MonteCarlo_GD(values, alpha_guess);
-        // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
-        // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
-
-         # pragma omp master
-         {
-            cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
-         }
-
-         if (abs(last_E-values[0])< 1e-7){   //Eller E eller V
-             break;
-         }
-
-         last_E = values[0];
-         /*
-        if (values[1]< pow(10,-9)){
-            break;
-        }
-        */
-        alpha_guess -= eta*values[2];
-    }
-    # pragma omp master
-    {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
-
-    cout <<"Number of iterations of gradient descent = " << counter<<endl;
-    // Optimal run
-    MC_ = pow(2,19);
-
-    double *optimal_energies = new double[N_*MC_];
-
-    file = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
-            "_alpha_" + to_string(alpha_guess) + "_E_L_samples_string_" + to_string(thread_ID_) + ".txt";
-
-    MonteCarlo2(alpha_guess, optimal_energies);
-
-    ofstream ofile;
-    ofile.open(file);
-    for (int i = 0; i < N_*MC_; i++){
-        ofile << setprecision(15) << optimal_energies[i] << endl;
-    }
-    ofile.close();
-
-}
-
-//Gradient Descent w/Importance sampling for interacting case
-void Solver::Gradient_descent_interaction(){
-    string file;                                        // path to where files should be stored
-    int iterations = 50;                                // Max number iterations gradient descent
-    double *alpha_vals_GD = new double[iterations];     // Array to store alpha values
-    for (int z = 0; z < iterations; z++){
-        alpha_vals_GD[z] = 0;
-    }
-    double *values = new double[3];
-    double alpha_guess = 0.9;                           // Initial guess for alpha
-    double eta = 0.01;                                 // Learning rate gradient descent
     int counter = 0;                                    // Counter to keep track of actual number of iterations
     double E_old;
 
@@ -512,20 +390,18 @@ void Solver::Gradient_descent_interaction(){
         counter++;
         alpha_vals_GD[i] = alpha_guess;
 
-        MonteCarlo_GD_interaction(values, alpha_guess);
-        // # pragma omp master
-        // {
-        //    cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
-        // }
+        (this->*Interaction_or_not_GD)(values, alpha_guess);
+        # pragma omp master
+        {
+            cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
+        }
 
-       {cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;}
-
-        if (values[1] < 1e-3){
+        if (values[1] < tol_GD_){
             break;
         }
-        alpha_guess -= eta*values[2];
+        alpha_guess -= eta_GD_*values[2];
     }
-   
+
     cout <<"Number of iterations of gradient descent = " << counter << " for thread " << to_string(thread_ID_) << endl;
 
     # pragma omp barrier
@@ -533,18 +409,24 @@ void Solver::Gradient_descent_interaction(){
     {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
     // Optimal run
-    MC_ = pow(2,12);
+    double *optimal_energies = new double[N_*MC_optimal_run_];
 
-    double *optimal_energies = new double[N_*MC_];
-
+    if(type_sampling_==3){
     file = "INTERACTION_OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
-            "_alpha_" + to_string(alpha_guess) + "_E_L_samples_string_" + to_string(thread_ID_) + ".txt";
+            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
+    }
 
-    MonteCarlo2_interaction(alpha_guess, optimal_energies);
+    if(type_sampling_==2){
+    file = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
+            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
+    }
+
+
+    (this->*Interaction_or_not_optimal)(alpha_guess, optimal_energies);
 
     ofstream ofile;
     ofile.open(file);
-    for (int i = 0; i < N_*MC_; i++){
+    for (int i = 0; i < N_*MC_optimal_run_; i++){
         ofile << setprecision(15) << optimal_energies[i] << endl;
     }
     ofile.close();
@@ -565,14 +447,6 @@ void Solver::Write_to_file(string outfilename, double time){
     ofile.close();
 }
 
-// void Solver::Write_array_to_file(string outfilename, double *array, int len){
-//     ofstream ofile1;
-//     ofile1.open(outfilename);
-//     for (int i = 0; i < len; i++){
-//         ofile1 <<array[i]<<endl;
-//     }
-//     ofile1.close();
-// }
 
 /*
 void Solver::ADAM(){

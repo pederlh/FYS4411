@@ -54,8 +54,7 @@ public:
 
     double Local_energy_analytical(double alpha);
     double Local_energy_brute_force(double alpha);
-    double Local_energy_interaction_analytical(double alpha);
-    double Local_energy_interaction_brute_force(double alpha);
+    double Local_energy_interaction(double alpha);
 
 
     double Update_r_sum(double sum, double r_init, double r_move);
