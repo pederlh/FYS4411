@@ -20,8 +20,8 @@ class Solver {
 
 private:
 
-int N_, num_alphas_, MC_, MC_optimal_run_, D_, type_energy_, type_sampling_, thread_ID_, equi_cycles_;
-double h_, sum_, step_, D_diff_, tol_GD_, eta_GD_;
+int N_, num_alphas_, MC_, MC_optimal_run_, D_, type_energy_, type_sampling_, thread_ID_, equi_cycles_, OBD_;
+double h_, sum_, step_, D_diff_, tol_GD_, eta_GD_, radi_;
 double *alphas_,*energies_, *variances_, *E_L_to_file_;
 random_device rd_;
 
@@ -53,6 +53,7 @@ void MonteCarlo_GD_interaction(double *values, double alpha);
 
 void Gradient_descent();
 double Greens_function(int idx);
+void One_body_density(double *bins);
 // void ADAM();
 
 void Write_to_file(string outfilename, double time);

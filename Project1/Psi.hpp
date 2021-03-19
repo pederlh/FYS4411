@@ -37,9 +37,7 @@ public:
     double *quantum_force_old_, *quantum_force_new_, *rkl_;
     double r2_sum_old_, r2_sum_new_;
     double tf_middle_, laplace_tf_;
-
-
-
+    
     void Declare_position(int N, int D, double h, double step, int case_type);
     void Declare_position_interaction(int N, int D, double h, double step, int case_type);
 

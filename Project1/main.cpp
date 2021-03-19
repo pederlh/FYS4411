@@ -6,14 +6,14 @@ int main(int argc, char const *argv[]) {
     int num_alphas = 15;
     int num_particles = 10;
     int mc_cycles = 1000;
-    int mc_cycles_optimal_run = pow(2,12);
+    int mc_cycles_optimal_run = pow(2,17);
     int dimentions = 3;
 
     // type_energy = 0 for analytical, type_energy = 1 for brute force.
     int type_energy = 0;
 
     //type_sampling = 0 for no importance sampling, type_sampling = 1 for importance sampling, = 2 for Gradient descent + importance sampling, = 3 for interaction GD
-    int type_sampling = 3;
+    int type_sampling = 2;
 
     if(type_energy ==1 && type_sampling==3){
         cout << "Brute force energy calculation not implemented for interactive case"<<endl;
@@ -21,7 +21,7 @@ int main(int argc, char const *argv[]) {
     }
 
     // Number of threads
-    int num_threads = 4;
+    int num_threads = 1;
     double start_time, end_time;
 
     // Start parallelization

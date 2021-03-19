@@ -23,6 +23,7 @@ Solver::Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int typ
     num_alphas_ = num_alphas;                          //
     MC_ = MC;
     MC_optimal_run_ = MC_optimal_run;
+    OBD_ = 1;
 
     if (type_sampling_ == 0){
         MC_method = &Solver::MonteCarlo_alpha_list;
@@ -63,6 +64,20 @@ Solver::Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int typ
 }
 
 
+
+void Solver::One_body_density(double *bins){
+    double r;
+    int bin_nr;
+    for (int i =1; i<N_;i++){
+        r = 0.0;
+        for (int j = 0; j < D_ ; j++){
+            r += pow(wave.r_old_[0][j] - wave.r_old_[i][j],2);
+        }
+        r = sqrt(r);
+        bin_nr = trunc(r/radi_);
+        bins[bin_nr] +=1;
+    }
+}
 void Solver::MonteCarlo_alpha_list(){
     double alpha, energy, energy_squared, DeltaE, variance;
 
@@ -116,6 +131,16 @@ void Solver::MonteCarlo_alpha_list(){
 
 void Solver::MonteCarlo(double alpha, double *energies){
     double DeltaE;
+    int num_bins = 100;
+    double max_radi = 5.0;
+    double *bins = new double[num_bins];
+
+    if (OBD_ == 1){
+        for (int i =0; i < num_bins; i++){
+            bins[i] = 0.0;
+        }
+        radi_ = max_radi/num_bins;
+    }
 
     wave.r2_sum_old_ = wave.Initialize_positions();
 
@@ -135,7 +160,8 @@ void Solver::MonteCarlo(double alpha, double *energies){
             // Finn avstand per partikkel
             // Heltallsdivisjon -> plasser i bins
             // Ta snitt til slutt
-            
+            if (OBD_ ==1){One_body_density(bins);}
+
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
@@ -152,10 +178,32 @@ void Solver::MonteCarlo(double alpha, double *energies){
             energies[cycle*N_ + n] += DeltaE;
         }
     }
+
+    if (OBD_ == 1){
+        string OBD_file = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
+        ofstream ofile2;
+        ofile2.open(OBD_file);
+        for (int i = 0; i < num_bins; i ++){
+            bins[i] /= (MC_optimal_run_*N_*pow(i*radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            ofile2 << setprecision(15) <<bins[i]<<endl;
+        }
+        ofile2.close();
+    }
 }
 
 void Solver::MonteCarlo_interaction(double alpha, double *energies){
     double DeltaE;
+    int num_bins = 100;
+    double max_radi = 5.0;
+    double *bins = new double[num_bins];
+
+    if (OBD_==1){
+        for (int i =0; i < num_bins; i++){
+            bins[i] = 0.0;
+        }
+        radi_ = max_radi/num_bins;
+    }
+
     wave.r2_sum_old_ = wave.Initialize_positions();
 
     //Equilibration step: runs metropolis algorithm without sampling to equibrate system
@@ -170,11 +218,23 @@ void Solver::MonteCarlo_interaction(double alpha, double *energies){
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
 
+            if (OBD_==1){One_body_density(bins);}
             wave.r2_sum_new_ = wave.r2_sum_old_;
             (this->*metropolis_sampling)(alpha); //Metropolis test
             DeltaE = wave.Local_energy_interaction(alpha);
             energies[cycle*N_ + n] += DeltaE;
         }
+    }
+
+    if (OBD_==1){
+        string OBD_file = "Interaction_One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
+        ofstream ofile2;
+        ofile2.open(OBD_file);
+        for (int i = 0; i < num_bins; i ++){
+            bins[i] /= (MC_optimal_run_*N_*pow(i*radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            ofile2 << setprecision(15) <<bins[i]<<endl;
+        }
+        ofile2.close();
     }
 }
 
