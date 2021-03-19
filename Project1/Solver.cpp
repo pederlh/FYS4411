@@ -498,6 +498,7 @@ void Solver::Gradient_descent_interaction(){
     int counter = 0;                                    // Counter to keep track of actual number of iterations
     double E_old;
 
+
      #pragma omp master
      {
          if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
@@ -506,32 +507,33 @@ void Solver::Gradient_descent_interaction(){
          cout << setw(10) << "Alpha" << setw(12) << "Energy" << setw(16) << "Variance" << endl;
          cout << "--------------------------------------" << endl;
      }
-
+    //cout << "Thread made it here: " << to_string(thread_ID_) << endl;
     for (int i = 0; i < iterations; i++){
         counter++;
         alpha_vals_GD[i] = alpha_guess;
 
         MonteCarlo_GD_interaction(values, alpha_guess);
-        // FILNAVNET REFLEKTERER IKKE SISTE VERDI AV ALPHA
-        // SPM: LENGRE KONVERGENSTID MED FLERE TRÅDER? BARE SNAKK OM ET PAR EKSTRA...
+        // # pragma omp master
+        // {
+        //    cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
+        // }
 
-         # pragma omp master
-         {
-            cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;
-         }
+       {cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << endl;}
 
-        if (abs((values[0]-E_old)/E_old) < pow(10,-4)){
+        if (values[1] < 1e-3){
             break;
         }
         alpha_guess -= eta*values[2];
-        E_old = values[0];
     }
+   
+    cout <<"Number of iterations of gradient descent = " << counter << " for thread " << to_string(thread_ID_) << endl;
+
+    # pragma omp barrier
     # pragma omp master
     {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
 
-    cout <<"Number of iterations of gradient descent = " << counter<<endl;
     // Optimal run
-    MC_ = pow(2,19);
+    MC_ = pow(2,12);
 
     double *optimal_energies = new double[N_*MC_];
 
@@ -546,7 +548,6 @@ void Solver::Gradient_descent_interaction(){
         ofile << setprecision(15) << optimal_energies[i] << endl;
     }
     ofile.close();
-
 }
 
 void Solver::Write_to_file(string outfilename, double time){

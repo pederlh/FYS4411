@@ -18,8 +18,6 @@ int main(int argc, char const *argv[]) {
     int num_threads = 4;
     double start_time, end_time;
 
-    cout << "LOL"<<to_string(omp_get_max_threads())<<endl;
-
     // Start parallelization
     if(num_threads > omp_get_max_threads()){
         cout << "Warning: requested number of threads (" << num_threads << ") is greater than omp_get_max_threads (" << omp_get_max_threads() << ")" << endl;

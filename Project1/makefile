@@ -6,7 +6,7 @@ compile:
 	c++ -o main.out Solver.cpp Psi.cpp main.cpp  -std=c++11
 
 compile_par:
-	g++ -o main.out Solver.cpp Psi.cpp main.cpp -std=c++11 -fopenmp
+	g++  -o main.out Solver.cpp Psi.cpp main.cpp -std=c++11 -fopenmp
 
 compile_par_mac:
 	g++-10 -o main.out Solver.cpp Psi.cpp main.cpp -std=c++11 -fopenmp
