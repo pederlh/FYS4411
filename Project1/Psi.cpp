@@ -26,7 +26,7 @@ void Psi::Declare_position_interaction(int N, int D, double h, double step, int 
     step_ = step;
     beta_ = 2.82843;
     case_ = case_type;     // 0 = for non interactive case, = 1 for interaction
-    a_ =  0.0043;
+    a_ = 0.0043;
 
     //Declaring position
     r_new_ = new double[D_];

@@ -184,7 +184,7 @@ void Solver::MonteCarlo(double alpha, double *energies){
         ofstream ofile2;
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*pow(i*radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
         ofile2.close();
@@ -231,7 +231,7 @@ void Solver::MonteCarlo_interaction(double alpha, double *energies){
         ofstream ofile2;
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*pow(i*radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
         ofile2.close();
