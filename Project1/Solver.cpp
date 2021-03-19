@@ -131,6 +131,11 @@ void Solver::MonteCarlo(double alpha, double *energies){
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
 
+            // Trenger: Radius, antall bins
+            // Finn avstand per partikkel
+            // Heltallsdivisjon -> plasser i bins
+            // Ta snitt til slutt
+            
             wave.r2_sum_new_ = wave.r2_sum_old_;
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
