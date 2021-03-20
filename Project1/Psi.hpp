@@ -13,20 +13,20 @@
 
 using namespace std;
 
+/*
+        Class for trial wave function and hamiltonian.
+        Contains functions for:
+            - Evaluation of local energy
+            - Trial wave function
+            - Particle distribution
+            - Quantum force
+
+*/
+
 
 class Psi {
 private:
-/*
 
-
-//Pointer to member function
-double (Psi::*energy_calculation)(double alpha, double r_sum);
-void (Psi::*QF)(double alpha, double **positions, double **q_force);
-
-
-void No_quantum_force(double alpha, double **positions, double **q_force);
-
-*/
 public:
 
     double h_, step_, D_diff_, beta_, a_;
@@ -37,34 +37,30 @@ public:
     double *quantum_force_old_, *quantum_force_new_, *rkl_;
     double r2_sum_old_, r2_sum_new_;
     double tf_middle_, laplace_tf_;
-    
-    void Declare_position(int N, int D, double h, double step, int case_type);
-    void Declare_position_interaction(int N, int D, double h, double step, int case_type);
 
-    void Declare_quantum_force(double D_diff);
+    //Non-interacting case
     double Initialize_positions();
-    void Initialize_quantum_force(double alpha, int idx);
-    void Initialize_quantum_force_interaction(double alpha, int idx);
-
+    void Declare_position(int N, int D, double h, double step, int case_type);
     double Proposed_move(int idx);
-    double Proposed_move_importance(int idx);
-    double Proposed_move_interaction(int idx);
-
     double Local_energy_analytical(double alpha);
     double Local_energy_brute_force(double alpha);
-    double Local_energy_interaction(double alpha);
-
-
     double Update_r_sum(double sum, double r_init, double r_move);
-    double Update_r_sum_interaction(double sum, double r_init, double r_move, double coord);
-
-
     double Trial_func(double alpha, double sum_r_squared);
+        //Importance sampling
+        void Declare_quantum_force(double D_diff);
+        void Initialize_quantum_force(double alpha, int idx);
+        double Proposed_move_importance(int idx);
+        void Update_quantum_force(double alpha);
+
+
+    //Interacting case
+    void Declare_position_interaction(int N, int D, double h, double step, int case_type);
+    void Initialize_quantum_force_interaction(double alpha, int idx);
+    double Proposed_move_interaction(int idx);
+    double Local_energy_interaction(double alpha);
+    double Update_r_sum_interaction(double sum, double r_init, double r_move, double coord);
     double Trial_func_interaction(double alpha, double sum_r_squared, string version, int idx);
-    void Update_quantum_force(double alpha);
     void Update_quantum_force_interaction(double alpha, int idx);
-
-
     double Laplace_phi(int idx, double d2_phi, double alpha);
 
 };

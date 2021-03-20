@@ -15,13 +15,23 @@
 #include "Psi.hpp"
 using namespace std;
 
+/*
+        Class for executing Montecarlo simulations using metropolis sampling.
+        Handles interacting and non-interacting particles.
+        Includes functions for:
+            - Monte Carlo simulation
+            - Metropolis sampling
+            - Metropolis-Hastings sampling
+            - Gradient descent for variational parameter estimation
+*/
+
 
 class Solver {
 
 private:
 
 int N_, num_alphas_, MC_, MC_optimal_run_, D_, type_energy_, type_sampling_, thread_ID_, equi_cycles_, OBD_;
-double h_, sum_, step_, D_diff_, tol_GD_, eta_GD_, radi_;
+double h_, step_, D_diff_, tol_GD_, eta_GD_, radi_;
 double *alphas_,*energies_, *variances_, *E_L_to_file_;
 random_device rd_;
 
