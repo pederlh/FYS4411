@@ -26,9 +26,9 @@ void Psi::Declare_position_interaction(int N, int D, double h, double step, int 
     N_ = N;                 //Number of particles
     h_ = h;                 //Stepsize to determine the distributions space of particles
     step_ = step;           //Stepsize used in numerical differentiation
-    beta_ = 2.82843;        //Scaling constant for the z-contribution in the trial wave function     Peder help :-)
+    beta_ = 2.82843;        //Scaling for the z-contribution in the trial wave function
     case_ = case_type;      // =0 for non-interacting bosons, =1 for interacting bosons
-    a_ = 0.0043;            // Potential strength/Well potential strength??                           Peder help :-)
+    a_ = 0.0043;            // Hard-core diameter of bosons
 
     //Declaring position
     r_new_ = new double[D_];
@@ -42,12 +42,11 @@ void Psi::Declare_position_interaction(int N, int D, double h, double step, int 
 //Function to declare quantum force, called if importance sampling is chosen.
 void Psi::Declare_quantum_force(double D_diff){
 
-    D_diff_ = D_diff;                   //Diffusion constant in greens function and solution of Langevin eq. ?? Peder help :-)
+    D_diff_ = D_diff;                       //Diffusion constant in Green's function and solution of Langevin eq.
 
     //Declaring quantum force
     quantum_force_new_ = new double[D_];
     quantum_force_old_ = new double[D_];
-
 }
 
 
@@ -154,7 +153,7 @@ void Psi::Update_quantum_force_interaction(double alpha, int idx){
     }
 
 
-    //Calculate quantum force in accordance to the analytical expression for QF for interacting bosons
+    //Calculate quantum force in accordance to the analytical expression for quantum force for interacting bosons
     for (int d = 0; d<D_;d++){
         if (d == 2){
             quantum_force_new_[d] = -4*alpha*beta_*r_new_[d];
@@ -206,7 +205,7 @@ double Psi::Proposed_move(int idx){
 }
 
 
-//Function to calculate a proposed move of one particle in the case of non-interacting bosons using solution of Langevin eq.   Help Peder :-)
+//Function to calculate a proposed move of one particle in the case of non-interacting bosons using solution of Langevin eq.
 // - Called if importance sampling is chosen
 double Psi::Proposed_move_importance(int idx){
     mt19937_64 gen(rd_());
@@ -222,7 +221,7 @@ double Psi::Proposed_move_importance(int idx){
 }
 
 
-//Function to calculate a proposed move of one particle in the case of interacting bosons using solution of Langevin eq.     Help peder :-)
+//Function to calculate a proposed move of one particle in the case of interacting bosons using solution of Langevin eq.
 double Psi::Proposed_move_interaction(int idx){
     mt19937_64 gen(rd_());
     normal_distribution<double> NDG(0.0,1.0);   //Random number generated from gaussian distribution with mean = 0, std = 1;
@@ -243,7 +242,7 @@ double Psi::Trial_func(double alpha, double sum_r_squared){
     return exp(-alpha*sum_r_squared);
 }
 
-//Function to evalueate the trial wave function in the case of interacting bosons
+//Function to evaluate the trial wave function in the case of interacting bosons
 double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string version, int idx = 0){
     double exp_prod = -alpha*sum_r_squared;    //First term in trial WF
     double u = 0;
@@ -271,7 +270,7 @@ double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string ve
                 diff += pow(r_copy[l][dim]-r_copy[m][dim],2);
             }
             diff = sqrt(diff);
-            if (diff <= a_){                        //Checks if particles lie closer than set potential strength ??? Peder help :-)
+            if (diff <= a_){                        //Checks if particles lie closer than hard-core diameter
                 return 0.0;                         //If so -> WF collapses
             }
             else{
