@@ -8,8 +8,6 @@
 #include <random>
 #include <iomanip>
 #include <cstdlib>
-#include "time.h"
-#include <valarray>
 #include "omp.h"
 
 #include "Psi.hpp"
@@ -30,17 +28,17 @@ class Solver {
 
 private:
 
-int N_, num_alphas_, MC_, MC_optimal_run_, D_, type_energy_, type_sampling_, thread_ID_, equi_cycles_, OBD_;
+int N_, num_alphas_, MC_, MC_optimal_run_, D_, type_energy_, type_sampling_, thread_ID_, equi_cycles_;
 double h_, step_, D_diff_, tol_GD_, eta_GD_, radi_;
 double *alphas_,*energies_, *variances_, *E_L_to_file_;
+bool OBD_check_;
 random_device rd_;
 
 //Pointer to member function
-void (Solver::*MC_method)();
+void (Solver::*main_method)();
 void (Solver::*metropolis_sampling)(double alpha);
 void (Solver::*Interaction_or_not_GD)(double *values, double alpha);
 void (Solver::*Interaction_or_not_optimal)(double alpha, double *energies);
-
 
 public:
 
@@ -50,24 +48,30 @@ Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int type_energy
 //Makes use of functions from class Psi;
 Psi wave;
 
+// Sampling methods
 void Metropolis(double alpha);
 void Metropolis_importance(double alpha);
-void Metropolis_interaction(double alpha);
+void Metropolis_interacting(double alpha);
 
-void MonteCarlo_alpha_list();
-void MonteCarlo(double alpha, double *energies);
-void MonteCarlo_interaction(double alpha, double *energies);
-
-void MonteCarlo_GD(double *values, double alpha);
-void MonteCarlo_GD_interaction(double *values, double alpha);
-
+// Main methods: Find optimal alpha by looping over list or gradient descent
+void Alpha_list();
 void Gradient_descent();
-double Greens_function(int idx);
-void One_body_density(double *bins);
+
+// During GD process: Interacting or noninteracting case 
+void MonteCarlo_GD_noninteracting(double *values, double alpha);
+void MonteCarlo_GD_interacting(double *values, double alpha);
+
+// Final run after GD process: Interacting or noninteracting case
+void MonteCarlo_optval_noninteracting(double alpha, double *energies);
+void MonteCarlo_optval_interacting(double alpha, double *energies);
+
+// Other methods
+void Equilibrate(double alpha);                     // Perform equilibration cycles
+double Greens_function(int idx);                    // Evaluate Green's function
+void One_body_density(double *bins);                // Add values to OBD histogram
+void Write_to_file(string outfilename, double time);// Write results to file
 // void ADAM();
 
-void Write_to_file(string outfilename, double time);
-// void Write_array_to_file(string outfilename, double *array, int len);
 };
 
 #endif

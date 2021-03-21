@@ -8,8 +8,6 @@
 #include <random>
 #include <iomanip>
 #include <cstdlib>
-#include "time.h"
-#include <valarray>
 
 using namespace std;
 
@@ -23,9 +21,7 @@ using namespace std;
 
 */
 
-
 class Psi {
-private:
 
 public:
 
@@ -46,12 +42,12 @@ public:
     double Local_energy_brute_force(double alpha);
     double Update_r_sum(double sum, double r_init, double r_move);
     double Trial_func(double alpha, double sum_r_squared);
-        //Importance sampling
-        void Declare_quantum_force(double D_diff);
-        void Initialize_quantum_force(double alpha, int idx);
-        double Proposed_move_importance(int idx);
-        void Update_quantum_force(double alpha);
-
+        
+    //Importance sampling
+    void Declare_quantum_force(double D_diff);
+    void Initialize_quantum_force(double alpha, int idx);
+    double Proposed_move_importance(int idx);
+    void Update_quantum_force(double alpha);
 
     //Interacting case
     void Declare_position_interaction(int N, int D, double h, double step, int case_type);

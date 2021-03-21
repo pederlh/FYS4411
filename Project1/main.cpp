@@ -2,11 +2,12 @@
 
 int main(int argc, char const *argv[]) {
     /*
-    int num_alphas, num_particles, dimensions, mc_cycles, mc_cycles_optimal_run, type_energy, type_sampling, num_treads;
-    if( argc != 9 ){
+    int num_alphas, num_particles, dimensions, mc_cycles, mc_cycles_optimal_run, type_energy, type_sampling, num_treads, OBD_check;
+    if( argc != 10 ){
         cout << "-------------------------------------------------------" << endl;
-        cout << "Bad Usage: " << argv[0] << " takes in eight integer arguments:" << endl;
-        cout << "num_alphas, num_particles, dimensions, mc_cycles, mc_cycles_optimal_run, type_energy, type_sampling, num_treads" << endl;            cout << "-------------------------------------------------------" << endl;
+        cout << "Bad Usage: " << argv[0] << " takes in nine arguments:" << endl;
+        cout << "num_alphas, num_particles, dimensions, mc_cycles, mc_cycles_optimal_run, type_energy, type_sampling, num_treads, OBD_check" << endl;            
+        cout << "-------------------------------------------------------" << endl;
         exit(1);
     }
     else{
@@ -18,6 +19,7 @@ int main(int argc, char const *argv[]) {
         type_energy             = atoi(argv[6]);    // type_energy = 0 for analytical, = 1 for brute force (Laplace operator in Hamiltonian).
         type_sampling           = atoi(argv[7]);    // Chooses how MC sampling and search for optimal alpha is done. See instructions below
         num_treads              = atoi(argv[8]);    // Number of threads (parallelization)
+        OBD_check               = atoi(argv[9]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation 
 
         // Choices for type_sampling parameter:
         // type_sampling = 0 for no importance sampling (loop through alpha-values)
@@ -32,15 +34,19 @@ int main(int argc, char const *argv[]) {
     int mc_cycles_optimal_run = pow(2,17);
     int dimentions = 3;
     int type_energy = 0;
-    int type_sampling = 2;
+    int type_sampling = 3;
+    int OBD_check = true;
 
+    // Certain combinations of input parameters are not implemented
     if(type_energy == 1 && type_sampling == 3){
-        cout << "Brute force energy calculation not implemented for interactive case"<<endl;
+        cout << "Brute force energy calculation not implemented for interactive case" << endl;
         return 1;
     }
-
+    if(type_sampling <= 1 && OBD_check == true){
+        cout << "Note: One body density calculation not implemented for non-gradient method." << endl;
+    }
     // Number of threads
-    int num_threads = 1;
+    int num_threads = 6;
     double start_time, end_time;
 
     // Start parallelization
