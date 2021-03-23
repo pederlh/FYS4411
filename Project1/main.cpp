@@ -1,25 +1,32 @@
 #include "Solver.hpp"
 
 int main(int argc, char const *argv[]) {
-    /*
-    int num_alphas, num_particles, dimensions, mc_cycles, mc_cycles_optimal_run, type_energy, type_sampling, num_treads, OBD_check;
-    if( argc != 10 ){
+    // /*
+    int num_particles, dimentions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check;
+    double mc_cycles_optimal_run;
+    if( argc < 8 || argc > 9 ){
+        cout << "------------------------------------------------------" << endl;
+        cout << "Bad Usage: " << argv[0] << " takes in eight or nine arguments:" << endl;
+        cout << "num_particles, dimensions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check, mc_cycles_optimal_run (when using gradient descent)" << endl;            
         cout << "-------------------------------------------------------" << endl;
-        cout << "Bad Usage: " << argv[0] << " takes in nine arguments:" << endl;
-        cout << "num_alphas, num_particles, dimensions, mc_cycles, mc_cycles_optimal_run, type_energy, type_sampling, num_treads, OBD_check" << endl;            
-        cout << "-------------------------------------------------------" << endl;
+
+        cout << "got " << argc << endl;
         exit(1);
     }
     else{
-        num_alphas              = atoi(argv[1]);    // Number of alpha values to be looped over (ignored when gradient descent used)
-        num_particles           = atoi(argv[2]);    // Number of particles in system
-        dimensions              = atoi(argv[3]);    // Number of spacial dimensions in system
-        mc_cycles               = atoi(argv[4]);    // MC cycles used per run during gradient descent (GD) and in non-GD cases
-        mc_cycles_optimal_run   = atoi(argv[5]);    // MC cycles used in big run after gradient descent
-        type_energy             = atoi(argv[6]);    // type_energy = 0 for analytical, = 1 for brute force (Laplace operator in Hamiltonian).
-        type_sampling           = atoi(argv[7]);    // Chooses how MC sampling and search for optimal alpha is done. See instructions below
-        num_treads              = atoi(argv[8]);    // Number of threads (parallelization)
-        OBD_check               = atoi(argv[9]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation 
+        num_particles           = atoi(argv[1]);    // Number of particles in system
+        dimentions              = atoi(argv[2]);    // Number of spacial dimensions in system
+        mc_cycles               = atoi(argv[3]);    // MC cycles used per run during gradient descent (GD) and in non-GD cases
+        type_energy             = atoi(argv[4]);    // type_energy = 0 for analytical, = 1 for brute force (Laplace operator in Hamiltonian).
+        type_sampling           = atoi(argv[5]);    // Chooses how MC sampling and search for optimal alpha is done. See instructions below
+        num_treads              = atoi(argv[6]);    // Number of threads (parallelization)
+        OBD_check               = atoi(argv[7]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation 
+        if (argc == 9){ 
+        mc_cycles_optimal_run   = atoi(argv[8]);   // MC cycles used in big run after gradient descent
+        }
+        else{
+        mc_cycles_optimal_run   = 1e17;
+        }
 
         // Choices for type_sampling parameter:
         // type_sampling = 0 for no importance sampling (loop through alpha-values)
@@ -27,15 +34,17 @@ int main(int argc, char const *argv[]) {
         // type_sampling = 2 for importance sampling + gradient descent (non-interacting case)
         // type_sampling = 3 for importance sampling + gradient descent (interacting case)        
     }
-    */     
-    int num_alphas = 15;
-    int num_particles = 10;
-    int mc_cycles = 1000;
-    int mc_cycles_optimal_run = pow(2,17);
-    int dimentions = 3;
-    int type_energy = 0;
-    int type_sampling = 3;
-    int OBD_check = true;
+    // */     
+  
+    // int num_particles = 10;
+    // int mc_cycles = 1000;
+    // int mc_cycles_optimal_run = pow(2,17);
+    // int dimentions = 3;
+    // int type_energy = 0;
+    // int type_sampling = 3;
+    // int OBD_check = true;
+
+    int num_alphas = 15;    // Number of alpha values to be looped over ()
 
     // Certain combinations of input parameters are not implemented
     if(type_energy == 1 && type_sampling == 3){
