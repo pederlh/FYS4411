@@ -8,6 +8,8 @@ def move_files_ask_plot(task, path, filenames):
     os.system("rm " + path + "*.txt")
     os.system("mv " + filenames + " " + path)
 
+    # if type is d or g: move OBD 
+
     if input("Press 'y' to make plots ") in ['y', 'Y']:
         make_plots(task)
 
@@ -28,8 +30,8 @@ else:
 
 
 """ Choose task """ 
-task_prompt = input("Which task to run? Choices are 'b' (simplest), 'c' (importance sampling), 'e' (gradient descent + blocking), 'g' (repulsion) or 'h' (one body densities): ")
-if task_prompt not in ['b' , 'c', 'e', 'g', 'h']:
+task_prompt = input("Which task to run? Choices are 'b' (simplest), 'c' (importance sampling), 'e' (gradient descent + blocking + one body density) or 'g' (everything + repulsion): ")
+if task_prompt not in ['b' , 'c', 'e', 'g']:
     print("Input not recognized. Aborting.")
     sys.exit(1)
 
@@ -39,18 +41,17 @@ print("Start producing data...")
 
 if task_prompt == "b":
 
-    num_particles = [1,10,50,100]
-    dimentions = [1,2,3]
+    num_particles = [1,10,100,500]
+    dimentions = 3
     type_energy = [0, 1]
-    mc_cycles = 1000
+    mc_cycles = 10000
     type_sampling = 0
     num_threads = 1
     OBD_check = 0
     for c in type_energy:
         for n in num_particles:
-            for d in dimentions:
-                os.system("./main.out " + str(n) + " " + str(d) + " " + str(mc_cycles) + " " + str(c) + " " \
-                                        + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
+            os.system("./main.out " + str(n) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(c) + " " \
+                                    + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
     path = "./Results/1b_simple_noninteracting/"
     filenames = "spherical*.txt"
@@ -59,32 +60,37 @@ if task_prompt == "b":
 
 if task_prompt == "c":
 
-    num_particles = 1
-    dimentions = 1
-    mc_cycles = 1000
-    type_energy = 1
+    num_particles = [1,10,100,500]
+    dimentions = 3
+    type_energy = [0, 1]
+    mc_cycles = 10000
     type_sampling = 1
     num_threads = 1
     OBD_check = 0
 
-    os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
+    for c in type_energy:
+        for n in num_particles:
+            os.system("./main.out " + str(n) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(c) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
     path = "./Results/1c_implementing_importance_sampling/"
     filenames = "importance_spherical*.txt"
     move_files_ask_plot("c", path, filenames)
 
+    """
+    Husk å fikse delta t !!!!!!!!!!!!!!!
+    """
 
 if task_prompt == "e":
     
-    num_particles = 5
-    dimentions = 2
+    num_particles = 16
+    dimentions = 3
     mc_cycles = 1000
     type_energy = 1
     type_sampling = 2
-    num_threads = 1
-    OBD_check = 0
-    mc_cycles_optimal_run = 1e17
+    num_threads = 4
+    OBD_check = 1
+    mc_cycles_optimal_run = 2**16
 
     os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))
@@ -94,7 +100,18 @@ if task_prompt == "e":
     move_files_ask_plot("e", path, filenames)
 
 if task_prompt == "g":
-    pass
+    num_particles = [16, 64, 128]
+    dimentions = 3
+    mc_cycles = 1000
+    type_energy = 1
+    type_sampling = 3
+    num_threads = 4
+    OBD_check = 1
+    mc_cycles_optimal_run = 2**16
 
-if task_prompt == "h":
-    pass 
+    os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
+                                    + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))
+
+    path = "./Results/1g_implementing_repulsion/"
+    filenames = "OPTIMAL_ALPHA*.txt" #??????
+    move_files_ask_plot("g", path, filenames)
