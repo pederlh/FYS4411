@@ -39,19 +39,19 @@ print("Start producing data...")
 
 if task_prompt == "b":
 
-    num_particles = [1,4,6]
-    dimentions = [1, 2, 3]
+    num_particles = [1,10,50,100]
+    dimentions = [1,2,3]
+    type_energy = [0, 1]
 
-    mc_cycles = 100000
-    type_energy = 1
+    mc_cycles = 1000
     type_sampling = 0
     num_threads = 1
     OBD_check = 0
-
-    for n in num_particles:
-        for d in dimentions:
-            os.system("./main.out " + str(n) + " " + str(d) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
-                                    + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
+    for c in type_energy:
+        for n in num_particles:
+            for d in dimentions:
+                os.system("./main.out " + str(n) + " " + str(d) + " " + str(mc_cycles) + " " + str(c) + " " \
+                                        + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
     path = "./Results/1b_simple_noninteracting/"
     filenames = "spherical*.txt"
@@ -60,7 +60,20 @@ if task_prompt == "b":
 
 if task_prompt == "c":
 
-    # Fyll på her
+    num_particles = [1]
+    dimentions = [1, 2, 3]
+
+    mc_cycles = 1000
+    type_energy = 1
+    type_sampling = 1
+    num_threads = 1
+    OBD_check = 0
+
+    for n in num_particles:
+        for d in dimentions:
+            os.system("./main.out " + str(n) + " " + str(d) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
+                                    + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
+
     
     input("Press Enter to move data ")
     path = "./Results/1c_implementing_importance_sampling/"
