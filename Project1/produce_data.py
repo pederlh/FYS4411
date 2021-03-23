@@ -28,8 +28,8 @@ else:
 
 
 """ Choose task """ 
-task_prompt = input("Which task to run? Choices are 'b' (simplest), 'c' (importance sampling), 'd' (gradient descent), 'f' (repulsion) or 'g' (one body densities): ")
-if task_prompt not in ['b' , 'c', 'd', 'f', 'g']:
+task_prompt = input("Which task to run? Choices are 'b' (simplest), 'c' (importance sampling), 'e' (gradient descent + blocking), 'g' (repulsion) or 'h' (one body densities): ")
+if task_prompt not in ['b' , 'c', 'e', 'g', 'h']:
     print("Input not recognized. Aborting.")
     sys.exit(1)
 
@@ -75,7 +75,7 @@ if task_prompt == "c":
     move_files_ask_plot("c", path, filenames)
 
 
-if task_prompt == "d":
+if task_prompt == "e":
     
     num_particles = 5
     dimentions = 2
@@ -89,16 +89,12 @@ if task_prompt == "d":
     os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))
 
-    path = "./Results/1c_implementing_gradient_descent/"
-    filenames = "OPIMAL_ALPHA*.txt"
-    move_files_ask_plot("c", path, filenames)
-
-
-if task_prompt == "e":
-    pass
-
-if task_prompt == "f":
-    pass
+    path = "./Results/1e_implementing_gradient_descent_and_blocking/"
+    filenames = "OPTIMAL_ALPHA*.txt"
+    move_files_ask_plot("e", path, filenames)
 
 if task_prompt == "g":
+    pass
+
+if task_prompt == "h":
     pass 
