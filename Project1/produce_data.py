@@ -22,7 +22,7 @@ if task_prompt not in ['b' , 'c', 'd', 'f', 'g']:
     print("Input not recognized. Aborting.")
     sys.exit(1)
 
-print("Start mak")
+print("Start producing data...")
 
 """ Start producing and moving data """
 
@@ -44,8 +44,10 @@ if task_prompt == "b":
 
     input("Press Enter to move data ")
     path = "./Results/1b_simple_noninteracting/"
-    os.system("rm " + path + "*.txt")
-    os.system("mv spherical*.txt " + path)
+    try:
+        os.system("rm " + path + "*.txt")
+    finally:
+        os.system("mv spherical*.txt " + path)
 
     if input("Press 'y' to make plots ") in ['y', 'Y']:
         make_plots("b")
