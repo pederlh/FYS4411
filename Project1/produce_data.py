@@ -1,6 +1,17 @@
 import os, sys
 from make_plots import make_plots
 
+
+def move_files_ask_plot(task, path, filenames):
+    # Function for moving files and asking if plotting is wanted
+    input("Press Enter to move data ")
+    os.system("rm " + path + "*.txt")
+    os.system("mv " + filenames + " " + path)
+
+    if input("Press 'y' to make plots ") in ['y', 'Y']:
+        make_plots(task)
+
+
 print("Note: The data produced will overwrite previous results")
 
 """ Compilation """
@@ -28,7 +39,7 @@ print("Start producing data...")
 
 if task_prompt == "b":
 
-    num_particles = [1]
+    num_particles = [1,4,6]
     dimentions = [1, 2, 3]
 
     mc_cycles = 100000
@@ -42,15 +53,9 @@ if task_prompt == "b":
             os.system("./main.out " + str(n) + " " + str(d) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
-    input("Press Enter to move data ")
     path = "./Results/1b_simple_noninteracting/"
-    try:
-        os.system("rm " + path + "*.txt")
-    finally:
-        os.system("mv spherical*.txt " + path)
-
-    if input("Press 'y' to make plots ") in ['y', 'Y']:
-        make_plots("b")
+    filenames = "spherical*.txt"
+    move_files_ask_plot("b", path, filenames)
 
 
 if task_prompt == "c":
