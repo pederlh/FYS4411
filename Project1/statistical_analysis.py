@@ -1,22 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
-"""Requires that you have run Solver w/GD to produce data """
-
-
-def Bootstrap_Local_Energy(B,filename):
-
-    energies = []
-
-    with open(filename,"r") as infile:
-        lines = infile.readlines()
-        for line in lines:
-            vals = line.split()
-            energies.append(float(vals[0]))
+import pandas as pd
+from pandas import DataFrame
+import sys
 
 
-    energies = np.array(energies)
+filename = sys.argv[1]
 
+def Bootstrap(B,filename):
+
+    energies = np.loadtxt(filename)
+    energies = np.delete(energies,0)   #delete first line as it is the time used, not data
+    n = len(energies)
 
     mean = np.mean(energies)
     energy_squared = energies*energies;
@@ -30,17 +25,16 @@ def Bootstrap_Local_Energy(B,filename):
     boot_M = np.zeros(B)
     boot_V = np.zeros(B)
     for b in range(B):
-        idx = np.random.randint(0, len(energies), size = len(energies));
+        idx = np.random.randint(0, n, size = n)
         energies_copy = energies[idx]
-        mean = np.mean(energies_copy)
-        energy_squared = energies_copy*energies_copy;
-        mean_2 = np.mean(energy_squared)
-        boot_M[b] = mean
-        boot_V[b]= mean_2 - mean*mean
+        mean_b = np.mean(energies_copy)
+        energy_squared_copy = energies_copy*energies_copy
+        mean_b_2 = np.mean(energy_squared_copy)
+        boot_M[b] = mean_b
+        boot_V[b]= mean_b_2 - mean_b*mean_b
 
     boot_Mean = np.mean(boot_M)
     boot_Var = np.mean(boot_V)
-
 
     hist, bins = np.histogram(boot_M, bins=50)
     width = 0.7 * (bins[1] - bins[0])
@@ -50,60 +44,48 @@ def Bootstrap_Local_Energy(B,filename):
 
     return boot_Mean, boot_Var, reg_M, reg_V
 
-N = [10]
-alphas = []
-with open("alpha_values_GD.txt", "r") as afile:
-    lines = afile.readlines()
-    for line in lines:
-        vals = line.split()
-        alphas.append(float(vals[0]))
 
-alphas = np.array(alphas)
-"""
+""" The blocking code, based on the article of Marius Jonsson  """
+def block(x):
+    # preliminaries
+    n = len(x)
+    d = int(np.log2(n))
+    s, gamma = np.zeros(d), np.zeros(d)
+    mu = np.mean(x)
 
-local_energy_b = np.zeros(len(alphas))
-variance_b = np.zeros(len(alphas))
+    # estimate the auto-covariance and variances
+    # for each blocking transformation
+    for i in np.arange(0,d):
+        n = len(x)
+        # estimate autocovariance of x
+        gamma[i] = (n)**(-1)*np.sum( (x[0:(n-1)]-mu)*(x[1:n]-mu) )
+        # estimate variance of x
+        s[i] = np.var(x)
+        # perform blocking transformation
+        x = 0.5*(x[0::2] + x[1::2])
 
-local_energy = np.zeros(len(alphas))
-variance = np.zeros(len(alphas))
+    # generate the test observator M_k from the theorem
+    M = (np.cumsum( ((gamma/s)**2*2**np.arange(1,d+1)[::-1])[::-1] )  )[::-1]
 
-N = 10
-for i in range(len(alphas)):
-    readfile = str(N)+"_part_alpha_"+ str(alphas[i]) + "_E_L_samples.txt"
-    local_energy_b[i], variance_b[i], local_energy[i], variance[i] = Bootstrap_Local_Energy(1000, readfile);
+    # we need a list of magic numbers
+    q =np.array([6.634897,9.210340, 11.344867, 13.276704, 15.086272, 16.811894, 18.475307, 20.090235, 21.665994, 23.209251, 24.724970, 26.216967, 27.688250, 29.141238, 30.577914, 31.999927, 33.408664, 34.805306, 36.190869, 37.566235, 38.932173, 40.289360, 41.638398, 42.979820, 44.314105, 45.641683, 46.962942, 48.278236, 49.587884, 50.892181])
 
-
-
-
-expectation_E = 15   #When N = 10
-rel_error = np.zeros(len(alphas))
-for i in range(len(alphas)):
-    rel_error[i] = np.abs((expectation_E-local_energy_b[i])/expectation_E)
+    # use magic to determine when we should have stopped blocking
+    for k in np.arange(0,d):
+        if(M[k] < q[k]):
+            break
+    if (k >= d-1):
+        print("Warning: Use more data")
+    return mu, s[k]/2**(d-k)
 
 
+x = np.loadtxt(filename)
+x = np.delete(x,0)   #delete first line as it is the time used, not data
+(mean, var) = block(x)
+std = np.sqrt(var)
+data ={'Mean':[mean], 'STDev':[std]}
+frame = pd.DataFrame(data,index=['Values'])
+print(frame)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
 
-#ax1.plot(alphas, rel_error, "*", label = "Relative error from expectation")
-ax1.plot(alphas,local_energy_b,"*", label="Bootstrapped values")
-ax1.plot(alphas,local_energy,"*", label = "non B")
-ax1.set_title("Local Energy")
-ax1.set_xlabel("Alpha")
-ax1.set_ylabel("Local energy")
-ax1.legend()
-ax1.invert_xaxis()
-
-ax2.plot(alphas, variance_b,"*", label="Bootstrapped values")
-ax2.plot(alphas, variance,"*", label = "non B")
-ax2.set_title("Variance")
-ax2.invert_xaxis()
-ax2.set_xlabel("Alpha")
-ax2.legend()
-ax2.set_ylabel("Variance")
-
-fig.tight_layout()
-plt.show()
-
-"""
-readfile = "OPTIMAL_ALPHA"+str(N[0])+"_part_alpha_"+ str(alphas[-1]) + "_E_L_samples.txt"
-Bootstrap_Local_Energy(1000,readfile)
+Bootstrap(1000,filename)
