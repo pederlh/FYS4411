@@ -1,5 +1,7 @@
 *.txt
 *.DS_store
+*.pyc 
+*.json
 
 # Prerequisites
 *.d
