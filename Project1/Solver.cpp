@@ -27,14 +27,14 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
 
     //Point to right member functions according to type of sampling
     if (type_sampling_ == 0){
-        num_alphas_ = 13;                       // Number of alphas to test for
+        num_alphas_ = 8;                       // Number of alphas to test for
         metropolis_sampling = &Solver::Metropolis;
 
         main_method = &Solver::Alpha_list;
     }
 
     if (type_sampling_ == 1){
-        num_alphas_ = 13;
+        num_alphas_ = 8;
         D_diff_ = 0.5;                                  // Diffusion constant in Greens function
         wave.Declare_quantum_force(D_diff_);
         metropolis_sampling = &Solver::Metropolis_importance;
@@ -78,7 +78,7 @@ void Solver::Alpha_list(){
 
     alphas_ = new double[num_alphas_];                 // Variational parameter
     for (int i = 0; i < num_alphas_; i++){
-        alphas_[i] = 0.1 + 0.05*i; }                   // Fill array alphas
+        alphas_[i] = 0.3 + 0.05*i; }                   // Fill array alphas
     energies_ = new double[num_alphas_];               // Array to hold energies for different values of alpha
     variances_ = new double[num_alphas_];              // Array to hold variances for different values of alpha
     alpha_list_times_ = new double[num_alphas_];

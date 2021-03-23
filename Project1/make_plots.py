@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def make_plots(task):
     if task == "b":
         N = [1,10,50,100]
-        MC = 10000
+        MC = 1000
         string_ID = 0
         path = "./Results/1b_simple_noninteracting/"
 
@@ -24,30 +24,37 @@ def make_plots(task):
                 lines = infile.readlines()
                 for line in lines[1:]:
                     vals = line.split()
-                    vals = float(vals)
-                    alphas.append(vals[0])
-                    energies_a.append(vals[1])
-                    variances_a.append(vals[2])
-                    times_a.append(vals[3])
+                    alphas.append(float(vals[0]))
+                    energies_a.append(float(vals[1]))
+                    variances_a.append(float(vals[2]))
+                    times_a.append(float(vals[3]))
 
             with open(filename_num, "r") as infile:
                 lines = infile.readlines()
                 for line in lines[1:]:
                     vals = line.split()
-                    vals = float(vals)
-                    energies_n.append(vals[1])
-                    variances_n.append(vals[2])
-                    times_n.append(vals[3])
+                    energies_n.append(float(vals[1]))
+                    variances_n.append(float(vals[2]))
+                    times_n.append(float(vals[3]))
 
             analytical_E = (3/2)*n
 
+            plt.title("Number of particles = %i" % n)
             plt.plot(alphas,energies_a,"o",color ="b", label="Local energy (analytical)")
             plt.plot(alphas,energies_n,"o",color ="k" ,label="Local energy (numerical)")
-            plt.axhline(y=analytical_E, color='r', linestyle='-')
+            plt.axhline(y=analytical_E, color='r', linestyle='-', label = "Local energy (exact)")
             plt.xlabel("alpha")
             plt.ylabel("Local energy")
             plt.legend()
-            plt.plot()
+            plt.show()
+
+            alphas = []
+            energies_a = []
+            variances_a = []
+            times_a = []
+            energies_n = []
+            variances_n = []
+            times_n = []
 
 
 
