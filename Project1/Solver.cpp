@@ -1,7 +1,7 @@
 #include "Solver.hpp"
 #include "Psi.hpp"
 
-Solver::Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID){
+Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID){
     D_ = D;                         // Dimentions
     N_ = N;                         // Number of particles
     h_ = 1.0;                       // Stepsize to determine the distributions space of particles
@@ -27,14 +27,14 @@ Solver::Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int typ
 
     //Point to right member functions according to type of sampling
     if (type_sampling_ == 0){
-        num_alphas_ = num_alphas;                       // Number of alphas to test for
+        num_alphas_ = 13;                       // Number of alphas to test for
         metropolis_sampling = &Solver::Metropolis;
 
         main_method = &Solver::Alpha_list;
     }
 
     if (type_sampling_ == 1){
-        num_alphas_ = num_alphas;
+        num_alphas_ = 13;
         D_diff_ = 0.5;                                  // Diffusion constant in Greens function
         wave.Declare_quantum_force(D_diff_);
         metropolis_sampling = &Solver::Metropolis_importance;
@@ -81,6 +81,7 @@ void Solver::Alpha_list(){
         alphas_[i] = 0.1 + 0.05*i; }                   // Fill array alphas
     energies_ = new double[num_alphas_];               // Array to hold energies for different values of alpha
     variances_ = new double[num_alphas_];              // Array to hold variances for different values of alpha
+    alpha_list_times_ = new double[num_alphas_];
 
     for (int a=0; a < num_alphas_; a++){               //Loop over alpha values to perform MC simulations
         alpha = alphas_[a];
@@ -99,6 +100,7 @@ void Solver::Alpha_list(){
             }
         }
 
+        start_time_ = omp_get_wtime();
         //Monte Carlo simulation with metropolis sampling
         for (int cycle = 0; cycle < MC_; cycle++){
             for (int n = 0; n < N_; n++){
@@ -120,11 +122,14 @@ void Solver::Alpha_list(){
                 }
 
             }
+        end_time_ = omp_get_wtime();
+        time_ = end_time_ - start_time_;
         energy /= (MC_*N_);
         energy_squared /= (MC_*N_);
         variance = energy_squared - energy*energy;
         energies_[a] = energy;
         variances_[a] = variance;
+        alpha_list_times_[a] = time_;
     }
 }
 
@@ -195,6 +200,7 @@ void Solver::Gradient_descent(){
     }
     ofstream ofile;
     ofile.open(file);
+    ofile << setprecision(15) << time_ << endl;
     for (int i = 0; i < N_*MC_optimal_run_; i++){
         ofile << setprecision(15) << optimal_energies[i] << endl;
     }
@@ -317,6 +323,7 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
     //Equilibration step: runs metropolis algorithm without sampling to equilibrate system
     Equilibrate(alpha);
 
+    start_time_ = omp_get_wtime();
     //Monte Carlo simulation with metropolis sampling
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
@@ -335,6 +342,8 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
             energies[cycle*N_ + n] += DeltaE;
         }
     }
+    end_time_ = omp_get_wtime();
+    time_ = end_time_ - start_time_;
 
     //Write average particle distribution to file
     if (OBD_check_ == true){
@@ -370,6 +379,7 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
     Equilibrate(alpha);
 
     //Monte Carlo simulation with metropolis sampling
+    start_time_ = omp_get_wtime();
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
 
@@ -380,7 +390,8 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
             energies[cycle*N_ + n] += DeltaE;
         }
     }
-
+    end_time_ = omp_get_wtime();
+    time_ = end_time_ - start_time_;
     //Write average particle distribution to file
     if (OBD_check_ == true){
         string OBD_file = "Interaction_One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
@@ -509,18 +520,17 @@ void Solver::Equilibrate(double alpha){
 
 
 
-void Solver::Write_to_file(string outfilename, double time){
+void Solver::Write_to_file(string outfilename){
     ofstream ofile;
+    ofile << "Cycles this thread: " << MC_ << endl;
     ofile.open(outfilename);
-    ofile << setw(5) << "alpha" << setw(15) << "energy" << setw(15) << "variance" << endl;
+    ofile << setw(5) << "alpha" << setw(15) << "energy" << setw(15) << "variance" << setw(15) << "time_used" << endl;
     for (int i = 0; i < num_alphas_; i++){
         ofile << setw(5) << setprecision(8) << alphas_[i];
         ofile << setw(15) << setprecision(8) << energies_[i];
-        ofile << setw(15) << setprecision(8) << variances_[i] << endl;
+        ofile << setw(15) << setprecision(8) << variances_[i];
+        ofile << setw(15) << setprecision(8) << alpha_list_times_[i] << endl;
     }
-    ofile << " " <<endl;
-    ofile << "Cycles this thread: " << MC_ << endl;
-    ofile << "Time used: " << time << " s" << endl;
     ofile.close();
 }
 

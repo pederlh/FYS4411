@@ -29,8 +29,8 @@ class Solver {
 private:
 
 int N_, num_alphas_, MC_, MC_optimal_run_, D_, type_energy_, type_sampling_, thread_ID_, equi_cycles_;
-double h_, step_, D_diff_, tol_GD_, eta_GD_, radi_;
-double *alphas_,*energies_, *variances_, *E_L_to_file_;
+double h_, step_, D_diff_, tol_GD_, eta_GD_, radi_, time_, start_time_, end_time_;
+double *alphas_,*energies_, *variances_, *E_L_to_file_, *alpha_list_times_;
 bool OBD_check_;
 random_device rd_;
 
@@ -43,7 +43,7 @@ void (Solver::*Interaction_or_not_optimal)(double alpha, double *energies);
 public:
 
 //Constructor
-Solver(int N, int num_alphas, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int num_threads);
+Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int num_threads);
 
 //Makes use of functions from class Psi;
 Psi wave;
@@ -57,7 +57,7 @@ void Metropolis_interacting(double alpha);
 void Alpha_list();
 void Gradient_descent();
 
-// During GD process: Interacting or noninteracting case 
+// During GD process: Interacting or noninteracting case
 void MonteCarlo_GD_noninteracting(double *values, double alpha);
 void MonteCarlo_GD_interacting(double *values, double alpha);
 
@@ -69,7 +69,7 @@ void MonteCarlo_optval_interacting(double alpha, double *energies);
 void Equilibrate(double alpha);                     // Perform equilibration cycles
 double Greens_function(int idx);                    // Evaluate Green's function
 void One_body_density(double *bins);                // Add values to OBD histogram
-void Write_to_file(string outfilename, double time);// Write results to file
+void Write_to_file(string outfilename);// Write results to file
 // void ADAM();
 
 };
