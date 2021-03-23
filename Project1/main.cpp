@@ -19,9 +19,9 @@ int main(int argc, char const *argv[]) {
         mc_cycles               = atoi(argv[3]);    // MC cycles used per run during gradient descent (GD) and in non-GD cases
         type_energy             = atoi(argv[4]);    // type_energy = 0 for analytical, = 1 for brute force (Laplace operator in Hamiltonian).
         type_sampling           = atoi(argv[5]);    // Chooses how MC sampling and search for optimal alpha is done. See instructions below
-        num_threads              = atoi(argv[6]);    // Number of threads (parallelization)
-        OBD_check               = atoi(argv[7]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation
-        if (argc == 9){
+        num_threads             = atoi(argv[6]);    // Number of threads (parallelization)
+        OBD_check               = atoi(argv[7]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation 
+        if (argc == 9){ 
         mc_cycles_optimal_run   = atoi(argv[8]);   // MC cycles used in big run after gradient descent
         }
         else{
@@ -34,17 +34,7 @@ int main(int argc, char const *argv[]) {
         // type_sampling = 2 for importance sampling + gradient descent (non-interacting case)
         // type_sampling = 3 for importance sampling + gradient descent (interacting case)
     }
-    // */
-
-    // int num_particles = 10;
-    // int mc_cycles = 1000;
-    // int mc_cycles_optimal_run = pow(2,17);
-    // int dimentions = 3;
-    // int type_energy = 0;
-    // int type_sampling = 3;
-    // int OBD_check = true;
-
-    int num_alphas = 15;    // Number of alpha values to be looped over ()
+    // */     
 
     // Certain combinations of input parameters are not implemented
     if(type_energy == 1 && type_sampling == 3){
@@ -73,7 +63,7 @@ int main(int argc, char const *argv[]) {
         start_time = omp_get_wtime();                           // Start recording time
 
         // Initialize Solver object and perform calculations
-        Solver mysolver(num_particles, num_alphas, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID);
+        Solver mysolver(num_particles, 15, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID);
 
         end_time = omp_get_wtime();                             // Stop recording time
         double timeused = end_time - start_time;
