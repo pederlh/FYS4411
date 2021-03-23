@@ -2,12 +2,12 @@
 
 int main(int argc, char const *argv[]) {
     // /*
-    int num_particles, dimentions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check;
+    int num_particles, dimentions, mc_cycles, type_energy, type_sampling, num_threads, OBD_check;
     double mc_cycles_optimal_run;
     if( argc < 8 || argc > 9 ){
         cout << "------------------------------------------------------" << endl;
         cout << "Bad Usage: " << argv[0] << " takes in eight or nine arguments:" << endl;
-        cout << "num_particles, dimensions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check, mc_cycles_optimal_run (when using gradient descent)" << endl;            
+        cout << "num_particles, dimensions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check, mc_cycles_optimal_run (when using gradient descent)" << endl;
         cout << "-------------------------------------------------------" << endl;
 
         cout << "got " << argc << endl;
@@ -19,9 +19,9 @@ int main(int argc, char const *argv[]) {
         mc_cycles               = atoi(argv[3]);    // MC cycles used per run during gradient descent (GD) and in non-GD cases
         type_energy             = atoi(argv[4]);    // type_energy = 0 for analytical, = 1 for brute force (Laplace operator in Hamiltonian).
         type_sampling           = atoi(argv[5]);    // Chooses how MC sampling and search for optimal alpha is done. See instructions below
-        num_treads              = atoi(argv[6]);    // Number of threads (parallelization)
-        OBD_check               = atoi(argv[7]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation 
-        if (argc == 9){ 
+        num_threads              = atoi(argv[6]);    // Number of threads (parallelization)
+        OBD_check               = atoi(argv[7]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation
+        if (argc == 9){
         mc_cycles_optimal_run   = atoi(argv[8]);   // MC cycles used in big run after gradient descent
         }
         else{
@@ -32,10 +32,10 @@ int main(int argc, char const *argv[]) {
         // type_sampling = 0 for no importance sampling (loop through alpha-values)
         // type_sampling = 1 for importance sampling (loop through alpha-values)
         // type_sampling = 2 for importance sampling + gradient descent (non-interacting case)
-        // type_sampling = 3 for importance sampling + gradient descent (interacting case)        
+        // type_sampling = 3 for importance sampling + gradient descent (interacting case)
     }
-    // */     
-  
+    // */
+
     // int num_particles = 10;
     // int mc_cycles = 1000;
     // int mc_cycles_optimal_run = pow(2,17);
@@ -55,7 +55,6 @@ int main(int argc, char const *argv[]) {
         cout << "Note: One body density calculation not implemented for non-gradient method." << endl;
     }
     // Number of threads
-    int num_threads = 6;
     double start_time, end_time;
 
     // Start parallelization
