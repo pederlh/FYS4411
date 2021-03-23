@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
         mc_cycles_optimal_run   = atoi(argv[8]);   // MC cycles used in big run after gradient descent
         }
         else{
-        mc_cycles_optimal_run   = 1e17;
+        mc_cycles_optimal_run   = int(1e17);
         }
 
         // Choices for type_sampling parameter:

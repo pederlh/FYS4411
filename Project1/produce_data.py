@@ -42,7 +42,6 @@ if task_prompt == "b":
     num_particles = [1,10,50,100]
     dimentions = [1,2,3]
     type_energy = [0, 1]
-
     mc_cycles = 1000
     type_sampling = 0
     num_threads = 1
@@ -60,31 +59,40 @@ if task_prompt == "b":
 
 if task_prompt == "c":
 
-    num_particles = [1]
-    dimentions = [1, 2, 3]
-
+    num_particles = 1
+    dimentions = 1
     mc_cycles = 1000
     type_energy = 1
     type_sampling = 1
     num_threads = 1
     OBD_check = 0
 
-    for n in num_particles:
-        for d in dimentions:
-            os.system("./main.out " + str(n) + " " + str(d) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
+    os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
-    
-    input("Press Enter to move data ")
     path = "./Results/1c_implementing_importance_sampling/"
-    os.system("rm " + path + "*.txt")
-    if input("Press 'y' to make plots ") in ['y', 'Y']:
-        make_plots("c")
+    filenames = "importance_spherical*.txt"
+    move_files_ask_plot("c", path, filenames)
 
-    # os.system("mv spherical*.txt " + path)
 
 if task_prompt == "d":
-    pass
+    
+    num_particles = 5
+    dimentions = 2
+    mc_cycles = 1000
+    type_energy = 1
+    type_sampling = 2
+    num_threads = 1
+    OBD_check = 0
+    mc_cycles_optimal_run = 1e17
+
+    os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
+                                    + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))
+
+    path = "./Results/1c_implementing_gradient_descent/"
+    filenames = "OPIMAL_ALPHA*.txt"
+    move_files_ask_plot("c", path, filenames)
+
 
 if task_prompt == "e":
     pass
