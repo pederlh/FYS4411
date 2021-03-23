@@ -17,14 +17,14 @@ os.system("echo Compiling finished. Executing...")
 
 """ Execute """
 
-num_particles = 10
+num_particles = 4
 dimentions = 3
 mc_cycles = 1000
 type_energy = 0
 type_sampling = 3
-num_threads = 2
+num_threads = 1
 OBD_check = 0
-mc_cycles_optimal_run = 2**17
+mc_cycles_optimal_run = 2**19 #/num_particles
 
 os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                         + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))

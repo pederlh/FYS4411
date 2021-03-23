@@ -380,9 +380,10 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
 
     //Monte Carlo simulation with metropolis sampling
     start_time_ = omp_get_wtime();
+    int actual_runs =0;
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
-
+            actual_runs += 1;
             if (OBD_check_ == true){One_body_density(bins);}             //Count particle positions for one body density calculation
             wave.r2_sum_new_ = wave.r2_sum_old_;
             (this->*metropolis_sampling)(alpha);              //Metropolis test
@@ -390,6 +391,7 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
             energies[cycle*N_ + n] += DeltaE;
         }
     }
+    cout <<"Times in loop: " <<actual_runs <<endl;
     end_time_ = omp_get_wtime();
     time_ = end_time_ - start_time_;
     //Write average particle distribution to file
