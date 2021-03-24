@@ -7,7 +7,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
     h_ = 1.0;                       // Stepsize to determine the distributions space of particles
     step_ = h_*pow(10,-4);          // Stepsize used in numerical differentiation
     thread_ID_ = thread_ID;         // ID of thread (parallelization)
-    equi_cycles_ = 5000;            // Number of burn in cycles (used for equilibration)
+    equi_cycles_ = (int) 0.10*MC;   // Number of burn in cycles (used for equilibration)
 
     type_energy_ = type_energy;     // Analytical expression or numerical differentiation
     type_sampling_ = type_sampling; // Brute force = 0, importance sampling = 1, gradient descent = 2 or gradient descent with interaction = 3
@@ -180,6 +180,8 @@ void Solver::Gradient_descent(){
 
     // Run large MC simulation for optimal value alpha obtained from GD
     double *optimal_energies = new double[N_*MC_optimal_run_];
+
+    equi_cycles_ = (int) 0.10*MC_optimal_run_;                              // Adjust number of equilibration cycles
 
     (this->*Interaction_or_not_optimal)(alpha_guess, optimal_energies);
 
