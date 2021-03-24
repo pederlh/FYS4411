@@ -145,6 +145,10 @@ void Solver::Gradient_descent(){
     double alpha_guess = 0.9;                           // Initial guess for alpha
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
+        
+    string OBD_file_test = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha_guess) + ".txt";
+    cout << OBD_file_test << endl;
+
 
      #pragma omp master
      {
@@ -183,23 +187,24 @@ void Solver::Gradient_descent(){
 
     equi_cycles_ = (int) 0.10*MC_optimal_run_;                              // Adjust number of equilibration cycles
 
-    (this->*Interaction_or_not_optimal)(alpha_guess, optimal_energies);
-
-    if(type_sampling_==2){
-    file = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
-            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
-    }
-
-    if(type_sampling_==3){
-    file = "INTERACTION_OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
-            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
-    }
+    (this->*Interaction_or_not_optimal)(alpha_guess, optimal_energies);     // Start big set of calculations
 
     # pragma omp barrier
     # pragma omp master
     {
         cout << "Finished calculations!" << endl;
     }
+
+    if(type_sampling_==2){
+        file = "OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
+            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
+    }
+
+    if(type_sampling_==3){
+        file = "INTERACTION_OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
+            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
+    }
+    
     ofstream ofile;
     ofile.open(file);
     ofile << setprecision(15) << time_ << endl;
@@ -324,8 +329,8 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
 
     //Equilibration step: runs metropolis algorithm without sampling to equilibrate system
     Equilibrate(alpha);
-
     start_time_ = omp_get_wtime();
+
     //Monte Carlo simulation with metropolis sampling
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
@@ -344,20 +349,36 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
             energies[cycle*N_ + n] += DeltaE;
         }
     }
+
     end_time_ = omp_get_wtime();
     time_ = end_time_ - start_time_;
 
     //Write average particle distribution to file
     if (OBD_check_ == true){
-        string OBD_file = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
+        cout << "Made it 4.01" << endl;
+        cout << alpha << endl;
+
+        string OBD_file = "One_body_density_N_.txt";// + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
+
+        cout << "Made it 4.02" << endl;
+
         ofstream ofile2;
+        cout << "Made it 4.03" << endl;
+
         ofile2.open(OBD_file);
+        cout << "Made it 4.1" << endl;
+
         for (int i = 0; i < num_bins; i ++){
+            cout << i << endl;
             bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
+        cout << "Made it 4.2" << endl;
+
         ofile2.close();
     }
+    cout << "Made it 5" << endl;
+
 }
 
 //Method for running Monte Carlo simulation for one (optimized) value of variational parameter alpha (interacting bosons)

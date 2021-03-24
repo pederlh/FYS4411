@@ -8,7 +8,11 @@ def move_files_ask_plot(task, path, filenames):
     os.system("rm " + path + "*.txt")
     os.system("mv " + filenames + " " + path)
 
-    # if type is d or g: move OBD
+    # Take special care of one body density files
+    if task == "e":
+        os.system("rm ./Results/1h_one_body_densities/One_body_density*.txt")
+        os.system("mv  One_body_density*.txt ./Results/1h_one_body_densities/")
+    # if type is d or g: move OBD 
 
     if input("Press 'y' to make plots ") in ['y', 'Y']:
         make_plots(task)
@@ -88,7 +92,7 @@ if task_prompt == "e":
     mc_cycles = 1000
     type_energy = 1
     type_sampling = 2
-    num_threads = 4
+    num_threads = 1
     OBD_check = 1
     mc_cycles_optimal_run = 2**16
 
@@ -107,7 +111,7 @@ if task_prompt == "g":
     type_sampling = 3
     num_threads = 4
     OBD_check = 1
-    mc_cycles_optimal_run = 2**16
+    mc_cycles_optimal_run = 2**18
 
     os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))
