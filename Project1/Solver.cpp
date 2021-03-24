@@ -1,7 +1,7 @@
 #include "Solver.hpp"
 #include "Psi.hpp"
 
-Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID){
+Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID, double learning_rate){
     D_ = D;                         // Dimentions
     N_ = N;                         // Number of particles
     h_ = 1.0;                       // Stepsize to determine the distributions space of particles
@@ -51,8 +51,8 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_noninteracting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_noninteracting;
-        tol_GD_ = 1e-9;                                 // Acceptance tolerance for gradient descent
-        eta_GD_ = 0.015;                                // Learning rate for gradient descent
+        tol_GD_ = 5e-8;                                 // Acceptance tolerance for gradient descent
+        eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
     if (type_sampling_ == 3){
@@ -65,7 +65,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_interacting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_interacting;
         tol_GD_ = 1e-3;                                 // Acceptance tolerance for gradient descent
-        eta_GD_ = 0.01;                                 // Learning rate for gradient descent
+        eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
 
@@ -136,7 +136,7 @@ void Solver::Alpha_list(){
 //Gradient Descent w/importance sampling for interacting and non-interacting bosons
 void Solver::Gradient_descent(){
     string file;
-    int iterations = 50;                                // Max number iterations of GD
+    int iterations = 500;                                // Max number iterations of GD
     double *alpha_vals_GD = new double[iterations];     // Array to store alpha values from GD
     for (int z = 0; z < iterations; z++){
         alpha_vals_GD[z] = 0;
@@ -148,7 +148,7 @@ void Solver::Gradient_descent(){
      #pragma omp master
      {
          if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
-         else cout << "Start gradient descent (showing progress master thread)" << endl << endl;
+         else cout << "Start gradient descent (showing progress master thread) N = "<< N_ << endl << endl;
 
          cout << setw(10) << "Alpha" << setw(12) << "Energy" << setw(16) << "Variance" << endl;
          cout << "--------------------------------------" << endl;
@@ -199,7 +199,7 @@ void Solver::Gradient_descent(){
         file = "INTERACTION_OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
             "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
     }
-    
+
     ofstream ofile;
     ofile.open(file);
     ofile << setprecision(15) << time_ << endl;

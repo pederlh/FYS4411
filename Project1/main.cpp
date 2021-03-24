@@ -3,11 +3,11 @@
 int main(int argc, char const *argv[]) {
     // /*
     int num_particles, dimentions, mc_cycles, type_energy, type_sampling, num_threads, OBD_check;
-    double mc_cycles_optimal_run;
-    if( argc < 8 || argc > 9 ){
+    double mc_cycles_optimal_run, learning_rate;
+    if( argc < 8 || argc > 10 ){
         cout << "------------------------------------------------------" << endl;
         cout << "Bad Usage: " << argv[0] << " takes in eight or nine arguments:" << endl;
-        cout << "num_particles, dimensions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check, mc_cycles_optimal_run (when using gradient descent)" << endl;
+        cout << "num_particles, dimensions, mc_cycles, type_energy, type_sampling, num_treads, OBD_check, mc_cycles_optimal_run (when using gradient descent), learning rate (GD)" << endl;
         cout << "-------------------------------------------------------" << endl;
 
         cout << "got " << argc << endl;
@@ -21,11 +21,13 @@ int main(int argc, char const *argv[]) {
         type_sampling           = atoi(argv[5]);    // Chooses how MC sampling and search for optimal alpha is done. See instructions below
         num_threads             = atoi(argv[6]);    // Number of threads (parallelization)
         OBD_check               = atoi(argv[7]);    // OBD_check = 0 skips calculation of one-body densites, = 1 does the calculation
-        if (argc == 9){
-        mc_cycles_optimal_run   = atoi(argv[8]);   // MC cycles used in big run after gradient descent
+        if (argc == 10){
+        mc_cycles_optimal_run   = atoi(argv[8]);    // MC cycles used in big run after gradient descent
+        learning_rate           = atof(argv[9]);    // Learning rate gradient descent
         }
         else{
         mc_cycles_optimal_run   = int(1e17);
+        learning_rate = 0.01;
         }
 
         // Choices for type_sampling parameter:
@@ -58,7 +60,7 @@ int main(int argc, char const *argv[]) {
         int ID = omp_get_thread_num();
 
         // Initialize Solver object and perform calculations
-        Solver mysolver(num_particles, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID);
+        Solver mysolver(num_particles, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID, learning_rate);
 
 
         // When type_sampling is 0 or 1, data is written to file with the functions below

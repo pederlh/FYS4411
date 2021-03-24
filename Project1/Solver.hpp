@@ -43,7 +43,7 @@ void (Solver::*Interaction_or_not_optimal)(double alpha, double *energies);
 public:
 
 //Constructor
-Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int num_threads);
+Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int num_threads, double learning_rate);
 
 //Makes use of functions from class Psi;
 Psi wave;
