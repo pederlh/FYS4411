@@ -12,7 +12,7 @@ def move_files_ask_plot(task, path, filenames):
     if task == "e":
         os.system("rm ./Results/1h_one_body_densities/One_body_density*.txt")
         os.system("mv  One_body_density*.txt ./Results/1h_one_body_densities/")
-    # if type is d or g: move OBD 
+    # if type is d or g: move OBD
 
     if input("Press 'y' to make plots ") in ['y', 'Y']:
         make_plots(task)
