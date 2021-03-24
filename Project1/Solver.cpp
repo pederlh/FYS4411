@@ -142,8 +142,9 @@ void Solver::Gradient_descent(){
         alpha_vals_GD[z] = 0;
     }
     double *values = new double[3];                     // Array to contain energy, variance and energy derivative wrt alpha;
-    double alpha_guess = 0.9;                           // Initial guess for alpha
+    double alpha_guess = 0.55;                           // Initial guess for alpha
     int counter = 0;                                    // Counter to keep track of actual number of iterations
+    double tol;
 
      #pragma omp master
      {
@@ -163,9 +164,11 @@ void Solver::Gradient_descent(){
         {
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
+        if (type_sampling_ ==3){tol = tol_GD_*values[0];}
+        else{tol = tol_GD_;}
 
         //Breaks GD if alpha provides acceptably low sample variance
-        if (values[1] < tol_GD_ ){
+        if (values[1] < tol ){
             break;
         }
         alpha_guess -= eta_GD_*values[2];
@@ -354,9 +357,12 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
 
         ofstream ofile2;
         ofile2.open(OBD_file);
+        double scale = 4/3*radi_*radi_;
 
         for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,2)-pow(i,2)));
+            //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1)));
+            //ELLER pow(r_old[i],D-1) ELLER volumet av kuleskallet V = 4/3*((i+1)**2-i**2)*radi**2;
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
 
@@ -387,10 +393,8 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
 
     //Monte Carlo simulation with metropolis sampling
     start_time_ = omp_get_wtime();
-    int actual_runs =0;
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
-            actual_runs += 1;
             if (OBD_check_ == true){One_body_density(bins);}             //Count particle positions for one body density calculation
             wave.r2_sum_new_ = wave.r2_sum_old_;
             (this->*metropolis_sampling)(alpha);              //Metropolis test
@@ -398,7 +402,6 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
             energies[cycle*N_ + n] += DeltaE;
         }
     }
-    cout <<"Times in loop: " <<actual_runs <<endl;
     end_time_ = omp_get_wtime();
     time_ = end_time_ - start_time_;
     //Write average particle distribution to file
@@ -542,39 +545,3 @@ void Solver::Write_to_file(string outfilename){
     }
     ofile.close();
 }
-
-
-/*
-void Solver::ADAM(){
-    double *values;
-    values = new double[3];
-    string path;
-    double avg_1_mom = 0.0;         //Average first momentum
-    double avg_2_mom = 0.0;         //Average second momentum
-    double B_1 = 0.9;               //Decay rate for average first momentum
-    double B_2 = 0.999;             //Decay rate for average second momentum
-    double scaled_eta, update, eps;  //Scaled_eta = adaptive learning rate
-    double Alphaa = 0.9;        //Initial guess for alpha
-    double eta = 0.01;          //Initial learning rate
-
-    int iterations = 50;
-    cout <<"Alpha " << "Energy " << "Variance " << endl;
-    for (int it = 0; it < iterations; it++){
-        path = "./Results/StatisticalAnalysis/" + to_string(N_) + "_part/alpha_" + to_string(Alphaa) + "/E_L_samples.txt";
-        MonteCarlo_GD_noninteracting(values, Alphaa, path);
-        values[2] *= eta;
-        avg_1_mom = B_1*avg_1_mom + (1-B_1)*values[2];
-        avg_2_mom = B_2*avg_2_mom + (1-B_2)*values[2]*values[2];
-        scaled_eta = eta*sqrt(1-pow(B_2,it+1))/(1-pow(B_1,it+1));
-        eps = pow(10,-8)*sqrt(1-pow(B_2,it+1));
-
-        update = scaled_eta*avg_1_mom/(sqrt(avg_2_mom)+eps);
-        Alphaa -= update;
-        cout <<Alphaa<<" " << values[0] << " " << values[1]<< " " << endl;
-        if (values[1]< pow(10,-9)){
-            break;
-        }
-
-    }
-}
-*/
