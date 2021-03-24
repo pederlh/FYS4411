@@ -8,7 +8,6 @@ def make_plots(task):
         string_ID = 0
         path = "./Results/1b_simple_noninteracting/"
 
-
         alphas = []
         energies_a = []
         variances_a = []
@@ -39,14 +38,18 @@ def make_plots(task):
 
             analytical_E = (3/2)*n
 
+            std_a = np.sqrt(variances_a)
+            std_n = np.sqrt(variances_n)
+
             plt.title("Number of particles = %i" % n)
-            plt.plot(alphas,energies_a,"o",color ="b", label="Local energy (analytical)")
-            plt.plot(alphas,energies_n,"o",color ="k" ,label="Local energy (numerical)")
-            plt.axhline(y=analytical_E, color='r', linestyle='-', label = "Local energy (exact)")
+            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Local energy (analytical)")
+            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Local energy (numerical)")
+            plt.axhline(y=analytical_E, color='b', linestyle='-', label = "Local energy (exact)")
             plt.xlabel("alpha")
             plt.ylabel("Local energy")
             plt.legend()
             plt.show()
+
 
             alphas = []
             energies_a = []
@@ -57,8 +60,8 @@ def make_plots(task):
             times_n = []
 
     if task == "c":
-        N = [1,10,50,100]
-        MC = 1000
+        N = [1,10,100,500]
+        MC = 10000
         string_ID = 0
         path = "./Results/1c_implementing_importance_sampling/"
 
@@ -92,10 +95,13 @@ def make_plots(task):
 
             analytical_E = (3/2)*n
 
+            std_a = np.sqrt(variances_a)
+            std_n = np.sqrt(variances_n)
+
             plt.title("Number of particles = %i" % n)
-            plt.plot(alphas,energies_a,"o",color ="b", label="Local energy (analytical)")
-            plt.plot(alphas,energies_n,"o",color ="k" ,label="Local energy (numerical)")
-            plt.axhline(y=analytical_E, color='r', linestyle='-', label = "Local energy (exact)")
+            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Local energy (analytical)")
+            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Local energy (numerical)")
+            plt.axhline(y=analytical_E, color='b', linestyle='-', label = "Local energy (exact)")
             plt.xlabel("alpha")
             plt.ylabel("Local energy")
             plt.legend()
