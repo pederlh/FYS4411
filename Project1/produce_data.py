@@ -87,16 +87,17 @@ if task_prompt == "c":
 
 if task_prompt == "e":
 
-    num_particles = 16
+    num_particles = [2,16,64,128]
     dimentions = 3
     mc_cycles = 1000
-    type_energy = 1
+    type_energy = 0
     type_sampling = 2
-    num_threads = 1
+    num_threads = 2
     OBD_check = 1
     mc_cycles_optimal_run = 2**16
 
-    os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
+    for n in num_particles:
+        os.system("./main.out " + str(n) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run))
 
     path = "./Results/1e_implementing_gradient_descent_and_blocking/"
@@ -104,10 +105,10 @@ if task_prompt == "e":
     move_files_ask_plot("e", path, filenames)
 
 if task_prompt == "g":
-    num_particles = [16, 64, 128]
+    num_particles = [2,16,64,128]
     dimentions = 3
     mc_cycles = 1000
-    type_energy = 1
+    type_energy = 0
     type_sampling = 3
     num_threads = 4
     OBD_check = 1
