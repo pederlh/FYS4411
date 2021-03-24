@@ -1,7 +1,7 @@
 #include "Solver.hpp"
 #include "Psi.hpp"
 
-Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID, double learning_rate){
+Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int thread_ID, double learning_rate, double*shared_alphas){
     D_ = D;                         // Dimentions
     N_ = N;                         // Number of particles
     h_ = 1.0;                       // Stepsize to determine the distributions space of particles
@@ -51,7 +51,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_noninteracting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_noninteracting;
-        tol_GD_ = 5e-8;                                 // Acceptance tolerance for gradient descent
+        tol_GD_ = 5*pow(10,-8);                                 // Acceptance tolerance for gradient descent
         eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
@@ -64,16 +64,15 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_interacting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_interacting;
-        tol_GD_ = 1e-3;                                 // Acceptance tolerance for gradient descent
+        tol_GD_ = 1e-2;                                 // Acceptance tolerance for gradient descent
         eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
-
-    (this->*main_method)();                               // Calls MC method and starts simulation
+    (this->*main_method)(shared_alphas);                               // Calls MC method and starts simulation
 }
 
 //Method for running Monte Carlo simulation for a list of values for variational parameter alpha
-void Solver::Alpha_list(){
+void Solver::Alpha_list(double * shared_alphas){
     double alpha, energy, energy_squared, DeltaE, variance;
 
     alphas_ = new double[num_alphas_];                 // Variational parameter
@@ -134,7 +133,7 @@ void Solver::Alpha_list(){
 }
 
 //Gradient Descent w/importance sampling for interacting and non-interacting bosons
-void Solver::Gradient_descent(){
+void Solver::Gradient_descent(double * shared_alphas){
     string file;
     int iterations = 500;                                // Max number iterations of GD
     double *alpha_vals_GD = new double[iterations];     // Array to store alpha values from GD
@@ -176,9 +175,27 @@ void Solver::Gradient_descent(){
 
     cout <<" Convergence after " << counter << " number of iterations  (thread " << to_string(thread_ID_) << ")" << endl;
 
+    shared_alphas[thread_ID_] = alpha_guess;         // Write best alpha guess to shared array
     # pragma omp barrier
     # pragma omp master
-    {cout << "Gradient descent finished, starting main MC calculations..." << endl;}
+    {
+        cout << "Gradient descent finished, starting main MC calculations..." << endl;
+        cout << "Best alphas found: " << endl;
+        for (int i=0; i < omp_get_num_threads(); i++){
+            cout << "Thread " << i << ": alpha = " << shared_alphas[i] << endl;
+        }
+    }
+    # pragma omp barrier
+    # pragma omp critical
+    {
+        double sum = 0.0;
+        for (int i =0; i < omp_get_num_threads();i++){
+            sum += shared_alphas[i];
+        }
+
+        alpha_guess = sum/omp_get_num_threads();
+    }
+
 
     // Run large MC simulation for optimal value alpha obtained from GD
     double *optimal_energies = new double[N_*MC_optimal_run_];
@@ -356,9 +373,8 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
         string OBD_file = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
 
         ofstream ofile2;
+        double scale = (4./3)*M_PI*radi_*radi_;
         ofile2.open(OBD_file);
-        double scale = 4/3*radi_*radi_;
-
         for (int i = 0; i < num_bins; i ++){
             bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,2)-pow(i,2)));
             //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1)));
@@ -408,9 +424,11 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
     if (OBD_check_ == true){
         string OBD_file = "Interaction_One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
         ofstream ofile2;
+        double scale = (4./3)*M_PI*radi_*radi_;
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,2)-pow(i,2)));
+            //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
         ofile2.close();

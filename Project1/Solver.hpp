@@ -35,7 +35,7 @@ bool OBD_check_;
 random_device rd_;
 
 //Pointer to member function
-void (Solver::*main_method)();
+void (Solver::*main_method)(double *shared_alphas);
 void (Solver::*metropolis_sampling)(double alpha);
 void (Solver::*Interaction_or_not_GD)(double *values, double alpha);
 void (Solver::*Interaction_or_not_optimal)(double alpha, double *energies);
@@ -43,7 +43,7 @@ void (Solver::*Interaction_or_not_optimal)(double alpha, double *energies);
 public:
 
 //Constructor
-Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int num_threads, double learning_rate);
+Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int type_sampling, int num_threads, double learning_rate, double*shared_alphas);
 
 //Makes use of functions from class Psi;
 Psi wave;
@@ -54,8 +54,8 @@ void Metropolis_importance(double alpha);
 void Metropolis_interacting(double alpha);
 
 // Main methods: Find optimal alpha by looping over list or gradient descent
-void Alpha_list();
-void Gradient_descent();
+void Alpha_list(double *shared_alphas);
+void Gradient_descent(double *shared_alphas);
 
 // During GD process: Interacting or noninteracting case
 void MonteCarlo_GD_noninteracting(double *values, double alpha);

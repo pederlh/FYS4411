@@ -117,52 +117,170 @@ def make_plots(task):
             variances_n = []
             times_n = []
 
+    if task == "e":
+
+        #CONCAT
+        """
+        1. Hente opp GD utviklingen til alpha for string 0
+        2. Plotte utviklingen for de forskjellige N verdiene
+
+
+        1. Hente alle filer UTEN INTERACTION FORRAN
+        2. Dele de opp etter N
+        3. Merge alle filer med samme N
+        4. Bootstrap/blocking
+        5. Flotte estimater
+        """
+        lol = 1
+
+    if task == "g":
+        #CONCAT
+        """
+        1. Hente alle filer UTEN INTERACTION FORRAN
+        2. Dele de opp etter N
+        3. Merge alle filer med samme N
+        4. Bootstrap/blocking
+        5. Flotte estimater
+        """
+        lol=1
+
     if task == "h":
+
         path = "./Results/1h_one_body_densities/"
         os.chdir(path)
         OBD_list = os.listdir()
-        OBD_I_list = []
 
-
-        OBD_list = [s for s in OBD_list if "stringID_0" in s]
-        OBD_I_list = [s for s in OBD_list if "Interaction" in s]
+        OBD_list_I = [s for s in OBD_list if "Interaction" in s]
         OBD_list = [s for s in OBD_list if "Interaction" not in s]
 
+        OBD_N2 = [s for s in OBD_list if "_N_2_" in s]
+        OBD_N16 = [s for s in OBD_list if "_N_16_" in s]
+        OBD_N32 = [s for s in OBD_list if "_N_32_" in s]
 
-        alpha_list = [OBD_list[i].split("_")[-1] for i in range(len(OBD_list))]
-        alpha_list_I = [OBD_I_list[i].split("_")[-1] for i in range(len(OBD_I_list))]
+        OBD_N2_I = [s for s in OBD_list_I if "_N_2_" in s]
+        OBD_N16_I = [s for s in OBD_list_I if "_N_16_" in s]
+        OBD_N32_I = [s for s in OBD_list_I if "_N_32_" in s]
 
-        alpha_list = [float(alpha.split(".txt")[0]) for alpha in alpha_list]
-        alpha_list_I = [float(alpha.split(".txt")[0]) for alpha in alpha_list_I]
+        thread0 = np.loadtxt(OBD_N2[0]);
+        thread1 = np.loadtxt(OBD_N2[1]);
+        thread2 = np.loadtxt(OBD_N2[2]);
+        thread3 = np.loadtxt(OBD_N2[3]);
 
+        joined_OBD_N2 = (thread0 + thread1 + thread2 + thread3)/4
 
-        N_list = [float(OBD_list[i].split("_")[4]) for i in range(len(OBD_list))]
-        N_list_I = [float(OBD_I_list[i].split("_")[4]) for i in range(len(OBD_I_list))]
+        thread0 = np.loadtxt(OBD_N16[0]);
+        thread1 = np.loadtxt(OBD_N16[1]);
+        thread2 = np.loadtxt(OBD_N16[2]);
+        thread3 = np.loadtxt(OBD_N16[3]);
 
+        joined_OBD_N16 = (thread0 + thread1 + thread2 + thread3)/4
 
-        r = 0
+        thread0 = np.loadtxt(OBD_N32[0]);
+        thread1 = np.loadtxt(OBD_N32[1]);
+        thread2 = np.loadtxt(OBD_N32[2]);
+        thread3 = np.loadtxt(OBD_N32[3]);
+
+        joined_OBD_N32 = (thread0 + thread1 + thread2 + thread3)/4
+
+        thread0 = np.loadtxt(OBD_N2_I[0]);
+        thread1 = np.loadtxt(OBD_N2_I[1]);
+        thread2 = np.loadtxt(OBD_N2_I[2]);
+        thread3 = np.loadtxt(OBD_N2_I[3]);
+
+        joined_OBD_N2_I = (thread0 + thread1 + thread2 + thread3)/4
+
+        thread0 = np.loadtxt(OBD_N16_I[0]);
+        thread1 = np.loadtxt(OBD_N16_I[1]);
+        thread2 = np.loadtxt(OBD_N16_I[2]);
+        thread3 = np.loadtxt(OBD_N16_I[3]);
+
+        joined_OBD_N16_I = (thread0 + thread1 + thread2 + thread3)/4
+
+        thread0 = np.loadtxt(OBD_N32_I[0]);
+        thread1 = np.loadtxt(OBD_N32_I[1]);
+        thread2 = np.loadtxt(OBD_N32_I[2]);
+        thread3 = np.loadtxt(OBD_N32_I[3]);
+
+        joined_OBD_N32_I = (thread0 + thread1 + thread2 + thread3)/4
+
+        r = np.linspace(0,5,100)
+
+        plt.title("N = 2")
+        plt.plot(r,joined_OBD_N2,label="No interaction")
+        plt.plot(r,joined_OBD_N2_I,label="Interaction")
+
+        OBD_integrate = np.trapz(joined_OBD_N2,r)
+        A = OBD_integrate*4/np.sqrt(np.pi)
+        ana_rho = A*(r**2)*np.exp(-r**2)
+
+        plt.plot(r,ana_rho, label = "Analytical density")
+        plt.xlabel("r")
+        plt.ylabel("rho(r)")
+        plt.legend()
+        plt.show()
+
+        plt.title("N = 16")
+        plt.plot(r,joined_OBD_N16,label="No interaction")
+        plt.plot(r,joined_OBD_N16_I,label="Interaction")
+        OBD_integrate = np.trapz(joined_OBD_N16,r)
+        A = OBD_integrate*4/np.sqrt(np.pi)
+        ana_rho = A*(r**2)*np.exp(-r**2)
+
+        plt.plot(r,ana_rho, label = "Analytical density")
+        plt.xlabel("r")
+        plt.ylabel("rho(r)")
+        plt.legend()
+        plt.show()
+
+        plt.title("N = 32")
+        plt.plot(r,joined_OBD_N32,label="No interaction")
+        plt.plot(r,joined_OBD_N32_I,label="Interaction")
+        OBD_integrate = np.trapz(joined_OBD_N32,r)
+        A = OBD_integrate*4/np.sqrt(np.pi)
+        ana_rho = A*(r**2)*np.exp(-r**2)
+
+        plt.plot(r,ana_rho, label = "Analytical density")
+        plt.xlabel("r")
+        plt.ylabel("rho(r)")
+        plt.legend()
+        plt.show()
+
+        """
         for i in range(len(OBD_list)):
             filename = OBD_list[i]
-            N = N_list[i]
+            N = N_list_new[i]
             alpha = alpha_list[i]
             OBD = np.loadtxt(filename)
-            if i == 0:
-                r = np.linspace(0,5,len(OBD))
-            plt.plot(r,OBD)
+            plt.plot(r,OBD,label="Non_interaction")
+
+            OBD_integrate = np.trapz(OBD,r)
+            A = OBD_integrate*np.sqrt(np.pi)/4
+
+            filename_I = OBD_I_list[i]
+            N_I = N_list_I_new[i]
+            alpha_I = alpha_list_I[i]
+            OBD_I = np.loadtxt(filename_I)
+            plt.plot(r,OBD_I, label="Interacting")
+
+            real_alpha = 0.5
+            ana_rho = A*(r**2)*np.exp(-r**2)
+            rho_integrate = np.trapz(ana_rho,r)
+            print(rho_integrate)
+
+            plt.plot(r,ana_rho, label = "Analytical density")
+
+
+            plt.legend()
+            plt.title("N = %i "% N_I)
+            plt.xlabel("r")
+            plt.ylabel("rho(r)")
             plt.show()
-            """
-            filename = OBD_I_list[i]
-            N = N_list_I[i]
-            alpha = alpha_list_I[i]
-            OBD = np.loadtxt(filename)
-            plt.plot(r,OBD)
-            plt.show()
-
 
             """
 
 
-        # Vil kunne plotte OBD for både interacting og ikke int med alpha verdi og N i plottet FOR EN STRING.
+
+
 
 
 

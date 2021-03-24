@@ -55,12 +55,15 @@ int main(int argc, char const *argv[]) {
     }
     omp_set_num_threads(num_threads);
 
+    double *shared_alphas = new double[num_threads];        // Array used in GD that all threads have access to.
+                                                            // Used to find average alpha in GD.
+
     #pragma omp parallel
     {
         int ID = omp_get_thread_num();
 
         // Initialize Solver object and perform calculations
-        Solver mysolver(num_particles, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID, learning_rate);
+        Solver mysolver(num_particles, mc_cycles, mc_cycles_optimal_run, dimentions, type_energy, type_sampling, ID, learning_rate, shared_alphas);
 
 
         // When type_sampling is 0 or 1, data is written to file with the functions below
