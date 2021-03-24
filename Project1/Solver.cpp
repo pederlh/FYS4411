@@ -145,11 +145,6 @@ void Solver::Gradient_descent(){
     double alpha_guess = 0.9;                           // Initial guess for alpha
     int counter = 0;                                    // Counter to keep track of actual number of iterations
 
-        
-    string OBD_file_test = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha_guess) + ".txt";
-    cout << OBD_file_test << endl;
-
-
      #pragma omp master
      {
          if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
@@ -363,21 +358,16 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
         cout << "Made it 4.02" << endl;
 
         ofstream ofile2;
-        cout << "Made it 4.03" << endl;
-
         ofile2.open(OBD_file);
-        cout << "Made it 4.1" << endl;
 
         for (int i = 0; i < num_bins; i ++){
             cout << i << endl;
             bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
-        cout << "Made it 4.2" << endl;
 
         ofile2.close();
     }
-    cout << "Made it 5" << endl;
 
 }
 
