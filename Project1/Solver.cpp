@@ -159,13 +159,13 @@ void Solver::Gradient_descent(){
         alpha_vals_GD[i] = alpha_guess;
 
         (this->*Interaction_or_not_GD)(values, alpha_guess);   //Points to correct Monte Carlo simulation (interacting/non-interacting)
-        // # pragma omp master
+        # pragma omp master
         {
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
 
         //Breaks GD if alpha provides acceptably low sample variance
-        if (values[1] < tol_GD_ && i>0){
+        if (values[1] < tol_GD_ ){
             break;
         }
         alpha_guess -= eta_GD_*values[2];
@@ -350,18 +350,12 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
 
     //Write average particle distribution to file
     if (OBD_check_ == true){
-        cout << "Made it 4.01" << endl;
-        cout << alpha << endl;
-
-        string OBD_file = "One_body_density_N_.txt";// + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
-
-        cout << "Made it 4.02" << endl;
+        string OBD_file = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
 
         ofstream ofile2;
         ofile2.open(OBD_file);
 
         for (int i = 0; i < num_bins; i ++){
-            cout << i << endl;
             bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
