@@ -33,7 +33,7 @@ else:
     sys.exit(1)
 
 
-""" Choose task """ 
+""" Choose task """
 task_prompt = input("Which task to run? Choices are 'b' (simplest), 'c' (importance sampling), 'e' (gradient descent + blocking + one body density) or 'g' (everything + repulsion): ")
 if task_prompt not in ['b' , 'c', 'e', 'g']:
     print("Input not recognized. Aborting.")
@@ -86,7 +86,7 @@ if task_prompt == "c":
     """
 
 if task_prompt == "e":
-    
+
     num_particles = 16
     dimentions = 3
     mc_cycles = 1000
