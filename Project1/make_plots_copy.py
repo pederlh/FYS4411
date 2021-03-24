@@ -17,8 +17,8 @@ def make_plots(task):
         variances_n = []
         times_n = []
         for n in N:
-            filename_num = path + "spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt"
-            filename_ana = path + "spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt"
+            filename_num = path + "spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt";
+            filename_ana = path + "spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt";
 
             with open(filename_ana, "r") as infile:
                 lines = infile.readlines()
@@ -56,9 +56,12 @@ def make_plots(task):
             variances_n = []
             times_n = []
 
-
+    if task == "c":
+        pass
 
 if __name__ == "__main__":
     task = input("Which task to make plots for? \n" \
-                + "Choices are 'b' (simplest), 'c' (importance sampling), 'd' (gradient descent), 'f' (repulsion) or 'g' (one body densities): ")
+                + "Choices are 'b' (simplest), 'c' (importance sampling), 'e' (gradient descent + blocking + one body density) or 'g' (everything + repulsion): ")
+    
+    assert task in ["b", "c", "e", "g"], "Input not recognized."
     make_plots(task)
