@@ -1,0 +1,71 @@
+
+     Alpha      Energy        Variance
+--------------------------------------
+       0.7   2.8995119      0.60618701 ID: 0
+0.49793766   3.0035169   9.3564196e-05 ID: 0
+0.50157461    3.000979   2.5612306e-05 ID: 0
+0.50027539    3.000232   5.8953765e-07 ID: 0
+0.50010418   2.9997662   1.5723063e-07 ID: 0
+0.49998345   2.9999776   1.1709016e-09 ID: 0
+ Convergence after 6 number of iterations  (thread 0)
+ Convergence after 8 number of iterations  (thread 3)
+ Convergence after 9 number of iterations  (thread 1)
+ Convergence after 12 number of iterations  (thread 2)
+Gradient descent finished, starting main MC calculations...
+Best alphas found:
+Thread 0: alpha = 0.49998345
+Thread 1: alpha = 0.49998451
+Thread 2: alpha = 0.4999844
+Thread 3: alpha = 0.50002663
+Finished calculations!
+Start gradient descent (showing progress master thread) N = 16
+
+     Alpha      Energy        Variance
+--------------------------------------
+       0.7   25.628379       3.8782493 ID: 0
+0.53840628   24.111601      0.15845194 ID: 0
+0.49867541   23.993686   0.00017044163 ID: 0
+0.49996387   23.999801   1.9011941e-07 ID: 0
+ 0.5000165   24.000113   2.8691034e-08 ID: 0
+0.49999911   23.999992   6.8212103e-11 ID: 0
+ Convergence after 6 number of iterations  (thread 0)
+ Convergence after 6 number of iterations  (thread 3)
+ Convergence after 9 number of iterations  (thread 2)
+ Convergence after 11 number of iterations  (thread 1)
+Gradient descent finished, starting main MC calculations...
+Best alphas found:
+Thread 0: alpha = 0.49999911
+Thread 1: alpha = 0.49999819
+Thread 2: alpha = 0.49999812
+Thread 3: alpha = 0.49999766
+Finished calculations!
+Start gradient descent (showing progress master thread) N = 32
+
+     Alpha      Energy        Variance
+--------------------------------------
+       0.7   51.679773       5.7176111 ID: 0
+0.66426493   51.321186       6.5037127 ID: 0
+0.61325486    50.89821       2.1941571 ID: 0
+0.58715083   49.335619       2.3322948 ID: 0
+0.55022643    48.42468      0.52751128 ID: 0
+0.53522587   48.452352      0.37172502 ID: 0
+0.51993556   48.023642      0.19321963 ID: 0
+0.50568141   48.041901     0.013574884 ID: 0
+0.50211762   47.997839    0.0020579976 ID: 0
+0.50066294   48.000022   0.00032058855 ID: 0
+0.49993804   47.999328   1.0591011e-06 ID: 0
+0.49996369    47.99973   3.7393374e-07 ID: 0
+0.49997913   47.999611   1.2082273e-07 ID: 0
+ Convergence after 13 number of iterations  (thread 1)
+ Convergence after 14 number of iterations  (thread 2)
+0.49998782     47.9999   5.5874352e-08 ID: 0
+ Convergence after 15 number of iterations  (thread 3)
+ 0.4999947   47.999967   1.2991677e-08 ID: 0
+0.49999836   47.999981   1.0513759e-09 ID: 0
+ Convergence after 16 number of iterations  (thread 0)
+Gradient descent finished, starting main MC calculations...
+Best alphas found:
+Thread 0: alpha = 0.49999836
+Thread 1: alpha = 0.50000408
+Thread 2: alpha = 0.50000404
+Thread 3: alpha = 0.49999531
