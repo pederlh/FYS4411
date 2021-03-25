@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import pandas as pd
 
 
 def make_plots(task):
@@ -119,30 +120,213 @@ def make_plots(task):
 
     if task == "e":
 
-        #CONCAT
-        """
-        1. Hente opp GD utviklingen til alpha for string 0
-        2. Plotte utviklingen for de forskjellige N verdiene
+        path = "./Results/GD_alphas/"
+        os.chdir(path)
+        GD = os.listdir()
+        GD.sort()
+
+        numbers = []
+
+        for files in GD:
+            for words in files.split("_"):
+                if words.isdigit():
+                    numbers.append(int(words))
 
 
-        1. Hente alle filer UTEN INTERACTION FORRAN
-        2. Dele de opp etter N
-        3. Merge alle filer med samme N
-        4. Bootstrap/blocking
-        5. Flotte estimater
-        """
-        lol = 1
+
+        numbers, GD = zip(*sorted(zip(numbers, GD)))
+
+        GD_2 = np.loadtxt(GD[0])[1:]
+        GD_16 = np.loadtxt(GD[1])[1:]
+        GD_32 = np.loadtxt(GD[2])[1:]
+        alphas= [GD_2,GD_16,GD_32]
+
+        it_2 = np.linspace(1,len(GD_2),len(GD_2))
+        it_16 = np.linspace(1,len(GD_16),len(GD_16))
+        it_32 = np.linspace(1,len(GD_32),len(GD_32))
+        its = [it_2,it_16,it_32]
+
+        for i in range(3):
+            plt.plot(its[i], alphas[i], "*",label = "N = %i" %numbers[i])
+            plt.plot(its[i][-1], alphas[i][-1],"*", markersize = 12)
+
+        plt.ylabel("Alpha value")
+        plt.xlabel("Number of iterations")
+        plt.title("Gradient descent for non-interacting bosons")
+        plt.legend()
+        plt.show()
+
+
+        path = "./Results/1e_implementing_gradient_descent_and_blocking/"
+        os.chdir(path)
+        runs = os.listdir()
+
+        t2 = []
+        t16 = []
+        t32 = []
+
+        N32 = [s for s in runs if "32_N_" in s]
+        runs = [s for s in runs if "32_N_" not in s]
+        N2 = [s for s in runs if "2_N_" in s]
+        N16 = [s for s in runs if "16_N_" in s]
+
+        thread0 = np.loadtxt(N2[0]);
+        t2.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N2[1]);
+        t2.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N2[2]);
+        t2.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N2[3]);
+        t2.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N16[0]);
+        t2.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N16[1]);
+        t2.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N16[2]);
+        t2.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N16[3]);
+        t2.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N32[0]);
+        t2.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N32[1]);
+        t2.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N32[2]);
+        t2.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N32[3]);
+        t2.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        print("Files has been read, start blocking...")
+        (mean, var) = block(joined_N2)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_2 = pd.DataFrame(data,index=['Values'])
+        index = frame_2.index
+        index.name = "N = 2"
+        print(frame_2)
+
+        (mean, var) = block(joined_N16)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_16 = pd.DataFrame(data,index=['Values'])
+        index = frame_16.index
+        index.name = "N = 16"
+        print(frame_16)
+
+        (mean, var) = block(joined_N32)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_32 = pd.DataFrame(data,index=['Values'])
+        index = frame_32.index
+        index.name = "N = 32"
+        print(frame_32)
+
 
     if task == "g":
-        #CONCAT
-        """
-        1. Hente alle filer UTEN INTERACTION FORRAN
-        2. Dele de opp etter N
-        3. Merge alle filer med samme N
-        4. Bootstrap/blocking
-        5. Flotte estimater
-        """
-        lol=1
+
+        print("Bootstrapping results from GD with repulsion")
+
+        path = "./Results/1g_implementing_repulsion/"
+        os.chdir(path)
+        runs = os.listdir()
+
+        t2 = []
+        t16 = []
+        t32 = []
+
+        N32 = [s for s in runs if "32_N_" in s]
+        runs = [s for s in runs if "32_N_" not in s]
+        N2 = [s for s in runs if "2_N_" in s]
+        N16 = [s for s in runs if "16_N_" in s]
+
+        thread0 = np.loadtxt(N2[0]);
+        t2.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N2[1]);
+        t2.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N2[2]);
+        t2.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N2[3]);
+        t2.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N16[0]);
+        t2.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N16[1]);
+        t2.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N16[2]);
+        t2.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N16[3]);
+        t2.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N32[0]);
+        t2.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N32[1]);
+        t2.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N32[2]);
+        t2.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N32[3]);
+        t2.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        print("Files has been read, start blocking...")
+        (mean, var) = block(joined_N2)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_2 = pd.DataFrame(data,index=['Values'])
+        index = frame_2.index
+        index.name = "N = 2"
+        print(frame_2)
+
+        (mean, var) = block(joined_N16)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_16 = pd.DataFrame(data,index=['Values'])
+        index = frame_16.index
+        index.name = "N = 16"
+        print(frame_16)
+
+        (mean, var) = block(joined_N32)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_32 = pd.DataFrame(data,index=['Values'])
+        index = frame_32.index
+        index.name = "N = 32"
+        print(frame_32)
 
     if task == "h":
 
@@ -278,6 +462,39 @@ def make_plots(task):
 
             """
 
+
+
+def block(x):
+    # preliminaries
+    n = len(x)
+    d = int(np.log2(n))
+    s, gamma = np.zeros(d), np.zeros(d)
+    mu = np.mean(x)
+
+    # estimate the auto-covariance and variances
+    # for each blocking transformation
+    for i in np.arange(0,d):
+        n = len(x)
+        # estimate autocovariance of x
+        gamma[i] = (n)**(-1)*np.sum( (x[0:(n-1)]-mu)*(x[1:n]-mu) )
+        # estimate variance of x
+        s[i] = np.var(x)
+        # perform blocking transformation
+        x = 0.5*(x[0::2] + x[1::2])
+
+    # generate the test observator M_k from the theorem
+    M = (np.cumsum( ((gamma/s)**2*2**np.arange(1,d+1)[::-1])[::-1] )  )[::-1]
+
+    # we need a list of magic numbers
+    q =np.array([6.634897,9.210340, 11.344867, 13.276704, 15.086272, 16.811894, 18.475307, 20.090235, 21.665994, 23.209251, 24.724970, 26.216967, 27.688250, 29.141238, 30.577914, 31.999927, 33.408664, 34.805306, 36.190869, 37.566235, 38.932173, 40.289360, 41.638398, 42.979820, 44.314105, 45.641683, 46.962942, 48.278236, 49.587884, 50.892181])
+
+    # use magic to determine when we should have stopped blocking
+    for k in np.arange(0,d):
+        if(M[k] < q[k]):
+            break
+    if (k >= d-1):
+        print("Warning: Use more data")
+    return mu, s[k]/2**(d-k)
 
 
 

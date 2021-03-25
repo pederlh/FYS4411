@@ -6,7 +6,7 @@ import sys
 
 
 filename = sys.argv[1]
-
+"""
 def Bootstrap(B,filename):
 
     energies = np.loadtxt(filename)
@@ -44,7 +44,7 @@ def Bootstrap(B,filename):
 
     return boot_Mean, boot_Var, reg_M, reg_V
 
-
+"""
 """ The blocking code, based on the article of Marius Jonsson  """
 def block(x):
     # preliminaries
@@ -88,4 +88,4 @@ frame = pd.DataFrame(data,index=['Values'])
 print(frame)
 
 
-Bootstrap(1000,filename)
+#Bootstrap(1000,filename)

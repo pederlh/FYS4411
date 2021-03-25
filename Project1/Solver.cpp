@@ -51,7 +51,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_noninteracting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_noninteracting;
-        tol_GD_ = 5*pow(10,-8);                                 // Acceptance tolerance for gradient descent
+        tol_GD_ = 1e-8;//5*pow(10,-8);                                 // Acceptance tolerance for gradient descent
         eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
@@ -141,7 +141,7 @@ void Solver::Gradient_descent(double * shared_alphas){
         alpha_vals_GD[z] = 0;
     }
     double *values = new double[3];                     // Array to contain energy, variance and energy derivative wrt alpha;
-    double alpha_guess = 0.55;                           // Initial guess for alpha
+    double alpha_guess = 0.7; //0.55;                          // Initial guess for alpha
     int counter = 0;                                    // Counter to keep track of actual number of iterations
     double tol;
 
@@ -373,10 +373,10 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
         string OBD_file = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
 
         ofstream ofile2;
-        double scale = (4./3)*M_PI*radi_*radi_;
+        double scale = (4./3)*M_PI*radi_*radi_*radi_;
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,2)-pow(i,2)));
+            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,3)-pow(i,3)));
             //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1)));
             //ELLER pow(r_old[i],D-1) ELLER volumet av kuleskallet V = 4/3*((i+1)**2-i**2)*radi**2;
             ofile2 << setprecision(15) <<bins[i]<<endl;
@@ -424,11 +424,12 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
     if (OBD_check_ == true){
         string OBD_file = "Interaction_One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
         ofstream ofile2;
-        double scale = (4./3)*M_PI*radi_*radi_;
+        double scale = (4./3)*M_PI*radi_*radi_*radi_;
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,2)-pow(i,2)));
-            //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1))); //ELLER pow(r_old[i],D-1);
+            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,3)-pow(i,3)));
+            //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1)));
+            //bins[i] /= (MC_optimal_run_*N_*pow(r_old[i],D-1)));
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
         ofile2.close();
