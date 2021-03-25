@@ -119,7 +119,7 @@ def make_plots(task):
             times_n = []
 
     if task == "e":
-
+        """
         path = "./Results/GD_alphas/"
         os.chdir(path)
         GD = os.listdir()
@@ -155,8 +155,10 @@ def make_plots(task):
         plt.title("Gradient descent for non-interacting bosons")
         plt.legend()
         plt.show()
+        """
 
-
+        print("Blocking results from GD with repulsion")
+        
         path = "./Results/1e_implementing_gradient_descent_and_blocking/"
         os.chdir(path)
         runs = os.listdir()
@@ -243,7 +245,7 @@ def make_plots(task):
 
     if task == "g":
 
-        print("Bootstrapping results from GD with repulsion")
+        print("Blocking results from GD with repulsion")
 
         path = "./Results/1g_implementing_repulsion/"
         os.chdir(path)

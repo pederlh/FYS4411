@@ -64,7 +64,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_interacting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_interacting;
-        tol_GD_ = 1e-2;                                 // Acceptance tolerance for gradient descent
+        tol_GD_ = 1e-3;                                 // Acceptance tolerance for gradient descent
         eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
@@ -163,7 +163,11 @@ void Solver::Gradient_descent(double * shared_alphas){
         {
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
-        if (type_sampling_ ==3){tol = tol_GD_*values[0];}
+        if (type_sampling_ ==3){
+            tol = tol_GD_*pow(10,floor(log10(N_)));
+            if (N_ == 16 || N_ == 32){tol*=2;}
+        }//{tol = tol_GD_*values[0];}
+
         else{tol = tol_GD_;}
 
         //Breaks GD if alpha provides acceptably low sample variance

@@ -333,13 +333,10 @@ double Psi::Local_energy_interaction(double alpha){
 
     double* nabla_phi = new double[D_];
     double* distance_vec = new double[D_];
-
-
     double d2_phi, term2, term3, term4, u_der, d2_psi, V_ext, E_L, V_int, tmp;
     d2_psi = 0.0;
     V_ext = 0.0;
-
-
+    double diff;
     for (int n = 0; n < N_ ;n++){
         d2_phi = Laplace_phi(n, d2_phi, alpha);
         term2 = 0.0;
@@ -357,13 +354,18 @@ double Psi::Local_energy_interaction(double alpha){
             rkl_[n2] = sqrt(tmp);
         }
         for (int n2 = 0; n2<N_;n2++){
-            if (n2 != n){
-                u_der = (1/(rkl_[n2]*rkl_[n2])) * (a_/(rkl_[n2] - a_));
-                term4 += (a_*a_ - 2*a_*rkl_[n2])/(rkl_[n2]*rkl_[n2]*(rkl_[n2]-a_)*(rkl_[n2]-a_)) + 2*u_der;
-                for (int d = 0; d<D_;d++){
-                    distance_vec[d] += (r_old_[n][d] - r_old_[n2][d]) * u_der;
+                if (rkl_[n2] <= a_){
+                    u_der += 0.0;
+                    term4 += 0.0;
                 }
-            }
+                else{
+                    u_der = a_/((rkl_[n2] - a_)*(rkl_[n2]*rkl_[n2]));
+                    //if(u_der > 100){cout<<"u_der HUGE"<<endl;}
+                    term4 += (a_*a_ - 2*a_*rkl_[n2])/(rkl_[n2]*rkl_[n2]*(rkl_[n2]-a_)*(rkl_[n2]-a_)) + 2*u_der;
+                    for (int d = 0; d<D_;d++){
+                        distance_vec[d] += (r_old_[n][d] - r_old_[n2][d]) * u_der;
+                    }
+                }
         }
 
         for (int d =0; d<D_; d++){
@@ -373,31 +375,43 @@ double Psi::Local_energy_interaction(double alpha){
             if(d==2) {V_ext += beta_*beta_*r_old_[n][d]*r_old_[n][d];}
             else {V_ext += r_old_[n][d]*r_old_[n][d];}
 
+
         }
+
 
         d2_psi += d2_phi + term2 + term3 + term4;
+
+        /*
+        if(d2_phi > 100){cout<<"d2_phi HUGE"<<endl;}
+        if(term2 > 100){cout<<"term2 HUGE"<<endl;}
+        if(term3 > 100){cout<<"term3 HUGE"<<endl;}
+        if(term4 > 100){cout<<"term4 HUGE"<<endl;}
+        */
+
     }
 
-    V_int = 0.0;
 
-    //double diff;
+    E_L = (1./2)*(-d2_psi+V_ext);
+    //if(E_L > 100){cout<<"E_L HUGE"<<endl;}
     /*
-    for (int i = 0; i < N_; i++){
-        for (int j = i+1; j <N_; j++){
-            diff = 0.0;
-            for (int d = 0; d < D_; d++){
-                diff += pow(r_old_[i][d]-r_old_[j][d],2);
-            }
-            diff = sqrt(diff);
-            if (diff <= a_){
-                V_int += 1e16;
-                cout <<"Enormt bidrag" <<endl;
-            }
+
+    double dr_p, dr_m;
+    laplace_tf_ = 0.0;
+
+    for (int nn = 0; nn < N_; nn++){
+        for (int dd = 0; dd < D_; dd++){
+            dr_p = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] + step_,dd);   //Position + delta r
+            dr_m = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] - step_,dd);   //Position - delta r
+            laplace_tf_  += Trial_func_interaction(alpha,dr_p,"old") + Trial_func_interaction(alpha, dr_m,"old");
         }
     }
-    */
 
-    E_L = (1./2)*(-d2_psi+V_ext) + V_int;
+    tf_middle_ = Trial_func_interaction(alpha,r2_sum_old_,"old");
+    laplace_tf_ -= 2*D_*N_*tf_middle_;
+    laplace_tf_ /= (step_*step_*tf_middle_);
+
+    return (1./2)*(-laplace_tf_ + r2_sum_old_);
+    */
 
     return E_L;
 }
