@@ -159,7 +159,7 @@ void Solver::Gradient_descent(double * shared_alphas){
         alpha_vals_GD[i] = alpha_guess;
 
         (this->*Interaction_or_not_GD)(values, alpha_guess);   //Points to correct Monte Carlo simulation (interacting/non-interacting)
-        # pragma omp master
+        //# pragma omp master
         {
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
@@ -332,8 +332,8 @@ void Solver::MonteCarlo_GD_interacting(double *values, double alpha){
 //Method for running Monte Carlo simulation for one (optimized) value of variational parameter alpha (non-interacting bosons)
 void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
     double DeltaE;
-    int num_bins = 100;                     // Number of bins OBD calculation
-    double max_radi = 5.0;                  // Max radius OBD calculation
+    int num_bins = 50;                     // Number of bins OBD calculation
+    double max_radi = 8.0;                  // Max radius OBD calculation
     double *bins = new double[num_bins];    // Array of bins where each bins[i] represents i*radius for one body density calculation
 
     //If one body density calculation is chosen: Initialize radius and bins array
@@ -381,11 +381,8 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
             bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,3)-pow(i,3)));
-            //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1)));
-            //ELLER pow(r_old[i],D-1) ELLER volumet av kuleskallet V = 4/3*((i+1)**2-i**2)*radi**2;
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
-
         ofile2.close();
     }
 
@@ -394,8 +391,8 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
 //Method for running Monte Carlo simulation for one (optimized) value of variational parameter alpha (interacting bosons)
 void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
     double DeltaE;
-    int num_bins = 100;                     // Number of bins OBD calculation
-    double max_radi = 5.0;                  // Max radius OBD calculation
+    int num_bins = 50;                     // Number of bins OBD calculation
+    double max_radi = 8.0;                  // Max radius OBD calculation
     double *bins = new double[num_bins];    // Array of bins where each bins[i] represents i*radius for one body density calculation
 
     //If one body density calculation is chosen: Initialize radius and bins array
@@ -531,10 +528,10 @@ double Solver::Greens_function(int idx){
 void Solver::One_body_density(double *bins){
     double r;                   // Distance from reference particles
     int bin_nr;                 // Corresponding bin in histogram
-    for (int i = 1; i<N_;i++){
+    for (int i = 0; i<N_;i++){
         r = 0.0;
         for (int j = 0; j < D_ ; j++){
-            r += pow(wave.r_old_[0][j] - wave.r_old_[i][j],2);
+            r += pow(wave.r_old_[i][j],2);
         }
         r = sqrt(r);
         bin_nr = trunc(r/radi_);

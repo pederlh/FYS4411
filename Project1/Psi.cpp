@@ -392,26 +392,7 @@ double Psi::Local_energy_interaction(double alpha){
 
 
     E_L = (1./2)*(-d2_psi+V_ext);
-    //if(E_L > 100){cout<<"E_L HUGE"<<endl;}
-    /*
-
-    double dr_p, dr_m;
-    laplace_tf_ = 0.0;
-
-    for (int nn = 0; nn < N_; nn++){
-        for (int dd = 0; dd < D_; dd++){
-            dr_p = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] + step_,dd);   //Position + delta r
-            dr_m = Update_r_sum_interaction(r2_sum_old_, r_old_[nn][dd], r_old_[nn][dd] - step_,dd);   //Position - delta r
-            laplace_tf_  += Trial_func_interaction(alpha,dr_p,"old") + Trial_func_interaction(alpha, dr_m,"old");
-        }
-    }
-
-    tf_middle_ = Trial_func_interaction(alpha,r2_sum_old_,"old");
-    laplace_tf_ -= 2*D_*N_*tf_middle_;
-    laplace_tf_ /= (step_*step_*tf_middle_);
-
-    return (1./2)*(-laplace_tf_ + r2_sum_old_);
-    */
+    double ana = (3/2)*N_;
 
     return E_L;
 }

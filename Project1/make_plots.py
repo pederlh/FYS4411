@@ -158,7 +158,7 @@ def make_plots(task):
         """
 
         print("Blocking results from GD with repulsion")
-        
+
         path = "./Results/1e_implementing_gradient_descent_and_blocking/"
         os.chdir(path)
         runs = os.listdir()
@@ -389,43 +389,52 @@ def make_plots(task):
 
         joined_OBD_N32_I = (thread0 + thread1 + thread2 + thread3)/4
 
-        r = np.linspace(0,5,100)
+        r = np.linspace(0,8,50)
 
         plt.title("N = 2")
-        plt.plot(r,joined_OBD_N2,label="No interaction")
-        plt.plot(r,joined_OBD_N2_I,label="Interaction")
+        A = 2/np.trapz(joined_OBD_N2*r**2,r)
+        plt.plot(r,A*joined_OBD_N2,label="No interaction")
+        #plt.plot(r,joined_OBD_N2_I,label="Interaction")
 
-        OBD_integrate = np.trapz(joined_OBD_N2,r)
-        A = OBD_integrate*4/np.sqrt(np.pi)
-        ana_rho = A*(r**2)*np.exp(-r**2)
+        better_ana_rho = 2 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
+        plt.plot(r,better_ana_rho, label = "GOOD? rho")
 
-        plt.plot(r,ana_rho, label = "Analytical density")
+
+        #plt.plot(r,ana_rho, label = "Analytical density")
         plt.xlabel("r")
         plt.ylabel("rho(r)")
         plt.legend()
         plt.show()
+
+
+
 
         plt.title("N = 16")
-        plt.plot(r,joined_OBD_N16,label="No interaction")
-        plt.plot(r,joined_OBD_N16_I,label="Interaction")
-        OBD_integrate = np.trapz(joined_OBD_N16,r)
-        A = OBD_integrate*4/np.sqrt(np.pi)
-        ana_rho = A*(r**2)*np.exp(-r**2)
+        A = 16/np.trapz(joined_OBD_N16*r**2,r)
+        plt.plot(r,A*joined_OBD_N16,label="No interaction")
+        #plt.plot(r,joined_OBD_N16_I,label="Interaction")
 
-        plt.plot(r,ana_rho, label = "Analytical density")
+        better_ana_rho = 16 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
+        plt.plot(r,better_ana_rho, label = "GOOD? rho")
+
+        #plt.plot(r,ana_rho, label = "Analytical density")
         plt.xlabel("r")
         plt.ylabel("rho(r)")
         plt.legend()
         plt.show()
 
-        plt.title("N = 32")
-        plt.plot(r,joined_OBD_N32,label="No interaction")
-        plt.plot(r,joined_OBD_N32_I,label="Interaction")
-        OBD_integrate = np.trapz(joined_OBD_N32,r)
-        A = OBD_integrate*4/np.sqrt(np.pi)
-        ana_rho = A*(r**2)*np.exp(-r**2)
 
-        plt.plot(r,ana_rho, label = "Analytical density")
+
+
+        plt.title("N = 32")
+        A = 32/np.trapz(joined_OBD_N32*r**2,r)
+        plt.plot(r,A*joined_OBD_N32,label="No interaction")
+        #plt.plot(r,joined_OBD_N32_I,label="Interaction")
+
+        better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
+        plt.plot(r,better_ana_rho, label = "GOOD? rho")
+
+        #plt.plot(r,ana_rho, label = "Analytical density")
         plt.xlabel("r")
         plt.ylabel("rho(r)")
         plt.legend()
