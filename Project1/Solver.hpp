@@ -71,6 +71,8 @@ double Greens_function(int idx);                    // Evaluate Green's function
 void One_body_density(double *bins);                // Add values to OBD histogram
 void Write_to_file(string outfilename);// Write results to file
 
+~Solver();
+
 };
 
 #endif

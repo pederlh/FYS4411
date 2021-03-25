@@ -138,13 +138,13 @@ def make_plots(task):
 
         GD_2 = np.loadtxt(GD[0])[1:]
         GD_16 = np.loadtxt(GD[1])[1:]
-        GD_32 = np.loadtxt(GD[2])[1:]
-        alphas= [GD_2,GD_16,GD_32]
+        GD_64 = np.loadtxt(GD[2])[1:]
+        alphas= [GD_2,GD_16,GD_64]
 
         it_2 = np.linspace(1,len(GD_2),len(GD_2))
         it_16 = np.linspace(1,len(GD_16),len(GD_16))
-        it_32 = np.linspace(1,len(GD_32),len(GD_32))
-        its = [it_2,it_16,it_32]
+        it_64 = np.linspace(1,len(GD_64),len(GD_64))
+        its = [it_2,it_16,it_64]
 
         for i in range(3):
             plt.plot(its[i], alphas[i], "*",label = "N = %i" %numbers[i])
@@ -157,7 +157,7 @@ def make_plots(task):
         plt.show()
         """
 
-        print("Blocking results from GD with repulsion")
+        print("Blocking results from GD without repulsion")
 
         path = "./Results/1e_implementing_gradient_descent_and_blocking/"
         os.chdir(path)
@@ -165,12 +165,14 @@ def make_plots(task):
 
         t2 = []
         t16 = []
-        t32 = []
+        t64 = []
+        t128 = []
 
-        N32 = [s for s in runs if "32_N_" in s]
-        runs = [s for s in runs if "32_N_" not in s]
+        N64 = [s for s in runs if "64_N_" in s]
+        runs = [s for s in runs if "64_N_" not in s]
         N2 = [s for s in runs if "2_N_" in s]
         N16 = [s for s in runs if "16_N_" in s]
+        N128 = [s for s in runs if "128_N_" in s]
 
         thread0 = np.loadtxt(N2[0]);
         t2.append(thread0[0])
@@ -188,34 +190,49 @@ def make_plots(task):
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
 
         thread0 = np.loadtxt(N16[0]);
-        t2.append(thread0[0])
+        t16.append(thread0[0])
         thread0 = thread0[1:]
         thread1 = np.loadtxt(N16[1]);
-        t2.append(thread1[0])
+        t16.append(thread1[0])
         thread1 = thread1[1:]
         thread2 = np.loadtxt(N16[2]);
-        t2.append(thread2[0])
+        t16.append(thread2[0])
         thread2 = thread2[1:]
         thread3 = np.loadtxt(N16[3]);
-        t2.append(thread3[0])
+        t16.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N32[0]);
-        t2.append(thread0[0])
+        thread0 = np.loadtxt(N64[0]);
+        t64.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N32[1]);
-        t2.append(thread1[0])
+        thread1 = np.loadtxt(N64[1]);
+        t64.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N32[2]);
-        t2.append(thread2[0])
+        thread2 = np.loadtxt(N64[2]);
+        t64.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N32[3]);
-        t2.append(thread3[0])
+        thread3 = np.loadtxt(N64[3]);
+        t64.append(thread3[0])
         thread3 = thread3[1:]
 
-        joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N128[0]);
+        t128.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N128[1]);
+        t128.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N128[2]);
+        t128.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N128[3]);
+        t128.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N128 = np.concatenate((thread0,thread1,thread2,thread3))
 
         print("Files has been read, start blocking...")
         (mean, var) = block(joined_N2)
@@ -234,13 +251,21 @@ def make_plots(task):
         index.name = "N = 16"
         print(frame_16)
 
-        (mean, var) = block(joined_N32)
+        (mean, var) = block(joined_N64)
         std = np.sqrt(var)
         data ={'Mean':[mean], 'STDev':[std]}
-        frame_32 = pd.DataFrame(data,index=['Values'])
-        index = frame_32.index
-        index.name = "N = 32"
-        print(frame_32)
+        frame_64 = pd.DataFrame(data,index=['Values'])
+        index = frame_64.index
+        index.name = "N = 64"
+        print(frame_64)
+
+        (mean, var) = block(joined_N128)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_128 = pd.DataFrame(data,index=['Values'])
+        index = frame_128.index
+        index.name = "N = 128"
+        print(frame_128)
 
 
     if task == "g":
@@ -253,10 +278,11 @@ def make_plots(task):
 
         t2 = []
         t16 = []
-        t32 = []
+        t64 = []
+        t128 = []
 
-        N32 = [s for s in runs if "32_N_" in s]
-        runs = [s for s in runs if "32_N_" not in s]
+        N64 = [s for s in runs if "64_N_" in s]
+        runs = [s for s in runs if "64_N_" not in s]
         N2 = [s for s in runs if "2_N_" in s]
         N16 = [s for s in runs if "16_N_" in s]
 
@@ -276,34 +302,49 @@ def make_plots(task):
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
 
         thread0 = np.loadtxt(N16[0]);
-        t2.append(thread0[0])
+        t16.append(thread0[0])
         thread0 = thread0[1:]
         thread1 = np.loadtxt(N16[1]);
-        t2.append(thread1[0])
+        t16.append(thread1[0])
         thread1 = thread1[1:]
         thread2 = np.loadtxt(N16[2]);
-        t2.append(thread2[0])
+        t16.append(thread2[0])
         thread2 = thread2[1:]
         thread3 = np.loadtxt(N16[3]);
-        t2.append(thread3[0])
+        t16.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N32[0]);
-        t2.append(thread0[0])
+        thread0 = np.loadtxt(N64[0]);
+        t64.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N32[1]);
-        t2.append(thread1[0])
+        thread1 = np.loadtxt(N64[1]);
+        t64.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N32[2]);
-        t2.append(thread2[0])
+        thread2 = np.loadtxt(N64[2]);
+        t64.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N32[3]);
-        t2.append(thread3[0])
+        thread3 = np.loadtxt(N64[3]);
+        t64.append(thread3[0])
         thread3 = thread3[1:]
 
-        joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N128[0]);
+        t128.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N128[1]);
+        t128.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N128[2]);
+        t128.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N128[3]);
+        t128.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N128 = np.concatenate((thread0,thread1,thread2,thread3))
 
         print("Files has been read, start blocking...")
         (mean, var) = block(joined_N2)
@@ -322,13 +363,21 @@ def make_plots(task):
         index.name = "N = 16"
         print(frame_16)
 
-        (mean, var) = block(joined_N32)
+        (mean, var) = block(joined_N64)
         std = np.sqrt(var)
         data ={'Mean':[mean], 'STDev':[std]}
-        frame_32 = pd.DataFrame(data,index=['Values'])
-        index = frame_32.index
-        index.name = "N = 32"
-        print(frame_32)
+        frame_64 = pd.DataFrame(data,index=['Values'])
+        index = frame_64.index
+        index.name = "N = 64"
+        print(frame_64)
+
+        (mean, var) = block(joined_N128)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_128 = pd.DataFrame(data,index=['Values'])
+        index = frame_128.index
+        index.name = "N = 128"
+        print(frame_128)
 
     if task == "h":
 
@@ -341,11 +390,13 @@ def make_plots(task):
 
         OBD_N2 = [s for s in OBD_list if "_N_2_" in s]
         OBD_N16 = [s for s in OBD_list if "_N_16_" in s]
-        OBD_N32 = [s for s in OBD_list if "_N_32_" in s]
+        OBD_N64 = [s for s in OBD_list if "_N_64_" in s]
+        OBD_N128 = [s for s in OBD_list if "_N_128_" in s]
 
         OBD_N2_I = [s for s in OBD_list_I if "_N_2_" in s]
         OBD_N16_I = [s for s in OBD_list_I if "_N_16_" in s]
-        OBD_N32_I = [s for s in OBD_list_I if "_N_32_" in s]
+        OBD_N64_I = [s for s in OBD_list_I if "_N_64_" in s]
+        OBD_N128_I = [s for s in OBD_list_I if "_N_128_" in s]
 
         thread0 = np.loadtxt(OBD_N2[0]);
         thread1 = np.loadtxt(OBD_N2[1]);
@@ -361,12 +412,19 @@ def make_plots(task):
 
         joined_OBD_N16 = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N32[0]);
-        thread1 = np.loadtxt(OBD_N32[1]);
-        thread2 = np.loadtxt(OBD_N32[2]);
-        thread3 = np.loadtxt(OBD_N32[3]);
+        thread0 = np.loadtxt(OBD_N64[0]);
+        thread1 = np.loadtxt(OBD_N64[1]);
+        thread2 = np.loadtxt(OBD_N64[2]);
+        thread3 = np.loadtxt(OBD_N64[3]);
 
-        joined_OBD_N32 = (thread0 + thread1 + thread2 + thread3)/4
+        joined_OBD_N64 = (thread0 + thread1 + thread2 + thread3)/4
+
+        thread0 = np.loadtxt(OBD_N128[0]);
+        thread1 = np.loadtxt(OBD_N128[1]);
+        thread2 = np.loadtxt(OBD_N128[2]);
+        thread3 = np.loadtxt(OBD_N128[3]);
+
+        joined_OBD_N128 = (thread0 + thread1 + thread2 + thread3)/4
 
         thread0 = np.loadtxt(OBD_N2_I[0]);
         thread1 = np.loadtxt(OBD_N2_I[1]);
@@ -382,25 +440,31 @@ def make_plots(task):
 
         joined_OBD_N16_I = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N32_I[0]);
-        thread1 = np.loadtxt(OBD_N32_I[1]);
-        thread2 = np.loadtxt(OBD_N32_I[2]);
-        thread3 = np.loadtxt(OBD_N32_I[3]);
+        thread0 = np.loadtxt(OBD_N64_I[0]);
+        thread1 = np.loadtxt(OBD_N64_I[1]);
+        thread2 = np.loadtxt(OBD_N64_I[2]);
+        thread3 = np.loadtxt(OBD_N64_I[3]);
 
-        joined_OBD_N32_I = (thread0 + thread1 + thread2 + thread3)/4
+        joined_OBD_N64_I = (thread0 + thread1 + thread2 + thread3)/4
+
+        thread0 = np.loadtxt(OBD_N128_I[0]);
+        thread1 = np.loadtxt(OBD_N128_I[1]);
+        thread2 = np.loadtxt(OBD_N128_I[2]);
+        thread3 = np.loadtxt(OBD_N128_I[3]);
+
+        joined_OBD_N128_I = (thread0 + thread1 + thread2 + thread3)/4
 
         r = np.linspace(0,8,50)
 
         plt.title("N = 2")
         A = 2/np.trapz(joined_OBD_N2*r**2,r)
+        B = 2/np.trapz(joined_OBD_N2_I*r**2,r)
         plt.plot(r,A*joined_OBD_N2,label="No interaction")
-        #plt.plot(r,joined_OBD_N2_I,label="Interaction")
+        plt.plot(r,B*joined_OBD_N2_I,label="Interaction")
 
         better_ana_rho = 2 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "GOOD? rho")
+        plt.plot(r,better_ana_rho, label = "Analytical rho")
 
-
-        #plt.plot(r,ana_rho, label = "Analytical density")
         plt.xlabel("r")
         plt.ylabel("rho(r)")
         plt.legend()
@@ -411,13 +475,13 @@ def make_plots(task):
 
         plt.title("N = 16")
         A = 16/np.trapz(joined_OBD_N16*r**2,r)
+        B = 16/np.trapz(joined_OBD_N16_I*r**2,r)
         plt.plot(r,A*joined_OBD_N16,label="No interaction")
-        #plt.plot(r,joined_OBD_N16_I,label="Interaction")
+        plt.plot(r,B*joined_OBD_N16_I,label="Interaction")
 
         better_ana_rho = 16 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "GOOD? rho")
+        plt.plot(r,better_ana_rho, label = "Analytical rho")
 
-        #plt.plot(r,ana_rho, label = "Analytical density")
         plt.xlabel("r")
         plt.ylabel("rho(r)")
         plt.legend()
@@ -426,52 +490,33 @@ def make_plots(task):
 
 
 
-        plt.title("N = 32")
-        A = 32/np.trapz(joined_OBD_N32*r**2,r)
-        plt.plot(r,A*joined_OBD_N32,label="No interaction")
-        #plt.plot(r,joined_OBD_N32_I,label="Interaction")
+        plt.title("N = 64")
+        A = 64/np.trapz(joined_OBD_N64*r**2,r)
+        B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
+        plt.plot(r,A*joined_OBD_N64,label="No interaction")
+        plt.plot(r,B*joined_OBD_N64_I,label="Interaction")
 
-        better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "GOOD? rho")
+        better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
+        plt.plot(r,better_ana_rho, label = "Analytical rho")
 
-        #plt.plot(r,ana_rho, label = "Analytical density")
         plt.xlabel("r")
         plt.ylabel("rho(r)")
         plt.legend()
         plt.show()
 
-        """
-        for i in range(len(OBD_list)):
-            filename = OBD_list[i]
-            N = N_list_new[i]
-            alpha = alpha_list[i]
-            OBD = np.loadtxt(filename)
-            plt.plot(r,OBD,label="Non_interaction")
+        plt.title("N = 128")
+        A = 128/np.trapz(joined_OBD_N128*r**2,r)
+        B = 128/np.trapz(joined_OBD_N128_I*r**2,r)
+        plt.plot(r,A*joined_OBD_N128,label="No interaction")
+        plt.plot(r,B*joined_OBD_N128_I,label="Interaction")
 
-            OBD_integrate = np.trapz(OBD,r)
-            A = OBD_integrate*np.sqrt(np.pi)/4
+        better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
+        plt.plot(r,better_ana_rho, label = "Analytical rho")
 
-            filename_I = OBD_I_list[i]
-            N_I = N_list_I_new[i]
-            alpha_I = alpha_list_I[i]
-            OBD_I = np.loadtxt(filename_I)
-            plt.plot(r,OBD_I, label="Interacting")
-
-            real_alpha = 0.5
-            ana_rho = A*(r**2)*np.exp(-r**2)
-            rho_integrate = np.trapz(ana_rho,r)
-            print(rho_integrate)
-
-            plt.plot(r,ana_rho, label = "Analytical density")
-
-
-            plt.legend()
-            plt.title("N = %i "% N_I)
-            plt.xlabel("r")
-            plt.ylabel("rho(r)")
-            plt.show()
-
-            """
+        plt.xlabel("r")
+        plt.ylabel("rho(r)")
+        plt.legend()
+        plt.show()
 
 
 

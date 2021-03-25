@@ -141,7 +141,7 @@ void Solver::Gradient_descent(double * shared_alphas){
         alpha_vals_GD[z] = 0;
     }
     double *values = new double[3];                     // Array to contain energy, variance and energy derivative wrt alpha;
-    double alpha_guess = 0.7; //0.55;                          // Initial guess for alpha
+    double alpha_guess = 0.55;                          // Initial guess for alpha
     int counter = 0;                                    // Counter to keep track of actual number of iterations
     double tol;
 
@@ -159,13 +159,13 @@ void Solver::Gradient_descent(double * shared_alphas){
         alpha_vals_GD[i] = alpha_guess;
 
         (this->*Interaction_or_not_GD)(values, alpha_guess);   //Points to correct Monte Carlo simulation (interacting/non-interacting)
-        //# pragma omp master
+        # pragma omp master
         {
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
         if (type_sampling_ ==3){
             tol = tol_GD_*pow(10,floor(log10(N_)));
-            if (N_ == 16 || N_ == 32){tol*=2;}
+            if (N_ == 64){tol*=20;}
         }//{tol = tol_GD_*values[0];}
 
         else{tol = tol_GD_;}
@@ -299,6 +299,8 @@ void Solver::MonteCarlo_GD_interacting(double *values, double alpha){
     Derivate_WF = 0;
     Derivate_WF_E = 0;
 
+    double E_approx = (3./2)*N_;
+
     //Monte Carlo simulation with metropolis sampling
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int n = 0; n < N_; n++){
@@ -307,6 +309,16 @@ void Solver::MonteCarlo_GD_interacting(double *values, double alpha){
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
             DeltaE = wave.Local_energy_interaction(alpha);  //Calculate local energy
+            if(DeltaE < (E_approx/3) || DeltaE >(E_approx*3) || DeltaE <0){        // Emergency test in cas of divergence
+                #pragma omp master
+                {
+                cout << "Energy wack (" << DeltaE
+                 << "), reset walkers & equil. before cont. Thread " << thread_ID_  << " Sampling nr " << cycle*N_ + n << endl;
+                }
+                wave.r2_sum_old_ = wave.Initialize_positions();
+                Equilibrate(alpha);
+                DeltaE = wave.Local_energy_interaction(alpha);
+            }
 
             energy += DeltaE;
             energy_squared += DeltaE*DeltaE;
@@ -408,14 +420,27 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
     //Equilibration step: runs metropolis algorithm without sampling to equilibrate system
     Equilibrate(alpha);
 
+    double E_approx = (3./2)*N_;
+
     //Monte Carlo simulation with metropolis sampling
     start_time_ = omp_get_wtime();
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
             if (OBD_check_ == true){One_body_density(bins);}             //Count particle positions for one body density calculation
             wave.r2_sum_new_ = wave.r2_sum_old_;
-            (this->*metropolis_sampling)(alpha);              //Metropolis test
-            DeltaE = wave.Local_energy_interaction(alpha);    //Calculate local energy
+            (this->*metropolis_sampling)(alpha);                        //Metropolis test
+            DeltaE = wave.Local_energy_interaction(alpha);              //Calculate local energy
+            if(DeltaE < (E_approx-100) || DeltaE >(E_approx+100) || DeltaE <0){        // Emergency test in cas of divergence
+                #pragma omp master
+                {
+                cout << "Energy wack (" << DeltaE
+                 << "), reset walkers & equil. before cont. Thread " << thread_ID_  << " Sampling nr " << cycle*N_ + n << endl;
+                }
+                wave.r2_sum_old_ = wave.Initialize_positions();
+                Equilibrate(alpha);
+                DeltaE = wave.Local_energy_interaction(alpha);
+            }
+
             energies[cycle*N_ + n] += DeltaE;
         }
     }
@@ -564,4 +589,14 @@ void Solver::Write_to_file(string outfilename){
         ofile << setw(15) << setprecision(8) << alpha_list_times_[i] << endl;
     }
     ofile.close();
+}
+
+
+Solver::~Solver(){
+    delete[] alphas_;
+    delete[] energies_;
+    delete[] variances_;
+    delete[] E_L_to_file_;
+    delete[] alpha_list_times_;
+
 }
