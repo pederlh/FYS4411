@@ -29,7 +29,7 @@ public:
     int N_, D_, case_;
     random_device rd_;
 
-    double **r_old_, *r_new_;
+    double **r_old_, *r_new_,**r_copy_;
     double *quantum_force_old_, *quantum_force_new_, *rkl_;
     double r2_sum_old_, r2_sum_new_;
     double tf_middle_, laplace_tf_;
@@ -42,7 +42,7 @@ public:
     double Local_energy_brute_force(double alpha);
     double Update_r_sum(double sum, double r_init, double r_move);
     double Trial_func(double alpha, double sum_r_squared);
-        
+
     //Importance sampling
     void Declare_quantum_force(double D_diff);
     void Initialize_quantum_force(double alpha, int idx);
@@ -59,6 +59,7 @@ public:
     void Update_quantum_force_interaction(double alpha, int idx);
     double Laplace_phi(int idx, double d2_phi, double alpha);
 
+    ~Psi();
 };
 
 #endif

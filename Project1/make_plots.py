@@ -279,7 +279,6 @@ def make_plots(task):
         t2 = []
         t16 = []
         t64 = []
-        t128 = []
 
         N64 = [s for s in runs if "64_N_" in s]
         runs = [s for s in runs if "64_N_" not in s]
@@ -331,20 +330,6 @@ def make_plots(task):
 
         joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N128[0]);
-        t128.append(thread0[0])
-        thread0 = thread0[1:]
-        thread1 = np.loadtxt(N128[1]);
-        t128.append(thread1[0])
-        thread1 = thread1[1:]
-        thread2 = np.loadtxt(N128[2]);
-        t128.append(thread2[0])
-        thread2 = thread2[1:]
-        thread3 = np.loadtxt(N128[3]);
-        t128.append(thread3[0])
-        thread3 = thread3[1:]
-
-        joined_N128 = np.concatenate((thread0,thread1,thread2,thread3))
 
         print("Files has been read, start blocking...")
         (mean, var) = block(joined_N2)
@@ -371,14 +356,6 @@ def make_plots(task):
         index.name = "N = 64"
         print(frame_64)
 
-        (mean, var) = block(joined_N128)
-        std = np.sqrt(var)
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_128 = pd.DataFrame(data,index=['Values'])
-        index = frame_128.index
-        index.name = "N = 128"
-        print(frame_128)
-
     if task == "h":
 
         path = "./Results/1h_one_body_densities/"
@@ -396,7 +373,6 @@ def make_plots(task):
         OBD_N2_I = [s for s in OBD_list_I if "_N_2_" in s]
         OBD_N16_I = [s for s in OBD_list_I if "_N_16_" in s]
         OBD_N64_I = [s for s in OBD_list_I if "_N_64_" in s]
-        OBD_N128_I = [s for s in OBD_list_I if "_N_128_" in s]
 
         thread0 = np.loadtxt(OBD_N2[0]);
         thread1 = np.loadtxt(OBD_N2[1]);
@@ -447,12 +423,6 @@ def make_plots(task):
 
         joined_OBD_N64_I = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N128_I[0]);
-        thread1 = np.loadtxt(OBD_N128_I[1]);
-        thread2 = np.loadtxt(OBD_N128_I[2]);
-        thread3 = np.loadtxt(OBD_N128_I[3]);
-
-        joined_OBD_N128_I = (thread0 + thread1 + thread2 + thread3)/4
 
         r = np.linspace(0,8,50)
 
@@ -506,9 +476,7 @@ def make_plots(task):
 
         plt.title("N = 128")
         A = 128/np.trapz(joined_OBD_N128*r**2,r)
-        B = 128/np.trapz(joined_OBD_N128_I*r**2,r)
         plt.plot(r,A*joined_OBD_N128,label="No interaction")
-        plt.plot(r,B*joined_OBD_N128_I,label="Interaction")
 
         better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
         plt.plot(r,better_ana_rho, label = "Analytical rho")

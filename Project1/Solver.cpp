@@ -64,7 +64,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_interacting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_interacting;
-        tol_GD_ = 1e-3;                                 // Acceptance tolerance for gradient descent
+        tol_GD_ = 1e-4;                                 // Acceptance tolerance for gradient descent
         eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
@@ -164,14 +164,15 @@ void Solver::Gradient_descent(double * shared_alphas){
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
         if (type_sampling_ ==3){
-            tol = tol_GD_*pow(10,floor(log10(N_)));
-            if (N_ == 64){tol*=20;}
-        }//{tol = tol_GD_*values[0];}
+            if (N_ == 64){tol=tol_GD_*pow(10,floor(log10(N_)))*90;}
+            if(N_== 16){tol=tol_GD_*pow(10,floor(log10(N_)))*10;}
+            if(N_==2){tol = tol_GD_;}
+        }
 
         else{tol = tol_GD_;}
 
         //Breaks GD if alpha provides acceptably low sample variance
-        if (values[1] < tol ){
+        if (values[1] < tol && values[1]>0){
             break;
         }
         alpha_guess -= eta_GD_*values[2];
@@ -309,7 +310,7 @@ void Solver::MonteCarlo_GD_interacting(double *values, double alpha){
 
             (this->*metropolis_sampling)(alpha); //Metropolis test
             DeltaE = wave.Local_energy_interaction(alpha);  //Calculate local energy
-            if(DeltaE < (E_approx/3) || DeltaE >(E_approx*3) || DeltaE <0){        // Emergency test in cas of divergence
+            if(DeltaE < (E_approx-200) || DeltaE >(E_approx+300) || DeltaE <0){        // Emergency test in cas of divergence
                 #pragma omp master
                 {
                 cout << "Energy wack (" << DeltaE

@@ -37,6 +37,10 @@ void Psi::Declare_position_interaction(int N, int D, double h, double step, int 
         r_old_[i] = new double[D_];
     }
 
+    r_copy_ = new double*[N_];
+    for (int i = 0; i< N_; i++){
+        r_copy_[i] = new double[D_];
+    }
 }
 
 //Function to declare quantum force, called if importance sampling is chosen.
@@ -248,36 +252,53 @@ double Psi::Trial_func_interaction(double alpha, double sum_r_squared, string ve
     double u = 0;
     double diff;
 
-    double **r_copy = new double*[N_];
-    for (int i = 0; i< N_; i++){
-        r_copy[i] = new double[D_];
-        for (int j = 0; j<D_; j++){
-            r_copy[i][j] = r_old_[i][j];
-        }
-    }
-
     if (version == "new"){
+        for (int i = 0; i< N_; i++){
+            for (int j = 0; j<D_; j++){
+                r_copy_[i][j] = r_old_[i][j];
+            }
+        }
+
         for (int d = 0; d < D_;d++){
-            r_copy[idx][d] = r_new_[d];
+            r_copy_[idx][d] = r_new_[d];
+        }
+        //Evaluate second term i trial WF
+        for (int l = 0; l < N_; l++){
+            for (int m = l+1; m < N_; m++){
+                diff= 0.0;
+                for (int dim = 0; dim <D_; dim ++){
+                    diff += pow(r_copy_[l][dim]-r_copy_[m][dim],2);
+                }
+                diff = sqrt(diff);
+                if (diff <= a_){                        //Checks if particles lie closer than hard-core diameter
+                    return 0.0;                         //If so -> WF collapses
+                }
+                else{
+                    u += log(1-(a_/diff));
+                }
+            }
         }
     }
 
-    //Evaluate second term i trial WF
-    for (int l = 0; l < N_; l++){
-        for (int m = l+1; m < N_; m++){
-            diff= 0.0;
-            for (int dim = 0; dim <D_; dim ++){
-                diff += pow(r_copy[l][dim]-r_copy[m][dim],2);
-            }
-            diff = sqrt(diff);
-            if (diff <= a_){                        //Checks if particles lie closer than hard-core diameter
-                return 0.0;                         //If so -> WF collapses
-            }
-            else{
-                u += log(1-(a_/diff));
+    if (version == "old"){
+        //Evaluate second term i trial WF
+        for (int l = 0; l < N_; l++){
+            for (int m = l+1; m < N_; m++){
+                diff= 0.0;
+                for (int dim = 0; dim <D_; dim ++){
+                    diff += pow(r_old_[l][dim]-r_old_[m][dim],2);
+                }
+                diff = sqrt(diff);
+                if (diff <= a_){                        //Checks if particles lie closer than hard-core diameter
+                    return 0.0;                         //If so -> WF collapses
+                }
+                else{
+                    u += log(1-(a_/diff));
+                }
             }
         }
     }
+
 
     return exp(exp_prod+u);
 }
@@ -395,4 +416,19 @@ double Psi::Local_energy_interaction(double alpha){
     double ana = (3/2)*N_;
 
     return E_L;
+}
+
+
+
+Psi::~Psi(){
+    for (int i = 0; i < N_;i++){
+        delete[] r_old_[i];
+        delete[] r_copy_[i];
+    }
+    delete[] r_old_;
+    delete[] r_copy_;
+    delete[] r_new_;
+    delete[] quantum_force_old_;
+    delete[] quantum_force_new_;
+    delete[] rkl_;
 }
