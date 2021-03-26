@@ -51,7 +51,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
         main_method = &Solver::Gradient_descent;
         Interaction_or_not_GD = &Solver::MonteCarlo_GD_noninteracting;
         Interaction_or_not_optimal = &Solver::MonteCarlo_optval_noninteracting;
-        tol_GD_ = 1e-8;//5*pow(10,-8);                                 // Acceptance tolerance for gradient descent
+        tol_GD_ = 1e-9;//5*pow(10,-8);                                 // Acceptance tolerance for gradient descent
         eta_GD_ = learning_rate;                        // Learning rate for gradient descent
     }
 
@@ -135,15 +135,27 @@ void Solver::Alpha_list(double * shared_alphas){
 //Gradient Descent w/importance sampling for interacting and non-interacting bosons
 void Solver::Gradient_descent(double * shared_alphas){
     string file;
-    int iterations = 500;                                // Max number iterations of GD
+    int iterations = 600;                                // Max number iterations of GD
     double *alpha_vals_GD = new double[iterations];     // Array to store alpha values from GD
     for (int z = 0; z < iterations; z++){
         alpha_vals_GD[z] = 0;
     }
     double *values = new double[3];                     // Array to contain energy, variance and energy derivative wrt alpha;
-    double alpha_guess = 0.55;                          // Initial guess for alpha
+    double alpha_guess = 0.7;//0.55;                          // Initial guess for alpha
+    double alpha_guess_std;                             // Standard deviation of mean of alpha found by all threads
     int counter = 0;                                    // Counter to keep track of actual number of iterations
     double tol;
+    if (type_sampling_ ==3){
+        if (N_ == 64){tol=tol_GD_*pow(10,floor(log10(N_)))*100;}
+        if (N_ == 32){tol=tol_GD_*pow(10,floor(log10(N_)))*10;}
+        if (N_ == 16){tol=tol_GD_*pow(10,floor(log10(N_)));}
+        if (N_ == 2){tol = tol_GD_*1e-2;}
+    }
+    //if (N_ == 128){tol = 1e-5;}
+    else{tol = tol_GD_;}
+
+
+
 
      #pragma omp master
      {
@@ -163,13 +175,6 @@ void Solver::Gradient_descent(double * shared_alphas){
         {
             cout << setw(10) << setprecision(8) << alpha_guess << setw(12) << values[0] << setw(16) << values[1] << " ID: " << thread_ID_ << endl;
         }
-        if (type_sampling_ ==3){
-            if (N_ == 64){tol=tol_GD_*pow(10,floor(log10(N_)))*90;}
-            if(N_== 16){tol=tol_GD_*pow(10,floor(log10(N_)))*10;}
-            if(N_==2){tol = tol_GD_;}
-        }
-
-        else{tol = tol_GD_;}
 
         //Breaks GD if alpha provides acceptably low sample variance
         if (values[1] < tol && values[1]>0){
@@ -177,6 +182,8 @@ void Solver::Gradient_descent(double * shared_alphas){
         }
         alpha_guess -= eta_GD_*values[2];
     }
+
+
 
     cout <<" Convergence after " << counter << " number of iterations  (thread " << to_string(thread_ID_) << ")" << endl;
 
@@ -194,11 +201,25 @@ void Solver::Gradient_descent(double * shared_alphas){
     # pragma omp critical
     {
         double sum = 0.0;
+        double sum_std = 0.0;
         for (int i =0; i < omp_get_num_threads();i++){
             sum += shared_alphas[i];
         }
 
         alpha_guess = sum/omp_get_num_threads();
+
+        for (int i =0; i < omp_get_num_threads();i++){
+            sum_std += pow(shared_alphas[i]-alpha_guess,2);
+        }
+
+        alpha_guess_std = sqrt((1./omp_get_num_threads())*sum_std);
+    }
+
+    # pragma omp master
+    {
+        cout <<" "<<endl;
+        cout << "Mean alpha for N = " << N_ << " +- standard deviation:" <<endl;
+        cout << alpha_guess << " +- " << alpha_guess_std << endl<<endl;
     }
 
 
@@ -427,7 +448,6 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
     start_time_ = omp_get_wtime();
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
-            if (OBD_check_ == true){One_body_density(bins);}             //Count particle positions for one body density calculation
             wave.r2_sum_new_ = wave.r2_sum_old_;
             (this->*metropolis_sampling)(alpha);                        //Metropolis test
             DeltaE = wave.Local_energy_interaction(alpha);              //Calculate local energy
@@ -441,6 +461,7 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
                 Equilibrate(alpha);
                 DeltaE = wave.Local_energy_interaction(alpha);
             }
+            if (OBD_check_ == true){One_body_density(bins);}             //Count particle positions for one body density calculation
 
             energies[cycle*N_ + n] += DeltaE;
         }
@@ -590,14 +611,4 @@ void Solver::Write_to_file(string outfilename){
         ofile << setw(15) << setprecision(8) << alpha_list_times_[i] << endl;
     }
     ofile.close();
-}
-
-
-Solver::~Solver(){
-    delete[] alphas_;
-    delete[] energies_;
-    delete[] variances_;
-    delete[] E_L_to_file_;
-    delete[] alpha_list_times_;
-
 }

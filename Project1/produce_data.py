@@ -52,12 +52,12 @@ if task_prompt == "b":
     num_particles = [1,10,100,500]
     dimentions = 3
     type_energy = [0, 1]
-    mc_cycles = 10000
     type_sampling = 0
     num_threads = 1
     OBD_check = 0
     for c in type_energy:
         for n in num_particles:
+            mc_cycles = 1e6/n
             os.system("./main.out " + str(n) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(c) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
@@ -71,13 +71,13 @@ if task_prompt == "c":
     num_particles = [1,10,100,500]
     dimentions = 3
     type_energy = [0, 1]
-    mc_cycles = 10000
     type_sampling = 1
     num_threads = 1
     OBD_check = 0
 
     for c in type_energy:
         for n in num_particles:
+            mc_cycles = 1e6/n
             os.system("./main.out " + str(n) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(c) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
@@ -91,8 +91,8 @@ if task_prompt == "c":
 
 if task_prompt == "e":
 
-    num_particles = [2,16,64,128]
-    num_etas =  [0.08,0.01,0.001,0.0003]
+    num_particles = [2,16,32,64,128]
+    num_etas =  [0.08,0.01,0.01,0.01,0.01]
     dimentions = 3
     type_energy = 0
     type_sampling = 2
@@ -100,7 +100,7 @@ if task_prompt == "e":
     OBD_check = 1
     for i in range(len(num_particles)):
         mc_cycles = 1000/num_particles[i];
-        mc_cycles_optimal_run = 2**20/(num_particles[i]*num_threads)
+        mc_cycles_optimal_run = 2**18/(num_particles[i])
         os.system("./main.out " + str(num_particles[i]) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run) + " " + str(num_etas[i]))
 
@@ -109,8 +109,8 @@ if task_prompt == "e":
     move_files_ask_plot("e", path, filenames)
 
 if task_prompt == "g":
-    num_particles = [2,16,64]
-    num_etas = [0.08,0.0015,0.001]
+    num_particles = [2,16,32,64]
+    num_etas = [0.08,0.0015,0.001,0.001]
     dimentions = 3
     type_energy = 0
     type_sampling = 3
@@ -118,7 +118,7 @@ if task_prompt == "g":
     OBD_check = 1
     for i in range(len(num_particles)):
         mc_cycles = 1000/num_particles[i];
-        mc_cycles_optimal_run = 2**20/(num_particles[i]*num_threads);
+        mc_cycles_optimal_run = 2**18/(num_particles[i]);
         os.system("./main.out " + str(num_particles[i]) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run) + " " + str(num_etas[i]))
 

@@ -59,7 +59,6 @@ public:
     void Update_quantum_force_interaction(double alpha, int idx);
     double Laplace_phi(int idx, double d2_phi, double alpha);
 
-    ~Psi();
 };
 
 #endif

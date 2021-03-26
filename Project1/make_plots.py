@@ -6,11 +6,16 @@ import pandas as pd
 
 def make_plots(task):
     if task == "b":
-        N = [1,10,50,100]
-        MC = 1000
+        N = [1,10,100,500]
+        MC = 1e6
         string_ID = 0
         path = "./Results/1b_simple_noninteracting/"
 
+        t_avg_a = np.zeros(len(N))
+        t_avg_n = np.zeros(len(N))
+
+        count = 0
+
         alphas = []
         energies_a = []
         variances_a = []
@@ -19,8 +24,9 @@ def make_plots(task):
         variances_n = []
         times_n = []
         for n in N:
-            filename_num = path + "spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt";
-            filename_ana = path + "spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt";
+            mc = int(MC/n)
+            filename_num = path + "spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
+            filename_ana = path + "spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
 
             with open(filename_ana, "r") as infile:
                 lines = infile.readlines()
@@ -54,6 +60,9 @@ def make_plots(task):
             plt.show()
 
 
+            t_avg_a[count] = np.sum(times_a)/len(N)
+            t_avg_n[count] = np.sum(times_n)/len(N)
+
             alphas = []
             energies_a = []
             variances_a = []
@@ -61,13 +70,26 @@ def make_plots(task):
             energies_n = []
             variances_n = []
             times_n = []
+
+            count += 1
+
+        plt.plot(N,t_avg_a,"*" ,label = "Avg. CPU time w/analytical EL")
+        plt.plot(N,t_avg_n,"*" ,label = "Avg. CPU time w/numerical EL")
+        plt.xlabel("Number of particles")
+        plt.ylabel("time [s]")
+        plt.legend()
+        plt.show()
 
     if task == "c":
         N = [1,10,100,500]
-        MC = 10000
+        MC = 1e6
         string_ID = 0
         path = "./Results/1c_implementing_importance_sampling/"
 
+        t_avg_a = np.zeros(len(N))
+        t_avg_n = np.zeros(len(N))
+
+        count = 0
         alphas = []
         energies_a = []
         variances_a = []
@@ -76,8 +98,9 @@ def make_plots(task):
         variances_n = []
         times_n = []
         for n in N:
-            filename_num = path + "importance_spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt";
-            filename_ana = path + "importance_spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(MC) +"_stringID_0" + ".txt";
+            mc = int(MC/n)
+            filename_num = path + "importance_spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
+            filename_ana = path + "importance_spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
 
             with open(filename_ana, "r") as infile:
                 lines = infile.readlines()
@@ -110,6 +133,9 @@ def make_plots(task):
             plt.legend()
             plt.show()
 
+            t_avg_a[count] = np.sum(times_a)/len(N)
+            t_avg_n[count] = np.sum(times_n)/len(N)
+
             alphas = []
             energies_a = []
             variances_a = []
@@ -118,8 +144,16 @@ def make_plots(task):
             variances_n = []
             times_n = []
 
-    if task == "e":
-        """
+            count += 1
+
+        plt.plot(N,t_avg_a,"*" ,label = "Avg. CPU time w/analytical EL")
+        plt.plot(N,t_avg_n,"*" ,label = "Avg. CPU time w/numerical EL")
+        plt.xlabel("Number of particles")
+        plt.ylabel("time [s]")
+        plt.legend()
+        plt.show()
+
+    if task == "d":
         path = "./Results/GD_alphas/"
         os.chdir(path)
         GD = os.listdir()
@@ -136,27 +170,31 @@ def make_plots(task):
 
         numbers, GD = zip(*sorted(zip(numbers, GD)))
 
-        GD_2 = np.loadtxt(GD[0])[1:]
-        GD_16 = np.loadtxt(GD[1])[1:]
-        GD_64 = np.loadtxt(GD[2])[1:]
-        alphas= [GD_2,GD_16,GD_64]
+        GD_2 = np.loadtxt(GD[0])
+        GD_16 = np.loadtxt(GD[1])
+        GD_32 =  np.loadtxt(GD[2])
+        GD_64 = np.loadtxt(GD[3])
+        GD_128 = np.loadtxt(GD[4])
+        alphas= [GD_2,GD_16,GD_32,GD_64,GD_128]
 
-        it_2 = np.linspace(1,len(GD_2),len(GD_2))
-        it_16 = np.linspace(1,len(GD_16),len(GD_16))
-        it_64 = np.linspace(1,len(GD_64),len(GD_64))
-        its = [it_2,it_16,it_64]
+        it_2 = np.linspace(0,len(GD_2),len(GD_2))
+        it_16 = np.linspace(0,len(GD_16),len(GD_16))
+        it_32 = np.linspace(0,len(GD_32),len(GD_32))
+        it_64 = np.linspace(0,len(GD_64),len(GD_64))
+        it_128 = np.linspace(0,len(GD_128),len(GD_128))
+        its = [it_2,it_16,it_32,it_64,it_128]
 
-        for i in range(3):
-            plt.plot(its[i], alphas[i], "*",label = "N = %i" %numbers[i])
-            plt.plot(its[i][-1], alphas[i][-1],"*", markersize = 12)
+        for i in range(len(its)):
+            plt.plot(its[i], alphas[i],label = "N = %i" %numbers[i])
+            plt.plot(its[i][-1], alphas[i][-1],"*")
 
         plt.ylabel("Alpha value")
         plt.xlabel("Number of iterations")
         plt.title("Gradient descent for non-interacting bosons")
         plt.legend()
         plt.show()
-        """
 
+    if task == "e":
         print("Blocking results from GD without repulsion")
 
         path = "./Results/1e_implementing_gradient_descent_and_blocking/"
@@ -165,11 +203,13 @@ def make_plots(task):
 
         t2 = []
         t16 = []
+        t32 = []
         t64 = []
         t128 = []
 
+        N32 = [s for s in runs if "32_N_" in s]
+        runs = [s for s in runs if "32_N_" not in s]
         N64 = [s for s in runs if "64_N_" in s]
-        runs = [s for s in runs if "64_N_" not in s]
         N2 = [s for s in runs if "2_N_" in s]
         N16 = [s for s in runs if "16_N_" in s]
         N128 = [s for s in runs if "128_N_" in s]
@@ -203,6 +243,21 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N32[0]);
+        t32.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N32[1]);
+        t32.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N32[2]);
+        t32.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N32[3]);
+        t32.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
 
         thread0 = np.loadtxt(N64[0]);
         t64.append(thread0[0])
@@ -251,6 +306,14 @@ def make_plots(task):
         index.name = "N = 16"
         print(frame_16)
 
+        (mean, var) = block(joined_N32)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_32 = pd.DataFrame(data,index=['Values'])
+        index = frame_32.index
+        index.name = "N = 32"
+        print(frame_32)
+
         (mean, var) = block(joined_N64)
         std = np.sqrt(var)
         data ={'Mean':[mean], 'STDev':[std]}
@@ -267,7 +330,6 @@ def make_plots(task):
         index.name = "N = 128"
         print(frame_128)
 
-
     if task == "g":
 
         print("Blocking results from GD with repulsion")
@@ -278,10 +340,12 @@ def make_plots(task):
 
         t2 = []
         t16 = []
+        t32 = []
         t64 = []
 
+        N32 = [s for s in runs if "32_N_" in s]
+        runs = [s for s in runs if "32_N_" not in s]
         N64 = [s for s in runs if "64_N_" in s]
-        runs = [s for s in runs if "64_N_" not in s]
         N2 = [s for s in runs if "2_N_" in s]
         N16 = [s for s in runs if "16_N_" in s]
 
@@ -314,6 +378,21 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
+
+        thread0 = np.loadtxt(N32[0]);
+        t32.append(thread0[0])
+        thread0 = thread0[1:]
+        thread1 = np.loadtxt(N32[1]);
+        t32.append(thread1[0])
+        thread1 = thread1[1:]
+        thread2 = np.loadtxt(N32[2]);
+        t32.append(thread2[0])
+        thread2 = thread2[1:]
+        thread3 = np.loadtxt(N32[3]);
+        t32.append(thread3[0])
+        thread3 = thread3[1:]
+
+        joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
 
         thread0 = np.loadtxt(N64[0]);
         t64.append(thread0[0])
@@ -348,6 +427,14 @@ def make_plots(task):
         index.name = "N = 16"
         print(frame_16)
 
+        (mean, var) = block(joined_N32)
+        std = np.sqrt(var)
+        data ={'Mean':[mean], 'STDev':[std]}
+        frame_32 = pd.DataFrame(data,index=['Values'])
+        index = frame_32.index
+        index.name = "N = 32"
+        print(frame_32)
+
         (mean, var) = block(joined_N64)
         std = np.sqrt(var)
         data ={'Mean':[mean], 'STDev':[std]}
@@ -367,11 +454,13 @@ def make_plots(task):
 
         OBD_N2 = [s for s in OBD_list if "_N_2_" in s]
         OBD_N16 = [s for s in OBD_list if "_N_16_" in s]
+        OBD_N32 = [s for s in OBD_list if "_N_32_" in s]
         OBD_N64 = [s for s in OBD_list if "_N_64_" in s]
         OBD_N128 = [s for s in OBD_list if "_N_128_" in s]
 
         OBD_N2_I = [s for s in OBD_list_I if "_N_2_" in s]
         OBD_N16_I = [s for s in OBD_list_I if "_N_16_" in s]
+        OBD_N32_I = [s for s in OBD_list_I if "_N_32_" in s]
         OBD_N64_I = [s for s in OBD_list_I if "_N_64_" in s]
 
         thread0 = np.loadtxt(OBD_N2[0]);
@@ -387,6 +476,13 @@ def make_plots(task):
         thread3 = np.loadtxt(OBD_N16[3]);
 
         joined_OBD_N16 = (thread0 + thread1 + thread2 + thread3)/4
+
+        thread0 = np.loadtxt(OBD_N32[0]);
+        thread1 = np.loadtxt(OBD_N32[1]);
+        thread2 = np.loadtxt(OBD_N32[2]);
+        thread3 = np.loadtxt(OBD_N32[3]);
+
+        joined_OBD_N32 = (thread0 + thread1 + thread2 + thread3)/4
 
         thread0 = np.loadtxt(OBD_N64[0]);
         thread1 = np.loadtxt(OBD_N64[1]);
@@ -416,6 +512,13 @@ def make_plots(task):
 
         joined_OBD_N16_I = (thread0 + thread1 + thread2 + thread3)/4
 
+        thread0 = np.loadtxt(OBD_N32_I[0]);
+        thread1 = np.loadtxt(OBD_N32_I[1]);
+        thread2 = np.loadtxt(OBD_N32_I[2]);
+        thread3 = np.loadtxt(OBD_N32_I[3]);
+
+        joined_OBD_N32_I = (thread0 + thread1 + thread2 + thread3)/4
+
         thread0 = np.loadtxt(OBD_N64_I[0]);
         thread1 = np.loadtxt(OBD_N64_I[1]);
         thread2 = np.loadtxt(OBD_N64_I[2]);
@@ -441,8 +544,6 @@ def make_plots(task):
         plt.show()
 
 
-
-
         plt.title("N = 16")
         A = 16/np.trapz(joined_OBD_N16*r**2,r)
         B = 16/np.trapz(joined_OBD_N16_I*r**2,r)
@@ -457,7 +558,19 @@ def make_plots(task):
         plt.legend()
         plt.show()
 
+        plt.title("N = 32")
+        A = 32/np.trapz(joined_OBD_N32*r**2,r)
+        B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
+        plt.plot(r,A*joined_OBD_N32,label="No interaction")
+        plt.plot(r,B*joined_OBD_N32_I,label="Interaction")
 
+        better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
+        plt.plot(r,better_ana_rho, label = "Analytical rho")
+
+        plt.xlabel("r")
+        plt.ylabel("rho(r)")
+        plt.legend()
+        plt.show()
 
 
         plt.title("N = 64")
@@ -522,13 +635,7 @@ def block(x):
 
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
     task = input("Which task to make plots for? \n"
-                + "Choices are 'b' (simplest), 'c' (importance sampling), 'd' (gradient descent), 'f' (repulsion) or 'g' (one body densities): ")
+                + "Choices are 'b' (simplest), 'c' (importance sampling), 'd' (gradient descent evolution),'e' (no-repulsion) 'g' (repulsion) or 'h' (one body densities): ")
     make_plots(task)

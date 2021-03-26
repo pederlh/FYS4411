@@ -417,18 +417,3 @@ double Psi::Local_energy_interaction(double alpha){
 
     return E_L;
 }
-
-
-
-Psi::~Psi(){
-    for (int i = 0; i < N_;i++){
-        delete[] r_old_[i];
-        delete[] r_copy_[i];
-    }
-    delete[] r_old_;
-    delete[] r_copy_;
-    delete[] r_new_;
-    delete[] quantum_force_old_;
-    delete[] quantum_force_new_;
-    delete[] rkl_;
-}
