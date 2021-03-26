@@ -4,11 +4,12 @@
 //Function to initialize an instance of the wavefunction/hamiltonian class for non-interacting bosons.
 void Psi::Declare_position(int N, int D, double h, double step, int case_type){
 
-    D_ = D;             //Dimentions
-    N_ = N;             //Number of particles
-    h_ = h;             //Stepsize to determine the distributions space of particles
-    step_ = step;       //Stepsize used in numerical differentiation
-    case_ = case_type;  // =0 for non-interacting bosons, =1 for interacting bosons
+    D_ = D;                 //Dimentions
+    N_ = N;                 //Number of particles
+    h_ = h;                 //Stepsize to determine the distributions space of particles
+    step_ = step;           //Stepsize used in numerical differentiation
+    case_ = case_type;      // =0 for non-interacting bosons, =1 for interacting bosons
+    move_step_ = 0.005;    //Delta t in solution of Langevin equation
 
     //Declaring position
     r_new_ = new double[D_];
@@ -29,6 +30,7 @@ void Psi::Declare_position_interaction(int N, int D, double h, double step, int 
     beta_ = 2.82843;        //Scaling for the z-contribution in the trial wave function
     case_ = case_type;      // =0 for non-interacting bosons, =1 for interacting bosons
     a_ = 0.0043;            // Hard-core diameter of bosons
+    move_step_ = 0.005;    //Delta t in solution of Langevin equation
 
     //Declaring position
     r_new_ = new double[D_];
@@ -216,9 +218,8 @@ double Psi::Proposed_move_importance(int idx){
     normal_distribution<double> NDG(0.0,1.0);   //Random number generated from gaussian distribution with mean = 0, std = 1;
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
 
-    double move_step = 0.005;                //Delta t in solution of Langevin equation
     for (int k = 0; k < D_; k++){
-        r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step + NDG(gen)*sqrt(move_step);
+        r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step_ + NDG(gen)*sqrt(move_step_);
         r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[k]);
     }
     return r2_sum_new_;
@@ -231,9 +232,8 @@ double Psi::Proposed_move_interaction(int idx){
     normal_distribution<double> NDG(0.0,1.0);   //Random number generated from gaussian distribution with mean = 0, std = 1;
     uniform_real_distribution<double> RDG(0,1);    //Random double genererator [0,1]
 
-    double move_step = 0.005;               //Delta t in solution of Langevin equation
     for (int k = 0; k < D_; k++){
-        r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step + NDG(gen)*sqrt(move_step);
+        r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step_ + NDG(gen)*sqrt(move_step_);
         r2_sum_new_ = Update_r_sum_interaction(r2_sum_new_, r_old_[idx][k], r_new_[k], k);
     }
     return r2_sum_new_;
@@ -381,7 +381,6 @@ double Psi::Local_energy_interaction(double alpha){
                 }
                 else{
                     u_der = a_/((rkl_[n2] - a_)*(rkl_[n2]*rkl_[n2]));
-                    //if(u_der > 100){cout<<"u_der HUGE"<<endl;}
                     term4 += (a_*a_ - 2*a_*rkl_[n2])/(rkl_[n2]*rkl_[n2]*(rkl_[n2]-a_)*(rkl_[n2]-a_)) + 2*u_der;
                     for (int d = 0; d<D_;d++){
                         distance_vec[d] += (r_old_[n][d] - r_old_[n2][d]) * u_der;
@@ -401,14 +400,6 @@ double Psi::Local_energy_interaction(double alpha){
 
 
         d2_psi += d2_phi + term2 + term3 + term4;
-
-        /*
-        if(d2_phi > 100){cout<<"d2_phi HUGE"<<endl;}
-        if(term2 > 100){cout<<"term2 HUGE"<<endl;}
-        if(term3 > 100){cout<<"term3 HUGE"<<endl;}
-        if(term4 > 100){cout<<"term4 HUGE"<<endl;}
-        */
-
     }
 
 

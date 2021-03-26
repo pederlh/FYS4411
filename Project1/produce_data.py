@@ -39,7 +39,7 @@ else:
 
 """ Choose task """
 task_prompt = input("Which task to run? Choices are 'b' (simplest), 'c' (importance sampling), 'e' (gradient descent + blocking + one body density) or 'g' (everything + repulsion): ")
-if task_prompt not in ['b' , 'c', 'e', 'g']:
+if task_prompt not in ['b' , 'c', 'e', 'g',"delta_t"]:
     print("Input not recognized. Aborting.")
     sys.exit(1)
 
@@ -125,3 +125,26 @@ if task_prompt == "g":
     path = "./Results/1g_implementing_repulsion/"
     filenames = "INTERACTION_OPTIMAL_ALPHA*.txt"
     move_files_ask_plot("g", path, filenames)
+
+
+if task_prompt == "delta_t":
+    num_particles = 50
+    dimentions = 3
+    type_energy = 0
+    type_sampling = 1
+    num_threads = 1
+    OBD_check = 0
+    dt = "0.005"
+    mc_cycles = 1e6/num_particles
+
+    os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
+
+    path = "./Results/data_for_report/"
+    filename = "dt_run_" + dt + "_ana.txt"
+    os.system("mv " + filename + " " + path)
+
+
+
+    """
+    Husk å fikse delta t !!!!!!!!!!!!!!!
+    """

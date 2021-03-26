@@ -25,7 +25,7 @@ class Psi {
 
 public:
 
-    double h_, step_, D_diff_, beta_, a_;
+    double h_, step_, D_diff_, beta_, a_, move_step_;
     int N_, D_, case_;
     random_device rd_;
 

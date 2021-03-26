@@ -81,11 +81,18 @@ int main(int argc, char const *argv[]) {
         }
 
         if (type_sampling == 1){
+
+
             outfilename =   "importance_spherical_HO_" + to_string(dimentions) + "D_" + calc +
                             "_N_" + to_string(num_particles) + "_MC_" + to_string(mc_cycles) +
                             "_stringID_" + to_string(ID) + ".txt";
 
             mysolver.Write_to_file(outfilename);
+            /*
+            string dt = "0.00001";
+            outfilename = "dt_run_" + dt + "_ana.txt";
+            mysolver.Write_to_file(outfilename);
+            */
         }
     }
     return 0;

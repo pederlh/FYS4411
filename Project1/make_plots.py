@@ -599,6 +599,27 @@ def make_plots(task):
         plt.legend()
         plt.show()
 
+    if task =="deltat":
+
+        path = "./Results/data_for_report"
+        dts = [1.0,5.0,0.1,0.5,0.01,0.05,0.001,0.005,0.0001,0.0005,0.00001,0.00005]
+        variance = np.zeros(len(dts))
+        time = np.zeros(len(dts))
+        energy = np.zeros(len(dts))
+
+        for i in range(len(dts)):
+            filename_num = path + "dt_run_" + str(dts[i]) + "_num.txt"
+            filename_ana = path + "dt_run_" + str(dts[i]) + "_ana.txt"
+
+            with open(filename_num,"r") as infile:
+                lines = infile.readlines()
+                vals = lines[5].split("")
+                energy[i] = float(vals[1])
+                variance[i] = float(vals[2])
+                time = float(vals[3])
+
+
+
 
 
 def block(x):
