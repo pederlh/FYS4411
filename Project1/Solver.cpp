@@ -151,7 +151,6 @@ void Solver::Gradient_descent(double * shared_alphas){
         if (N_ == 16){tol=tol_GD_*pow(10,floor(log10(N_)));}
         if (N_ == 2){tol = tol_GD_*1e-2;}
     }
-    //if (N_ == 128){tol = 1e-5;}
     else{tol = tol_GD_;}
 
 
