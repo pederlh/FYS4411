@@ -579,11 +579,11 @@ def make_plots(task):
         plotname = "N_2.pdf"
         A = 2/np.trapz(joined_OBD_N2*r**2,r)
         B = 2/np.trapz(joined_OBD_N2_I*r**2,r)
-        plt.plot(r,A*joined_OBD_N2,label="No interaction")
-        plt.plot(r,B*joined_OBD_N2_I,label="Interaction")
+        plt.plot(r[:20],A*joined_OBD_N2[:20],label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N2_I[:20],label="Interaction")
 
         better_ana_rho = 2 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "Analytical rho")
+        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
 
         plt.xlabel("r",fontsize = fsz)
         plt.ylabel("$\\rho(r)$",fontsize = fsz)
@@ -598,11 +598,11 @@ def make_plots(task):
         plotname = "N_16.pdf"
         A = 16/np.trapz(joined_OBD_N16*r**2,r)
         B = 16/np.trapz(joined_OBD_N16_I*r**2,r)
-        plt.plot(r,A*joined_OBD_N16,label="No interaction")
-        plt.plot(r,B*joined_OBD_N16_I,label="Interaction")
+        plt.plot(r[:20],A*joined_OBD_N16[:20],label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N16_I[:20],label="Interaction")
 
         better_ana_rho = 16 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "Analytical rho")
+        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
 
         plt.xlabel("r",fontsize = fsz)
         plt.ylabel("$\\rho(r)$",fontsize = fsz)
@@ -616,11 +616,11 @@ def make_plots(task):
         plotname = "N_32.pdf"
         A = 32/np.trapz(joined_OBD_N32*r**2,r)
         B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
-        plt.plot(r,A*joined_OBD_N32,label="No interaction")
-        plt.plot(r,B*joined_OBD_N32_I,label="Interaction")
+        plt.plot(r[:20],A*joined_OBD_N32[:20],label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N32_I[:20],label="Interaction")
 
         better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "Analytical rho")
+        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
 
         plt.xlabel("r",fontsize = fsz)
         plt.ylabel("$\\rho(r)$",fontsize = fsz)
@@ -635,11 +635,11 @@ def make_plots(task):
         plotname = "N_64.pdf"
         A = 64/np.trapz(joined_OBD_N64*r**2,r)
         B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
-        plt.plot(r,A*joined_OBD_N64,label="No interaction")
-        plt.plot(r,B*joined_OBD_N64_I,label="Interaction")
+        plt.plot(r[:20],A*joined_OBD_N64[:20],label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N64_I[:20],label="Interaction")
 
         better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "Analytical rho")
+        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
 
         plt.xlabel("r",fontsize = fsz)
         plt.ylabel("$\\rho(r)$",fontsize = fsz)
@@ -652,10 +652,10 @@ def make_plots(task):
         plt.title("N = 128",fontsize = fsz)
         plotname = "N_128.pdf"
         A = 128/np.trapz(joined_OBD_N128*r**2,r)
-        plt.plot(r,A*joined_OBD_N128,label="No interaction")
+        plt.plot(r[:20],A*joined_OBD_N128[:20],"b",label="No interaction")
 
         better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r,better_ana_rho, label = "Analytical rho")
+        plt.plot(r[:20],better_ana_rho[:20],"g", label = "Analytical rho")
 
         plt.xlabel("r",fontsize = fsz)
         plt.ylabel("$\\rho(r)$",fontsize = fsz)
