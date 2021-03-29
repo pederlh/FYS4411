@@ -9,11 +9,13 @@ def make_plots(task):
     if task == "b":
         N = [1,10,100,500]
         MC = 1e6
-        string_ID = 0
         path = "./Results/1b_simple_noninteracting/"
 
         t_avg_a = np.zeros(len(N))
         t_avg_n = np.zeros(len(N))
+
+        t_std_a = np.zeros(len(N))
+        t_std_n = np.zeros(len(N))
 
         count = 0
 
@@ -67,8 +69,13 @@ def make_plots(task):
             plt.show()
 
 
-            t_avg_a[count] = np.sum(times_a)/len(times_a)
-            t_avg_n[count] = np.sum(times_n)/len(times_n)
+            t_avg_a[count] = np.mean(times_a)
+            t_avg_n[count] = np.mean(times_n)
+
+            t_std_a[count] = np.std(times_a)
+            t_std_n[count] = np.std(times_n)
+
+
 
             alphas = []
             energies_a = []
@@ -89,13 +96,14 @@ def make_plots(task):
         """
 
         print("avg time num:")
-        print("")
         print(t_avg_n)
-        print("")
-        print("")
+        print("std time num:")
+        print(t_std_n, "\n")
         print("avg time ana:")
-        print("")
         print(t_avg_a)
+        print("std time ana:")
+        print(t_std_a, "\n")
+
     #Plots local energy and std for gridsearch mtropolis-hastings MC
     if task == "c":
         N = [1,10,100,500]
@@ -105,6 +113,9 @@ def make_plots(task):
 
         t_avg_a = np.zeros(len(N))
         t_avg_n = np.zeros(len(N))
+
+        t_std_a = np.zeros(len(N))
+        t_std_n = np.zeros(len(N))
 
         count = 0
         alphas = []
@@ -156,8 +167,11 @@ def make_plots(task):
             plt.savefig(plotname)
             plt.show()
 
-            t_avg_a[count] = np.sum(times_a)/len(times_a)
-            t_avg_n[count] = np.sum(times_n)/len(times_a)
+            t_avg_a[count] = np.mean(times_a)
+            t_avg_n[count] = np.mean(times_n)
+
+            t_std_a[count] = np.std(times_a)
+            t_std_n[count] = np.std(times_n)
 
             alphas = []
             energies_a = []
