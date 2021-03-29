@@ -62,8 +62,8 @@ def make_plots(task):
         times_n = []
         for n in N:
             mc = int(MC/n)
-            filename_num = path + "spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
-            filename_ana = path + "spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
+            filename_num = path + "spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt"
+            filename_ana = path + "spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt"
 
             with open(filename_ana, "r") as infile:
                 lines = infile.readlines()
@@ -161,8 +161,8 @@ def make_plots(task):
         times_n = []
         for n in N:
             mc = int(MC/n)
-            filename_num = path + "importance_spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
-            filename_ana = path + "importance_spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt";
+            filename_num = path + "importance_spherical_HO_3" + "D_num" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt"
+            filename_ana = path + "importance_spherical_HO_3" + "D_ana" +"_N_"+ str(n) + "_MC_"+ str(mc) +"_stringID_0" + ".txt"
 
             with open(filename_ana, "r") as infile:
                 lines = infile.readlines()
@@ -305,76 +305,76 @@ def make_plots(task):
         N16 = [s for s in runs if "16_N_" in s]
         N128 = [s for s in runs if "128_N_" in s]
 
-        thread0 = np.loadtxt(N2[0]);
+        thread0 = np.loadtxt(N2[0])
         t2.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N2[1]);
+        thread1 = np.loadtxt(N2[1])
         t2.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N2[2]);
+        thread2 = np.loadtxt(N2[2])
         t2.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N2[3]);
+        thread3 = np.loadtxt(N2[3])
         t2.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N16[0]);
+        thread0 = np.loadtxt(N16[0])
         t16.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N16[1]);
+        thread1 = np.loadtxt(N16[1])
         t16.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N16[2]);
+        thread2 = np.loadtxt(N16[2])
         t16.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N16[3]);
+        thread3 = np.loadtxt(N16[3])
         t16.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N32[0]);
+        thread0 = np.loadtxt(N32[0])
         t32.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N32[1]);
+        thread1 = np.loadtxt(N32[1])
         t32.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N32[2]);
+        thread2 = np.loadtxt(N32[2])
         t32.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N32[3]);
+        thread3 = np.loadtxt(N32[3])
         t32.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N64[0]);
+        thread0 = np.loadtxt(N64[0])
         t64.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N64[1]);
+        thread1 = np.loadtxt(N64[1])
         t64.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N64[2]);
+        thread2 = np.loadtxt(N64[2])
         t64.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N64[3]);
+        thread3 = np.loadtxt(N64[3])
         t64.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N128[0]);
+        thread0 = np.loadtxt(N128[0])
         t128.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N128[1]);
+        thread1 = np.loadtxt(N128[1])
         t128.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N128[2]);
+        thread2 = np.loadtxt(N128[2])
         t128.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N128[3]);
+        thread3 = np.loadtxt(N128[3])
         t128.append(thread3[0])
         thread3 = thread3[1:]
 
@@ -440,61 +440,61 @@ def make_plots(task):
         N2 = [s for s in runs if "2_N_" in s]
         N16 = [s for s in runs if "16_N_" in s]
 
-        thread0 = np.loadtxt(N2[0]);
+        thread0 = np.loadtxt(N2[0])
         t2.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N2[1]);
+        thread1 = np.loadtxt(N2[1])
         t2.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N2[2]);
+        thread2 = np.loadtxt(N2[2])
         t2.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N2[3]);
+        thread3 = np.loadtxt(N2[3])
         t2.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N16[0]);
+        thread0 = np.loadtxt(N16[0])
         t16.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N16[1]);
+        thread1 = np.loadtxt(N16[1])
         t16.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N16[2]);
+        thread2 = np.loadtxt(N16[2])
         t16.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N16[3]);
+        thread3 = np.loadtxt(N16[3])
         t16.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N32[0]);
+        thread0 = np.loadtxt(N32[0])
         t32.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N32[1]);
+        thread1 = np.loadtxt(N32[1])
         t32.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N32[2]);
+        thread2 = np.loadtxt(N32[2])
         t32.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N32[3]);
+        thread3 = np.loadtxt(N32[3])
         t32.append(thread3[0])
         thread3 = thread3[1:]
 
         joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
 
-        thread0 = np.loadtxt(N64[0]);
+        thread0 = np.loadtxt(N64[0])
         t64.append(thread0[0])
         thread0 = thread0[1:]
-        thread1 = np.loadtxt(N64[1]);
+        thread1 = np.loadtxt(N64[1])
         t64.append(thread1[0])
         thread1 = thread1[1:]
-        thread2 = np.loadtxt(N64[2]);
+        thread2 = np.loadtxt(N64[2])
         t64.append(thread2[0])
         thread2 = thread2[1:]
-        thread3 = np.loadtxt(N64[3]);
+        thread3 = np.loadtxt(N64[3])
         t64.append(thread3[0])
         thread3 = thread3[1:]
 
@@ -554,66 +554,66 @@ def make_plots(task):
         OBD_N32_I = [s for s in OBD_list_I if "_N_32_" in s]
         OBD_N64_I = [s for s in OBD_list_I if "_N_64_" in s]
 
-        thread0 = np.loadtxt(OBD_N2[0]);
-        thread1 = np.loadtxt(OBD_N2[1]);
-        thread2 = np.loadtxt(OBD_N2[2]);
-        thread3 = np.loadtxt(OBD_N2[3]);
+        thread0 = np.loadtxt(OBD_N2[0])
+        thread1 = np.loadtxt(OBD_N2[1])
+        thread2 = np.loadtxt(OBD_N2[2])
+        thread3 = np.loadtxt(OBD_N2[3])
 
         joined_OBD_N2 = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N16[0]);
-        thread1 = np.loadtxt(OBD_N16[1]);
-        thread2 = np.loadtxt(OBD_N16[2]);
-        thread3 = np.loadtxt(OBD_N16[3]);
+        thread0 = np.loadtxt(OBD_N16[0])
+        thread1 = np.loadtxt(OBD_N16[1])
+        thread2 = np.loadtxt(OBD_N16[2])
+        thread3 = np.loadtxt(OBD_N16[3])
 
         joined_OBD_N16 = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N32[0]);
-        thread1 = np.loadtxt(OBD_N32[1]);
-        thread2 = np.loadtxt(OBD_N32[2]);
-        thread3 = np.loadtxt(OBD_N32[3]);
+        thread0 = np.loadtxt(OBD_N32[0])
+        thread1 = np.loadtxt(OBD_N32[1])
+        thread2 = np.loadtxt(OBD_N32[2])
+        thread3 = np.loadtxt(OBD_N32[3])
 
         joined_OBD_N32 = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N64[0]);
-        thread1 = np.loadtxt(OBD_N64[1]);
-        thread2 = np.loadtxt(OBD_N64[2]);
-        thread3 = np.loadtxt(OBD_N64[3]);
+        thread0 = np.loadtxt(OBD_N64[0])
+        thread1 = np.loadtxt(OBD_N64[1])
+        thread2 = np.loadtxt(OBD_N64[2])
+        thread3 = np.loadtxt(OBD_N64[3])
 
         joined_OBD_N64 = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N128[0]);
-        thread1 = np.loadtxt(OBD_N128[1]);
-        thread2 = np.loadtxt(OBD_N128[2]);
-        thread3 = np.loadtxt(OBD_N128[3]);
+        thread0 = np.loadtxt(OBD_N128[0])
+        thread1 = np.loadtxt(OBD_N128[1])
+        thread2 = np.loadtxt(OBD_N128[2])
+        thread3 = np.loadtxt(OBD_N128[3])
 
         joined_OBD_N128 = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N2_I[0]);
-        thread1 = np.loadtxt(OBD_N2_I[1]);
-        thread2 = np.loadtxt(OBD_N2_I[2]);
-        thread3 = np.loadtxt(OBD_N2_I[3]);
+        thread0 = np.loadtxt(OBD_N2_I[0])
+        thread1 = np.loadtxt(OBD_N2_I[1])
+        thread2 = np.loadtxt(OBD_N2_I[2])
+        thread3 = np.loadtxt(OBD_N2_I[3])
 
         joined_OBD_N2_I = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N16_I[0]);
-        thread1 = np.loadtxt(OBD_N16_I[1]);
-        thread2 = np.loadtxt(OBD_N16_I[2]);
-        thread3 = np.loadtxt(OBD_N16_I[3]);
+        thread0 = np.loadtxt(OBD_N16_I[0])
+        thread1 = np.loadtxt(OBD_N16_I[1])
+        thread2 = np.loadtxt(OBD_N16_I[2])
+        thread3 = np.loadtxt(OBD_N16_I[3])
 
         joined_OBD_N16_I = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N32_I[0]);
-        thread1 = np.loadtxt(OBD_N32_I[1]);
-        thread2 = np.loadtxt(OBD_N32_I[2]);
-        thread3 = np.loadtxt(OBD_N32_I[3]);
+        thread0 = np.loadtxt(OBD_N32_I[0])
+        thread1 = np.loadtxt(OBD_N32_I[1])
+        thread2 = np.loadtxt(OBD_N32_I[2])
+        thread3 = np.loadtxt(OBD_N32_I[3])
 
         joined_OBD_N32_I = (thread0 + thread1 + thread2 + thread3)/4
 
-        thread0 = np.loadtxt(OBD_N64_I[0]);
-        thread1 = np.loadtxt(OBD_N64_I[1]);
-        thread2 = np.loadtxt(OBD_N64_I[2]);
-        thread3 = np.loadtxt(OBD_N64_I[3]);
+        thread0 = np.loadtxt(OBD_N64_I[0])
+        thread1 = np.loadtxt(OBD_N64_I[1])
+        thread2 = np.loadtxt(OBD_N64_I[2])
+        thread3 = np.loadtxt(OBD_N64_I[3])
 
         joined_OBD_N64_I = (thread0 + thread1 + thread2 + thread3)/4
 
@@ -713,7 +713,7 @@ def make_plots(task):
         plt.savefig(path+plotname)
         plt.show()
 
-    if task =="deltat":
+    if task =="delta_t":
 
         path = "./Results/data_for_report/"
         #dts = [1.0,5.0,0.1,0.5,0.01,0.05,0.001,0.005,0.0001,0.0005,0.00001,0.00005]
@@ -759,7 +759,7 @@ def make_plots(task):
 
 if __name__ == "__main__":
     print("Possible commands: 'b' (simplest), 'c' (importance sampling), 'd' (gradient descent evolution), \n" \
-        + "'e' (no-repulsion), 'g' (repulsion), 'h' (one body densities) and 'deltat' (find optimal delta t)")
+        + "'e' (no-repulsion), 'g' (repulsion), 'h' (one body densities) and 'delta_t' (find optimal delta t)")
     task = input("Which task to make plots for? ")
     assert task in ["b", "c", "d", "e", "g", "h", "deltat"], "Input not recognized."
     make_plots(task)
