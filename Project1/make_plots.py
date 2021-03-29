@@ -142,7 +142,6 @@ def make_plots(task):
     if task == "c":
         N = [1,10,100,500]
         MC = 1e6
-        string_ID = 0
         path = "./Results/1c_implementing_importance_sampling/"
 
         t_avg_a = np.zeros(len(N))

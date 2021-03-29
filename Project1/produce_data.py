@@ -98,7 +98,7 @@ if task_prompt == "e":
     num_threads = 4
     OBD_check = 1
     for i in range(len(num_particles)):
-        mc_cycles = 1000/num_particles[i];
+        mc_cycles = 1000/num_particles[i]
         mc_cycles_optimal_run = 2**18/(num_particles[i])
         os.system("./main.out " + str(num_particles[i]) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " \
                                     + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check) + " " + str(mc_cycles_optimal_run) + " " + str(num_etas[i]))
