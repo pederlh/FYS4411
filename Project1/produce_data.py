@@ -92,7 +92,7 @@ if task_prompt == "c":
 if task_prompt == "e":
 
     num_particles = [2,16,32,64,128]
-    num_etas =  [0.08,0.01,0.01,0.01,0.01]
+    num_etas =  [0.08,0.015,0.01,0.01,0.01]
     dimentions = 3
     type_energy = 0
     type_sampling = 2

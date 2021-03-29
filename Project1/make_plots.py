@@ -271,6 +271,8 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N2_mean = np.mean(joined_N2)
+        joined_N2_std = np.std(joined_N2)
 
         thread0 = np.loadtxt(N16[0]);
         t16.append(thread0[0])
@@ -286,6 +288,8 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N16_mean = np.mean(joined_N16)
+        joined_N16_std = np.std(joined_N16)
 
         thread0 = np.loadtxt(N32[0]);
         t32.append(thread0[0])
@@ -301,6 +305,8 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N32_mean = np.mean(joined_N32)
+        joined_N32_std = np.std(joined_N32)
 
         thread0 = np.loadtxt(N64[0]);
         t64.append(thread0[0])
@@ -316,6 +322,8 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N64_mean = np.mean(joined_N64)
+        joined_N64_std = np.std(joined_N64)
 
         thread0 = np.loadtxt(N128[0]);
         t128.append(thread0[0])
@@ -331,47 +339,81 @@ def make_plots(task):
         thread3 = thread3[1:]
 
         joined_N128 = np.concatenate((thread0,thread1,thread2,thread3))
+        joined_N128_mean = np.mean(joined_N128)
+        joined_N128_std = np.std(joined_N128)
 
-        print("Files has been read, start blocking...")
+        print("Files have been read, start blocking...")
         (mean, var) = block(joined_N2)
         std = np.sqrt(var)
+        """
         data ={'Mean':[mean], 'STDev':[std]}
         frame_2 = pd.DataFrame(data,index=['Values'])
         index = frame_2.index
         index.name = "N = 2"
         print(frame_2)
+        """
+
+        print("Statistical values:\n")
+        print("N=2")
+        print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N2_mean, joined_N2_std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+
 
         (mean, var) = block(joined_N16)
         std = np.sqrt(var)
+        """
         data ={'Mean':[mean], 'STDev':[std]}
         frame_16 = pd.DataFrame(data,index=['Values'])
         index = frame_16.index
         index.name = "N = 16"
         print(frame_16)
+        """
+
+        print("\n N=16")
+        print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N16_mean, joined_N16_std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
 
         (mean, var) = block(joined_N32)
         std = np.sqrt(var)
+        """
         data ={'Mean':[mean], 'STDev':[std]}
         frame_32 = pd.DataFrame(data,index=['Values'])
         index = frame_32.index
         index.name = "N = 32"
         print(frame_32)
+        """
+        print("\n N=32")
+        print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N32_mean, joined_N32_std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
 
         (mean, var) = block(joined_N64)
         std = np.sqrt(var)
+        """
         data ={'Mean':[mean], 'STDev':[std]}
         frame_64 = pd.DataFrame(data,index=['Values'])
         index = frame_64.index
         index.name = "N = 64"
         print(frame_64)
+        """
+
+        print("\n N=64")
+        print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N64_mean, joined_N64_std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
 
         (mean, var) = block(joined_N128)
         std = np.sqrt(var)
+
+
+        print("\n N=128")
+        print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N128_mean, joined_N128_std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+        """
         data ={'Mean':[mean], 'STDev':[std]}
         frame_128 = pd.DataFrame(data,index=['Values'])
         index = frame_128.index
         index.name = "N = 128"
         print(frame_128)
+        """
 
     if task == "g":
 
