@@ -137,7 +137,7 @@ if task_prompt == "delta_t":
 
     os.system("./main.out " + str(num_particles) + " " + str(dimentions) + " " + str(mc_cycles) + " " + str(type_energy) + " " + str(type_sampling) + " " + str(num_threads) + " " + str(OBD_check))
 
-    path = "./Results/data_for_report/"
+    path = "./Results/delta_t_comparisons/"
     filename = "dt_run_" + dt + "_ana.txt"
     os.system("mv " + filename + " " + path)
 

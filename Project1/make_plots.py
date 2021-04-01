@@ -797,48 +797,43 @@ def make_plots(task):
         path = "./Results/data_for_report/"
         #dts = [1.0,5.0,0.1,0.5,0.01,0.05,0.001,0.005,0.0001,0.0005,0.00001,0.00005]
         dts= ["5.0","1.0","0.5","0.1","0.05","0.01","0.005","0.001","0.0005","0.0001","0.00005","0.00001"]
-        variance = np.zeros(len(dts))
-        time = np.zeros(len(dts))
-        energy = np.zeros(len(dts))
 
-        outfile_num = path + "delta_t_comparrison_num.txt"
+        energy_045 = np.zeros(len(dts))     # alpha = 0.45
+        variance_045 = np.zeros(len(dts))   
+
+        energy_050 = np.zeros(len(dts))     # alpha = 0.50
+        variance_050 = np.zeros(len(dts))   
+
+        energy_055 = np.zeros(len(dts))     # alpha = 0.55
+        variance_055 = np.zeros(len(dts))   
+
         outfile_ana = path + "delta_t_comparrison_ana.txt"
 
-        variance_n = np.zeros(len(dts))
-        time_n = np.zeros(len(dts))
-        energy_n = np.zeros(len(dts))
-
         for i in range(len(dts)):
-            filename_num = path + "dt_run_" + dts[i] + "_num.txt"
             filename_ana = path + "dt_run_" + dts[i] + "_ana.txt"
-
-            with open(filename_num,"r") as infile:
-                lines = infile.readlines()
-                vals = lines[5].split()
-                energy_n[i] = float(vals[1])
-                variance_n[i] = float(vals[2])
-                time_n[i] = float(vals[3])
 
             with open(filename_ana,"r") as infile:
                 lines = infile.readlines()
-                vals = lines[5].split()
-                energy[i] = float(vals[1])
-                variance[i] = float(vals[2])
-                time[i] = float(vals[3])
 
+                energy_045[i] = float(lines[4].split()[1])
+                variance_045[i] = float(lines[4].split()[2])
 
-        with open(outfile_num,"w") as outfile:
-            for i in range(len(dts)):
-                outfile.write(dts[i]+ " " + str(energy_n[i]) + " " + str(np.sqrt(variance_n[i])) + " " + str(time_n[i])+"\n")
+                energy_050[i] = float(lines[5].split()[1])
+                variance_050[i] = float(lines[5].split()[2])
+
+                energy_055[i] = float(lines[6].split()[1])
+                variance_055[i] = float(lines[6].split()[2])
 
         with open(outfile_ana,"w") as outfile:
+            outfile.write("dt - E_045 - var_045 - E_050 - var_055 - E_055 - var_055 \n")
             for i in range(len(dts)):
-                outfile.write(dts[i]+ " " + str(energy[i]) + " " + str(np.sqrt(variance[i])) + " " + str(time[i])+"\n")
+                outfile.write(dts[i]+ " & " + str(energy_045[i]) + " & " + str(variance_045[i]) + " & " + str(energy_050[i]) \
+                                    + " & " + str(variance_050[i]) + " & " + str(energy_055[i]) + " & " + str(variance_055[i]) + " \\\\ \n")
 
 
 if __name__ == "__main__":
     print("Possible commands: 'b' (simplest), 'c' (importance sampling), 'd' (gradient descent evolution), \n" \
         + "'e' (no-repulsion), 'g' (repulsion), 'h' (one body densities) and 'delta_t' (find optimal delta t)")
     task = input("Which task to make plots for? ")
-    assert task in ["b", "c", "d", "e", "g", "h", "deltat"], "Input not recognized."
+    assert task in ["b", "c", "d", "e", "g", "h", "delta_t"], "Input not recognized."
     make_plots(task)
