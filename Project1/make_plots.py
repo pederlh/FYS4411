@@ -2,7 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
+import seaborn as sns
 
+plt.style.use('seaborn')
+sns.set(font_scale=1.35)
 """ Script that both creates plots and performs blocking on local energy data sets """
 
 def block(x):
@@ -79,7 +82,7 @@ def make_plots(task):
                 for line in lines[1:]:
                     vals = line.split()
                     energies_n.append(float(vals[1]))
-                    variances_n.append(float(vals[2]))
+                    variances_n.append(float(vals[2])) 
                     times_n.append(float(vals[3]))
 
             analytical_E = (3/2)*n
@@ -87,19 +90,20 @@ def make_plots(task):
             std_a = np.sqrt(variances_a)
             std_n = np.sqrt(variances_n)
 
-            fsz = 14
+            # fsz = 14
             n_str = "%i"%n
             plotname = "./Results/Plots/b/N_" + n_str +".pdf"
-            plt.title("Number of particles = %i" % n, fontsize = fsz)
-            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Local energy (analytical)")
-            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Local energy (numerical)")
-            plt.axhline(y=analytical_E, color='b', linestyle='-', label = "Local energy (exact)")
-            plt.xlabel("Alpha", fontsize = fsz )
-            plt.ylabel("Local energy", fontsize = fsz)
-            plt.xticks(fontsize=fsz )
-            plt.yticks(fontsize= fsz)
-            plt.legend(fontsize = fsz-2)
+            #plt.title("Number of particles = %i" % n, fontsize = fsz)
+            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+            plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
+            plt.xlabel(r"$\alpha$") #, fontsize = fsz )
+            plt.ylabel(r"$\langle E_L \rangle$") #, fontsize = fsz)
+            plt.xticks() # plt.xticks(fontsize=fsz)
+            plt.yticks() # plt.yticks(fontsize= fsz)
+            plt.legend() # plt.legend(fontsize = fsz-2)
             plt.savefig(plotname)
+            plt.grid('--')
             plt.show()
 
 
@@ -185,19 +189,21 @@ def make_plots(task):
             std_a = np.sqrt(variances_a)
             std_n = np.sqrt(variances_n)
 
-            fsz = 14
+            # fsz = 14
             n_str = "%i" % n
             plotname = "./Results/Plots/c/N_" + n_str + ".pdf"
-            plt.title("Number of particles = %i" % n, fontsize = fsz)
-            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Local energy (analytical)")
-            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Local energy (numerical)")
-            plt.axhline(y=analytical_E, color='b', linestyle='-', label = "Local energy (exact)")
-            plt.xlabel("alpha",fontsize = fsz)
-            plt.ylabel("Local energy",fontsize = fsz)
-            plt.xticks(fontsize=fsz )
-            plt.yticks(fontsize= fsz)
-            plt.legend(fontsize = fsz-2)
+            # plt.title("Number of particles = %i" % n, fontsize = fsz)
+            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative + imp. sampling", markeredgewidth=1)
+            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative + imp. sampling", markeredgewidth=1)
+            plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
+            plt.xlabel(r"$\alpha$")
+            plt.ylabel(r"$\langle E_L \rangle$")
+
+            plt.xticks()
+            plt.yticks()
+            plt.legend()
             plt.savefig(plotname)
+            plt.grid('--')
             plt.show()
 
             t_avg_a[count] = np.mean(times_a)
