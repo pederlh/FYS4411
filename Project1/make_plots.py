@@ -82,13 +82,13 @@ def make_plots(task):
                 for line in lines[1:]:
                     vals = line.split()
                     energies_n.append(float(vals[1]))
-                    variances_n.append(float(vals[2])) 
+                    variances_n.append(float(vals[2]))
                     times_n.append(float(vals[3]))
 
             analytical_E = (3/2)*n
 
-            std_a = np.sqrt(variances_a)
-            std_n = np.sqrt(variances_n)
+            std_a = np.sqrt(variances_a)/np.sqrt(len(variances_a))
+            std_n = np.sqrt(variances_n)/np.sqrt(len(variances_n))
 
             # fsz = 14
             n_str = "%i"%n
@@ -110,8 +110,8 @@ def make_plots(task):
             t_avg_a[count] = np.mean(times_a)
             t_avg_n[count] = np.mean(times_n)
 
-            t_std_a[count] = np.std(times_a)
-            t_std_n[count] = np.std(times_n)
+            t_std_a[count] = np.std(times_a)/np.sqrt(len(times_a))
+            t_std_n[count] = np.std(times_n)/np.sqrt(len(times_n))
 
 
 
@@ -186,15 +186,15 @@ def make_plots(task):
 
             analytical_E = (3/2)*n
 
-            std_a = np.sqrt(variances_a)
-            std_n = np.sqrt(variances_n)
+            std_a = np.sqrt(variances_a)/np.sqrt(len(variances_a))
+            std_n = np.sqrt(variances_n)/np.sqrt(len(variances_n))
 
             # fsz = 14
             n_str = "%i" % n
             plotname = "./Results/Plots/c/N_" + n_str + ".pdf"
             # plt.title("Number of particles = %i" % n, fontsize = fsz)
-            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative + imp. sampling", markeredgewidth=1)
-            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative + imp. sampling", markeredgewidth=1)
+            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
             plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
             plt.xlabel(r"$\alpha$")
             plt.ylabel(r"$\langle E_L \rangle$")
@@ -209,8 +209,8 @@ def make_plots(task):
             t_avg_a[count] = np.mean(times_a)
             t_avg_n[count] = np.mean(times_n)
 
-            t_std_a[count] = np.std(times_a)
-            t_std_n[count] = np.std(times_n)
+            t_std_a[count] = np.std(times_a)/np.sqrt(len(times_a))
+            t_std_n[count] = np.std(times_n)/np.sqrt(len(times_n))
 
             alphas = []
             energies_a = []
@@ -232,13 +232,13 @@ def make_plots(task):
         """
 
         print("avg time num:")
-        print("")
         print(t_avg_n)
-        print("")
-        print("")
+        print("std time num:")
+        print(t_std_n, "\n")
         print("avg time ana:")
-        print("")
         print(t_avg_a)
+        print("std time ana:")
+        print(t_std_a, "\n")
 
     #Plots gradient descent evolution for non-interacting bosons
     if task == "d":
@@ -325,7 +325,7 @@ def make_plots(task):
 
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N2_mean = np.mean(joined_N2)
-        joined_N2_std = np.std(joined_N2)
+        joined_N2_std = np.std(joined_N2)/np.sqrt(len(joined_N2))
 
         thread0 = np.loadtxt(N16[0])
         t16.append(thread0[0])
@@ -342,7 +342,7 @@ def make_plots(task):
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N16_mean = np.mean(joined_N16)
-        joined_N16_std = np.std(joined_N16)
+        joined_N16_std = np.std(joined_N16)/np.sqrt(len(joined_N16))
 
         thread0 = np.loadtxt(N32[0])
         t32.append(thread0[0])
@@ -359,7 +359,7 @@ def make_plots(task):
 
         joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N32_mean = np.mean(joined_N32)
-        joined_N32_std = np.std(joined_N32)
+        joined_N32_std = np.std(joined_N32)/np.sqrt(len(joined_N32))
 
         thread0 = np.loadtxt(N64[0])
         t64.append(thread0[0])
@@ -376,7 +376,7 @@ def make_plots(task):
 
         joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N64_mean = np.mean(joined_N64)
-        joined_N64_std = np.std(joined_N64)
+        joined_N64_std = np.std(joined_N64)/np.sqrt(len(joined_N64))
 
         thread0 = np.loadtxt(N128[0])
         t128.append(thread0[0])
@@ -393,7 +393,7 @@ def make_plots(task):
 
         joined_N128 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N128_mean = np.mean(joined_N128)
-        joined_N128_std = np.std(joined_N128)
+        joined_N128_std = np.std(joined_N128)/np.sqrt(len(joined_N128))
 
         print("Files have been read, start blocking...")
         (mean, var) = block(joined_N2)
@@ -502,7 +502,7 @@ def make_plots(task):
 
         joined_N2 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N2_mean = np.mean(joined_N2)
-        joined_N2_std = np.std(joined_N2)
+        joined_N2_std = np.std(joined_N2)/np.sqrt(len(joined_N2))
 
         thread0 = np.loadtxt(N16[0])
         t16.append(thread0[0])
@@ -519,7 +519,7 @@ def make_plots(task):
 
         joined_N16 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N16_mean = np.mean(joined_N16)
-        joined_N16_std = np.std(joined_N16)
+        joined_N16_std = np.std(joined_N16)/np.sqrt(len(joined_N16))
 
         thread0 = np.loadtxt(N32[0])
         t32.append(thread0[0])
@@ -536,7 +536,7 @@ def make_plots(task):
 
         joined_N32 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N32_mean = np.mean(joined_N32)
-        joined_N32_std = np.std(joined_N32)
+        joined_N32_std = np.std(joined_N32)/np.sqrt(len(joined_N32))
 
         thread0 = np.loadtxt(N64[0])
         t64.append(thread0[0])
@@ -553,7 +553,7 @@ def make_plots(task):
 
         joined_N64 = np.concatenate((thread0,thread1,thread2,thread3))
         joined_N64_mean = np.mean(joined_N64)
-        joined_N64_std = np.std(joined_N64)
+        joined_N64_std = np.std(joined_N64)/np.sqrt(len(joined_N64))
 
 
         print("Files has been read, start blocking...")
@@ -718,7 +718,7 @@ def make_plots(task):
         # TESTS
         print(np.trapz(r**2*A*joined_OBD_N2,r))
         print(np.trapz(r**2*B*joined_OBD_N2_I,r))
-        
+
 
         better_ana_rho = 2 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
         plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
@@ -766,57 +766,57 @@ def make_plots(task):
         plt.savefig(path+plotname)
         plt.show()
 
-        # plotname = "N_32.pdf"
-        # A = 32/np.trapz(joined_OBD_N32*r**2,r)
-        # B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
-        # plt.plot(r[:20],A*joined_OBD_N32[:20], "-o", ms=5, label="No interaction")
-        # plt.plot(r[:20],B*joined_OBD_N32_I[:20], "-o", ms=5, label="Interaction")
+        plotname = "N_32.pdf"
+        A = 32/np.trapz(joined_OBD_N32*r**2,r)
+        B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
+        plt.plot(r[:20],A*joined_OBD_N32[:20], "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N32_I[:20], "-o", ms=5, label="Interaction")
 
-        # better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
-        # plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
-
-
-        # plt.xlabel(r"$r$")
-        # plt.ylabel(r"$\rho(r)$")
-        # plt.legend()
-        # plt.xticks()
-        # plt.yticks()
-        # plt.savefig(path+plotname)
-        # plt.show()
+        better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
 
 
-        # plotname = "N_64.pdf"
-        # A = 64/np.trapz(joined_OBD_N64*r**2,r)
-        # B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
-        # plt.plot(r[:20],A*joined_OBD_N64[:20], "-o", ms=5, label="No interaction")
-        # plt.plot(r[:20],B*joined_OBD_N64_I[:20], "-o", ms=5, label="Interaction")
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.savefig(path+plotname)
+        plt.show()
 
-        # better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
-        # plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
+
+        plotname = "N_64.pdf"
+        A = 64/np.trapz(joined_OBD_N64*r**2,r)
+        B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
+        plt.plot(r[:20],A*joined_OBD_N64[:20], "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N64_I[:20], "-o", ms=5, label="Interaction")
+
+        better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
 
 
-        # plt.xlabel(r"$r$")
-        # plt.ylabel(r"$\rho(r)$")
-        # plt.legend()
-        # plt.xticks()
-        # plt.yticks()
-        # plt.savefig(path+plotname)
-        # plt.show()
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.savefig(path+plotname)
+        plt.show()
 
-        # plotname = "N_128.pdf"
-        # A = 128/np.trapz(joined_OBD_N128*r**2,r)
-        # plt.plot(r[:20],A*joined_OBD_N128[:20],"-o", color="b", ms=5, label="No interaction")
+        plotname = "N_128.pdf"
+        A = 128/np.trapz(joined_OBD_N128*r**2,r)
+        plt.plot(r[:20],A*joined_OBD_N128[:20],"-o", color="b", ms=5, label="No interaction")
 
-        # better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
-        # plt.plot(r_ana[:200],better_ana_rho[:200],"g", label = "Analytical solution")
+        better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200],"g", label = "Analytical solution")
 
-        # plt.xlabel(r"$r$")
-        # plt.ylabel(r"$\rho(r)$")
-        # plt.legend()
-        # plt.xticks()
-        # plt.yticks()
-        # plt.savefig(path+plotname)
-        # plt.show()
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.savefig(path+plotname)
+        plt.show()
 
     if task =="delta_t":
 
@@ -825,13 +825,13 @@ def make_plots(task):
         dts= ["5.0","1.0","0.5","0.1","0.05","0.01","0.005","0.001","0.0005","0.0001","0.00005","0.00001"]
 
         energy_045 = np.zeros(len(dts))     # alpha = 0.45
-        variance_045 = np.zeros(len(dts))   
+        variance_045 = np.zeros(len(dts))
 
         energy_050 = np.zeros(len(dts))     # alpha = 0.50
-        variance_050 = np.zeros(len(dts))   
+        variance_050 = np.zeros(len(dts))
 
         energy_055 = np.zeros(len(dts))     # alpha = 0.55
-        variance_055 = np.zeros(len(dts))   
+        variance_055 = np.zeros(len(dts))
 
         outfile_ana = path + "delta_t_comparrison_ana.txt"
 
