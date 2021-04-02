@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 
 plt.style.use('seaborn')
-sns.set(font_scale=1.35)
+sns.set(font_scale=1.4)
 """ Script that both creates plots and performs blocking on local energy data sets """
 
 def block(x):
@@ -274,19 +274,19 @@ def make_plots(task):
 
         colors = ["r","b","g","c","m"]
         for i in range(len(its)):
-            plt.plot(its[i], alphas[i],label = "N = %i" %numbers[i], color = colors[i])
-            plt.plot(its[i][-1], alphas[i][-1],"*", color = colors[i])
+            plt.plot(its[i], alphas[i], "-o", markersize=4, label = "$N$ = %i" %numbers[i], color = colors[i])
+            plt.plot(its[i][-1], alphas[i][-1],"*", markersize=10, markeredgecolor='k', markeredgewidth=0.5, color = colors[i], zorder=10)
 
 
         os.chdir("../")
         plotname = "../Results/Plots/d/GD_evolution.pdf"
-        fsz = 14
-        plt.ylabel("Alpha value", fontsize = fsz)
-        plt.xlabel("Number of iterations", fontsize = fsz)
-        plt.title("Gradient descent for non-interacting bosons", fontsize = fsz)
-        plt.legend(fontsize = fsz)
-        plt.xticks(fontsize=fsz )
-        plt.yticks(fontsize= fsz)
+        plt.ylabel(r"$\alpha$")
+        plt.xlabel("Number of iterations")
+        # plt.title("Gradient descent for non-interacting bosons")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.tight_layout()
         plt.savefig(plotname)
         plt.show()
 
@@ -704,99 +704,119 @@ def make_plots(task):
 
 
         r = np.linspace(0,8,50)
-        fsz = 14
+        r_ana = np.linspace(0,8,500)
         os.chdir("../")
         path = "../Results/Plots/h/"
 
-        plt.title("N = 2",fontsize = fsz)
         plotname = "N_2.pdf"
         A = 2/np.trapz(joined_OBD_N2*r**2,r)
         B = 2/np.trapz(joined_OBD_N2_I*r**2,r)
-        plt.plot(r[:20],A*joined_OBD_N2[:20],label="No interaction")
-        plt.plot(r[:20],B*joined_OBD_N2_I[:20],label="Interaction")
+        plt.plot(r[:20],A*joined_OBD_N2[:20], "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N2_I[:20], "-o", ms=5, label="Interaction")
 
-        better_ana_rho = 2 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
 
-        plt.xlabel("r",fontsize = fsz)
-        plt.ylabel("$\\rho(r)$",fontsize = fsz)
-        plt.legend(fontsize = fsz)
-        plt.xticks(fontsize=fsz )
-        plt.yticks(fontsize= fsz)
+        # TESTS
+        print(np.trapz(r**2*A*joined_OBD_N2,r))
+        print(np.trapz(r**2*B*joined_OBD_N2_I,r))
+        
+
+        better_ana_rho = 2 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
+
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
         plt.savefig(path+plotname)
         plt.show()
 
 
-        plt.title("N = 16",fontsize = fsz)
         plotname = "N_16.pdf"
         A = 16/np.trapz(joined_OBD_N16*r**2,r)
         B = 16/np.trapz(joined_OBD_N16_I*r**2,r)
-        plt.plot(r[:20],A*joined_OBD_N16[:20],label="No interaction")
-        plt.plot(r[:20],B*joined_OBD_N16_I[:20],label="Interaction")
+        plt.plot(r[:20],A*joined_OBD_N16[:20], "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N16_I[:20], "-o", ms=5, label="Interaction")
 
-        better_ana_rho = 16 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
+        better_ana_rho = 16 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
 
-        plt.xlabel("r",fontsize = fsz)
-        plt.ylabel("$\\rho(r)$",fontsize = fsz)
-        plt.legend(fontsize = fsz)
-        plt.xticks(fontsize=fsz )
-        plt.yticks(fontsize= fsz)
-        plt.savefig(path+plotname)
-        plt.show()
-
-        plt.title("N = 32",fontsize = fsz)
-        plotname = "N_32.pdf"
-        A = 32/np.trapz(joined_OBD_N32*r**2,r)
-        B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
-        plt.plot(r[:20],A*joined_OBD_N32[:20],label="No interaction")
-        plt.plot(r[:20],B*joined_OBD_N32_I[:20],label="Interaction")
-
-        better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
-
-        plt.xlabel("r",fontsize = fsz)
-        plt.ylabel("$\\rho(r)$",fontsize = fsz)
-        plt.legend(fontsize = fsz)
-        plt.xticks(fontsize=fsz )
-        plt.yticks(fontsize= fsz)
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
         plt.savefig(path+plotname)
         plt.show()
 
 
-        plt.title("N = 64",fontsize = fsz)
-        plotname = "N_64.pdf"
-        A = 64/np.trapz(joined_OBD_N64*r**2,r)
-        B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
-        plt.plot(r[:20],A*joined_OBD_N64[:20],label="No interaction")
-        plt.plot(r[:20],B*joined_OBD_N64_I[:20],label="Interaction")
+        # TEST PLOT
 
-        better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r[:20],better_ana_rho[:20], label = "Analytical rho")
+        plt.plot(r[:20],A*joined_OBD_N16[:20]*r[:20]**2, "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N16_I[:20]*r[:20]**2, "-o", ms=5, label="Interaction")
 
-        plt.xlabel("r",fontsize = fsz)
-        plt.ylabel("$\\rho(r)$",fontsize = fsz)
-        plt.legend(fontsize = fsz)
-        plt.xticks(fontsize=fsz )
-        plt.yticks(fontsize= fsz)
+        better_ana_rho = 16 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200]*r_ana[:200]**2, label = "Analytical solution")
+
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$r^2 \cdot \rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
         plt.savefig(path+plotname)
         plt.show()
 
-        plt.title("N = 128",fontsize = fsz)
-        plotname = "N_128.pdf"
-        A = 128/np.trapz(joined_OBD_N128*r**2,r)
-        plt.plot(r[:20],A*joined_OBD_N128[:20],"b",label="No interaction")
+        # plotname = "N_32.pdf"
+        # A = 32/np.trapz(joined_OBD_N32*r**2,r)
+        # B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
+        # plt.plot(r[:20],A*joined_OBD_N32[:20], "-o", ms=5, label="No interaction")
+        # plt.plot(r[:20],B*joined_OBD_N32_I[:20], "-o", ms=5, label="Interaction")
 
-        better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r ** 2))
-        plt.plot(r[:20],better_ana_rho[:20],"g", label = "Analytical rho")
+        # better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        # plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
 
-        plt.xlabel("r",fontsize = fsz)
-        plt.ylabel("$\\rho(r)$",fontsize = fsz)
-        plt.legend(fontsize = fsz)
-        plt.xticks(fontsize=fsz )
-        plt.yticks(fontsize= fsz)
-        plt.savefig(path+plotname)
-        plt.show()
+
+        # plt.xlabel(r"$r$")
+        # plt.ylabel(r"$\rho(r)$")
+        # plt.legend()
+        # plt.xticks()
+        # plt.yticks()
+        # plt.savefig(path+plotname)
+        # plt.show()
+
+
+        # plotname = "N_64.pdf"
+        # A = 64/np.trapz(joined_OBD_N64*r**2,r)
+        # B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
+        # plt.plot(r[:20],A*joined_OBD_N64[:20], "-o", ms=5, label="No interaction")
+        # plt.plot(r[:20],B*joined_OBD_N64_I[:20], "-o", ms=5, label="Interaction")
+
+        # better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        # plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
+
+
+        # plt.xlabel(r"$r$")
+        # plt.ylabel(r"$\rho(r)$")
+        # plt.legend()
+        # plt.xticks()
+        # plt.yticks()
+        # plt.savefig(path+plotname)
+        # plt.show()
+
+        # plotname = "N_128.pdf"
+        # A = 128/np.trapz(joined_OBD_N128*r**2,r)
+        # plt.plot(r[:20],A*joined_OBD_N128[:20],"-o", color="b", ms=5, label="No interaction")
+
+        # better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        # plt.plot(r_ana[:200],better_ana_rho[:200],"g", label = "Analytical solution")
+
+        # plt.xlabel(r"$r$")
+        # plt.ylabel(r"$\rho(r)$")
+        # plt.legend()
+        # plt.xticks()
+        # plt.yticks()
+        # plt.savefig(path+plotname)
+        # plt.show()
 
     if task =="delta_t":
 

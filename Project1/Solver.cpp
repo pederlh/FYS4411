@@ -475,8 +475,6 @@ void Solver::MonteCarlo_optval_interacting(double alpha, double *energies){
         ofile2.open(OBD_file);
         for (int i = 0; i < num_bins; i ++){
             bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,3)-pow(i,3)));
-            //bins[i] /= (MC_optimal_run_*N_*pow(radi_,(D_-1)));
-            //bins[i] /= (MC_optimal_run_*N_*pow(r_old[i],D-1)));
             ofile2 << setprecision(15) <<bins[i]<<endl;
         }
         ofile2.close();
