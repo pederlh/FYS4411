@@ -766,57 +766,57 @@ def make_plots(task):
         plt.savefig(path+plotname)
         plt.show()
 
-        # plotname = "N_32.pdf"
-        # A = 32/np.trapz(joined_OBD_N32*r**2,r)
-        # B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
-        # plt.plot(r[:20],A*joined_OBD_N32[:20], "-o", ms=5, label="No interaction")
-        # plt.plot(r[:20],B*joined_OBD_N32_I[:20], "-o", ms=5, label="Interaction")
+        plotname = "N_32.pdf"
+        A = 32/np.trapz(joined_OBD_N32*r**2,r)
+        B = 32/np.trapz(joined_OBD_N32_I*r**2,r)
+        plt.plot(r[:20],A*joined_OBD_N32[:20], "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N32_I[:20], "-o", ms=5, label="Interaction")
 
-        # better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
-        # plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
-
-
-        # plt.xlabel(r"$r$")
-        # plt.ylabel(r"$\rho(r)$")
-        # plt.legend()
-        # plt.xticks()
-        # plt.yticks()
-        # plt.savefig(path+plotname)
-        # plt.show()
+        better_ana_rho = 32 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
 
 
-        # plotname = "N_64.pdf"
-        # A = 64/np.trapz(joined_OBD_N64*r**2,r)
-        # B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
-        # plt.plot(r[:20],A*joined_OBD_N64[:20], "-o", ms=5, label="No interaction")
-        # plt.plot(r[:20],B*joined_OBD_N64_I[:20], "-o", ms=5, label="Interaction")
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.savefig(path+plotname)
+        plt.show()
 
-        # better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
-        # plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
+
+        plotname = "N_64.pdf"
+        A = 64/np.trapz(joined_OBD_N64*r**2,r)
+        B = 64/np.trapz(joined_OBD_N64_I*r**2,r)
+        plt.plot(r[:20],A*joined_OBD_N64[:20], "-o", ms=5, label="No interaction")
+        plt.plot(r[:20],B*joined_OBD_N64_I[:20], "-o", ms=5, label="Interaction")
+
+        better_ana_rho = 64 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200], label = "Analytical solution")
 
 
-        # plt.xlabel(r"$r$")
-        # plt.ylabel(r"$\rho(r)$")
-        # plt.legend()
-        # plt.xticks()
-        # plt.yticks()
-        # plt.savefig(path+plotname)
-        # plt.show()
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.savefig(path+plotname)
+        plt.show()
 
-        # plotname = "N_128.pdf"
-        # A = 128/np.trapz(joined_OBD_N128*r**2,r)
-        # plt.plot(r[:20],A*joined_OBD_N128[:20],"-o", color="b", ms=5, label="No interaction")
+        plotname = "N_128.pdf"
+        A = 128/np.trapz(joined_OBD_N128*r**2,r)
+        plt.plot(r[:20],A*joined_OBD_N128[:20] / 128,"-o", color="b", ms=5, label="No interaction")
 
-        # better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
-        # plt.plot(r_ana[:200],better_ana_rho[:200],"g", label = "Analytical solution")
+        better_ana_rho = 128 * (np.sqrt(np.pi) ** (-3) * 4 * np.pi * np.exp(-r_ana ** 2))
+        plt.plot(r_ana[:200],better_ana_rho[:200],"g", label = "Analytical solution")
 
-        # plt.xlabel(r"$r$")
-        # plt.ylabel(r"$\rho(r)$")
-        # plt.legend()
-        # plt.xticks()
-        # plt.yticks()
-        # plt.savefig(path+plotname)
-        # plt.show()
+        plt.xlabel(r"$r$")
+        plt.ylabel(r"$\rho(r)$")
+        plt.legend()
+        plt.xticks()
+        plt.yticks()
+        plt.savefig(path+plotname)
+        plt.show()
 
     if task =="delta_t":
 
