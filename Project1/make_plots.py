@@ -87,23 +87,21 @@ def make_plots(task):
 
             analytical_E = (3/2)*n
 
-            std_a = np.sqrt(variances_a)
-            std_n = np.sqrt(variances_n)
-
             n_str = "%i"%n
             plotname = "./Results/Plots/b/N_" + n_str +".pdf"
             plt.figure(n)
 
-
             # # Dumb standard error
-            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
-            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+            # std_a = np.sqrt(np.asarray(variances_a)) / np.sqrt(MC)
+            # std_n = np.sqrt(np.asarray(variances_n)) / np.sqrt(MC)
+            # plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            # plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
 
             # Blocking standard error
-            # std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
-            # std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
-            # plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
-            # plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+            std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
+            std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
+            plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
             
 
             plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
@@ -196,22 +194,21 @@ def make_plots(task):
 
             analytical_E = (3/2)*n
 
-            std_a = np.sqrt(np.asarray(variances_a))
-            std_n = np.sqrt(np.asarray(variances_n))
-
             n_str = "%i" % n
             plotname = "./Results/Plots/c/N_" + n_str + ".pdf"
             plt.figure(n)
 
-            # # Dumb standard error
-            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
-            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+            # Dumb standard error
+            # std_a = np.sqrt(np.asarray(variances_a)) / np.sqrt(MC)
+            # std_n = np.sqrt(np.asarray(variances_n)) / np.sqrt(MC)
+            # plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            # plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
 
             # Blocking standard error
-            # std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
-            # std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
-            # plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
-            # plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+            std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
+            std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
+            plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
 
 
             plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
