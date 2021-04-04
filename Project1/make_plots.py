@@ -90,22 +90,31 @@ def make_plots(task):
             std_a = np.sqrt(variances_a)
             std_n = np.sqrt(variances_n)
 
-            # fsz = 14
             n_str = "%i"%n
             plotname = "./Results/Plots/b/N_" + n_str +".pdf"
-            #plt.title("Number of particles = %i" % n, fontsize = fsz)
+            plt.figure(n)
+
+
+            # # Dumb standard error
             plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
             plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+
+            # Blocking standard error
+            # std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
+            # std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
+            # plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            # plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+            
+
             plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
-            plt.xlabel(r"$\alpha$") #, fontsize = fsz )
-            plt.ylabel(r"$\langle E_L \rangle$") #, fontsize = fsz)
+            plt.xlabel(r"$\alpha$")
+            plt.ylabel(r"$\langle E_L \rangle$")
             plt.xticks() # plt.xticks(fontsize=fsz)
-            plt.yticks() # plt.yticks(fontsize= fsz)
-            plt.legend() # plt.legend(fontsize = fsz-2)
+            plt.yticks()
+            plt.legend()
             plt.savefig(plotname)
             plt.grid('--')
             plt.show()
-
 
             t_avg_a[count] = np.mean(times_a)
             t_avg_n[count] = np.mean(times_n)
@@ -115,6 +124,7 @@ def make_plots(task):
 
 
 
+            # Reset for next value of N
             alphas = []
             energies_a = []
             variances_a = []
@@ -142,7 +152,7 @@ def make_plots(task):
         print("std time ana:")
         print(t_std_a, "\n")
 
-    #Plots local energy and std for gridsearch mtropolis-hastings MC
+    #Plots local energy and std for gridsearch metropolis-hastings MC
     if task == "c":
         N = [1,10,100,500]
         MC = 1e6
@@ -186,15 +196,24 @@ def make_plots(task):
 
             analytical_E = (3/2)*n
 
-            std_a = np.sqrt(variances_a)
-            std_n = np.sqrt(variances_n)
+            std_a = np.sqrt(np.asarray(variances_a))
+            std_n = np.sqrt(np.asarray(variances_n))
 
-            # fsz = 14
             n_str = "%i" % n
             plotname = "./Results/Plots/c/N_" + n_str + ".pdf"
-            # plt.title("Number of particles = %i" % n, fontsize = fsz)
-            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative + imp. sampling", markeredgewidth=1)
-            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative + imp. sampling", markeredgewidth=1)
+            plt.figure(n)
+
+            # # Dumb standard error
+            plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+
+            # Blocking standard error
+            # std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
+            # std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
+            # plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
+            # plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
+
+
             plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
             plt.xlabel(r"$\alpha$")
             plt.ylabel(r"$\langle E_L \rangle$")

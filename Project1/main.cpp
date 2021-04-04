@@ -69,29 +69,33 @@ int main(int argc, char const *argv[]) {
         // When type_sampling is 0 or 1, data is written to file with the functions below
 
         string calc, outfilename;
-        // if (type_energy==0) calc = "ana";   // Different strings appended to file name
-        // if (type_energy==1) calc = "num";
+        if (type_energy==0) calc = "ana";   // Different strings appended to file name
+        if (type_energy==1) calc = "num";
 
-        // if (type_sampling == 0){
-        //     outfilename =   "spherical_HO_" + to_string(dimentions) + "D_" + calc +
-        //                     "_N_"+ to_string(num_particles) + "_MC_"+ to_string(mc_cycles) +
-        //                     "_stringID_" + to_string(ID) + ".txt";
+        if (type_sampling == 0){
+            outfilename =   "spherical_HO_" + to_string(dimentions) + "D_" + calc +
+                            "_N_"+ to_string(num_particles) + "_MC_"+ to_string(mc_cycles) +
+                            "_stringID_" + to_string(ID) + ".txt";
 
-        //     mysolver.Write_to_file(outfilename);
-        // }
+            mysolver.Write_to_file(outfilename);
+        }
 
-        // if (type_sampling == 1){
+        if (type_sampling == 1){
 
 
-        //     outfilename =   "importance_spherical_HO_" + to_string(dimentions) + "D_" + calc +
-        //                     "_N_" + to_string(num_particles) + "_MC_" + to_string(mc_cycles) +
-        //                     "_stringID_" + to_string(ID) + ".txt";
+            outfilename =   "importance_spherical_HO_" + to_string(dimentions) + "D_" + calc +
+                            "_N_" + to_string(num_particles) + "_MC_" + to_string(mc_cycles) +
+                            "_stringID_" + to_string(ID) + ".txt";
 
-        //     mysolver.Write_to_file(outfilename);
-        // }
+            mysolver.Write_to_file(outfilename);
+        }
+
+        // When varying delta t: write to file with following lines of code
+        /* 
         string dt = "0.005";
         outfilename = "dt_run_" + dt + "_ana.txt";
         mysolver.Write_to_file(outfilename);
+        */
     }
     return 0;
 }
