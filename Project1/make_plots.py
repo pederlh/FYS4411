@@ -834,17 +834,16 @@ def make_plots(task):
 
     if task =="delta_t":
 
-        path = "./Results/data_for_report/"
+        path = "./Results/delta_t_comparisons/"
         #dts = [1.0,5.0,0.1,0.5,0.01,0.05,0.001,0.005,0.0001,0.0005,0.00001,0.00005]
         dts= ["5.0","1.0","0.5","0.1","0.05","0.01","0.005","0.001","0.0005","0.0001","0.00005","0.00001"]
 
         energy_045 = np.zeros(len(dts))     # alpha = 0.45
-        variance_045 = np.zeros(len(dts))   
-
         energy_050 = np.zeros(len(dts))     # alpha = 0.50
-        variance_050 = np.zeros(len(dts))   
-
         energy_055 = np.zeros(len(dts))     # alpha = 0.55
+
+        variance_045 = np.zeros(len(dts))   
+        variance_050 = np.zeros(len(dts))   
         variance_055 = np.zeros(len(dts))   
 
         outfile_ana = path + "delta_t_comparrison_ana.txt"
@@ -856,19 +855,34 @@ def make_plots(task):
                 lines = infile.readlines()
 
                 energy_045[i] = float(lines[4].split()[1])
-                variance_045[i] = float(lines[4].split()[2])
-
                 energy_050[i] = float(lines[5].split()[1])
-                variance_050[i] = float(lines[5].split()[2])
-
                 energy_055[i] = float(lines[6].split()[1])
+
+                variance_045[i] = float(lines[4].split()[2])
+                variance_050[i] = float(lines[5].split()[2])
                 variance_055[i] = float(lines[6].split()[2])
 
+        # Ghetto variance
         with open(outfile_ana,"w") as outfile:
             outfile.write("dt - E_045 - var_045 - E_050 - var_055 - E_055 - var_055 \n")
             for i in range(len(dts)):
                 outfile.write(dts[i]+ " & " + str(energy_045[i]) + " & " + str(variance_045[i]) + " & " + str(energy_050[i]) \
                                     + " & " + str(variance_050[i]) + " & " + str(energy_055[i]) + " & " + str(variance_055[i]) + " \\\\ \n")
+
+        """ Below code not working - FIX"""
+        # # Block std. error
+        # std_045_block = std_050_block = std_055_block = np.zeros(len(dts))
+        # for i in range(len(dts)):
+        #     std_045_block[i] = np.sqrt(block(energy_045)[1])
+        #     std_050_block[i] = np.sqrt(block(energy_050)[1])
+        #     std_055_block[i] = np.sqrt(block(energy_055)[1])
+
+        # with open(outfile_ana,"w") as outfile:
+        #     outfile.write("dt - E_045 - std_block_045 - E_050 - std_block_055 - E_055 - std_block_055 \n")
+        #     for i in range(len(dts)):
+        #         outfile.write(dts[i] + " & " + str(energy_045[i]) + " & " + str(std_045_block[i]) + " & " + str(energy_050[i]) \
+        #                             + " & " + str(std_050_block[i]) + " & " + str(energy_055[i]) + " & " + str(std_055_block[i]) + " \\\\ \n")
+
 
 
 if __name__ == "__main__":
