@@ -1,6 +1,7 @@
-*.DS_store
+*.DS_Store
 *.pyc 
 *.json
+*.vscode
 
 # Prerequisites
 *.d
