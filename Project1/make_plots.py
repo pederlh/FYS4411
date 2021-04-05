@@ -576,66 +576,46 @@ def make_plots(task):
 
         print("Files has been read, start blocking...")
         (mean, var) = block(joined_N2)
-        std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_2 = pd.DataFrame(data,index=['Values'])
-        index = frame_2.index
-        index.name = "N = 2"
-        print(frame_2)
-        """
+        std_2_B = np.sqrt(var)
+
 
         print("Statistical values:\n")
         print("N=2")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N2_mean, joined_N2_std))
-        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std_2_B))
 
 
         (mean, var) = block(joined_N16)
-        std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_16 = pd.DataFrame(data,index=['Values'])
-        index = frame_16.index
-        index.name = "N = 16"
-        print(frame_16)
-        """
+        std_16_B = np.sqrt(var)
+
 
 
         print("Statistical values:\n")
         print("N=16")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N16_mean, joined_N16_std))
-        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std_16_B))
 
         (mean, var) = block(joined_N32)
-        std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_32 = pd.DataFrame(data,index=['Values'])
-        index = frame_32.index
-        index.name = "N = 32"
-        print(frame_32)
-        """
+        std_32_B = np.sqrt(var)
+
 
         print("Statistical values:\n")
         print("N=32")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N32_mean, joined_N32_std))
-        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std_32_B))
 
         (mean, var) = block(joined_N64)
-        std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_64 = pd.DataFrame(data,index=['Values'])
-        index = frame_64.index
-        index.name = "N = 64"
-        print(frame_64)
-        """
+        std_64_B = np.sqrt(var)
+
 
         print("Statistical values:\n")
         print("N=64")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N64_mean, joined_N64_std))
-        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std_64_B))
+
+
+        print("- Energy per particle -")
+        print(f"N2: {joined_N2_mean/2}, N16: {joined_N16_mean/16}, N32: {joined_N32_mean/32}, N64: {joined_N64_mean/64}")
 
     if task == "h":
 
@@ -736,8 +716,9 @@ def make_plots(task):
         rho_solution = 2 * (np.sqrt(np.pi)**(-3) * 4 * np.pi * np.exp(-r_ana**2))
         plt.plot(r_ana[:200],rho_solution[:200], label = "Analytical solution")
 
+
         plt.xlabel(r"$r$")
-        plt.ylabel(r"$\rho(r)$")
+        plt.ylabel(r"$\rho_r(r)$")
         plt.legend()
         plt.xticks()
         plt.yticks()
@@ -755,7 +736,7 @@ def make_plots(task):
         plt.plot(r_ana[:200],rho_solution[:200], label = "Analytical solution")
 
         plt.xlabel(r"$r$")
-        plt.ylabel(r"$\rho(r)$")
+        plt.ylabel(r"$\rho_r(r)$")
         plt.legend()
         plt.xticks()
         plt.yticks()
@@ -775,7 +756,7 @@ def make_plots(task):
         plt.plot(r_ana[:200],rho_solution[:200]*r_ana[:200]**2, label = "Analytical solution")
 
         plt.xlabel(r"$r$")
-        plt.ylabel(r"$r^2 \cdot \rho(r)$")
+        plt.ylabel(r"$r^2 \cdot \rho_r(r)$")
         plt.legend()
         plt.xticks()
         plt.yticks()
@@ -793,7 +774,7 @@ def make_plots(task):
 
 
         plt.xlabel(r"$r$")
-        plt.ylabel(r"$\rho(r)$")
+        plt.ylabel(r"$\rho_r(r)$")
         plt.legend()
         plt.xticks()
         plt.yticks()
@@ -812,7 +793,7 @@ def make_plots(task):
 
 
         plt.xlabel(r"$r$")
-        plt.ylabel(r"$\rho(r)$")
+        plt.ylabel(r"$\rho_r(r)$")
         plt.legend()
         plt.xticks()
         plt.yticks()
@@ -827,7 +808,7 @@ def make_plots(task):
         plt.plot(r_ana[:200],rho_solution[:200],"g", label = "Analytical solution")
 
         plt.xlabel(r"$r$")
-        plt.ylabel(r"$\rho(r)$")
+        plt.ylabel(r"$\rho_r(r)$")
         plt.legend()
         plt.xticks()
         plt.yticks()
@@ -870,21 +851,6 @@ def make_plots(task):
             for i in range(len(dts)):
                 outfile.write(dts[i]+ " & " + str(energy_045[i]) + " & " + str(variance_045[i]) + " & " + str(energy_050[i]) \
                                     + " & " + str(variance_050[i]) + " & " + str(energy_055[i]) + " & " + str(variance_055[i]) + " \\\\ \n")
-
-        """ Below code not working - FIX"""
-        # # Block std. error
-        # std_045_block = std_050_block = std_055_block = np.zeros(len(dts))
-        # for i in range(len(dts)):
-        #     std_045_block[i] = np.sqrt(block(energy_045)[1])
-        #     std_050_block[i] = np.sqrt(block(energy_050)[1])
-        #     std_055_block[i] = np.sqrt(block(energy_055)[1])
-
-        # with open(outfile_ana,"w") as outfile:
-        #     outfile.write("dt - E_045 - std_block_045 - E_050 - std_block_055 - E_055 - std_block_055 \n")
-        #     for i in range(len(dts)):
-        #         outfile.write(dts[i] + " & " + str(energy_045[i]) + " & " + str(std_045_block[i]) + " & " + str(energy_050[i]) \
-        #                             + " & " + str(std_050_block[i]) + " & " + str(energy_055[i]) + " & " + str(std_055_block[i]) + " \\\\ \n")
-
 
 
 if __name__ == "__main__":
