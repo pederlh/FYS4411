@@ -118,8 +118,8 @@ def make_plots(task):
             t_avg_a[count] = np.mean(times_a)
             t_avg_n[count] = np.mean(times_n)
 
-            t_std_a[count] = np.std(times_a)
-            t_std_n[count] = np.std(times_n)
+            t_std_a[count] = np.std(times_a)/np.sqrt(len(times_a))
+            t_std_n[count] = np.std(times_n)/np.sqrt(len(times_n))
 
 
 
@@ -227,8 +227,8 @@ def make_plots(task):
             t_avg_a[count] = np.mean(times_a)
             t_avg_n[count] = np.mean(times_n)
 
-            t_std_a[count] = np.std(times_a)
-            t_std_n[count] = np.std(times_n)
+            t_std_a[count] = np.std(times_a)/np.sqrt(len(times_a))
+            t_std_n[count] = np.std(times_n)/np.sqrt(len(times_n))
 
             alphas = []
             energies_a = []
