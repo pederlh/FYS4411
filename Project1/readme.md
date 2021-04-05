@@ -9,9 +9,11 @@ In this project we tackled the problem of both non-interacting and interacting b
 - Estimate the one body density of N-particle systems
 - Perform gradient descent on the variational parameter alpha of the trial wave function
 
+### Structure
+The main structure of our code lies in the two classes `Solver.cpp` and `Psi.cpp`. The first contains methods for VMC calculations, gradient descent and Metropolis sampling. The second contains functions for the trial wave function, calculation of local energy and methods for evaluating the positions of the particle and the quantum force acting on them. The `main.cpp` file is there to create instances of the Solver class and write results to file. In the scripts folder there are Python files used to generate data and plots found in the report linked at the top.
 
 ### Running instructions
-Instruction to produce new data and/or results for the tasks listed in the problem set are as follows. The `main.cpp` file is organized to take 7-9 input arguments so when running the makefile one has to specify at least the first seven
+Instruction to produce new data and/or results for the tasks listed in the problem set are as follows. The `main.cpp` file is organized to take 7-9 input arguments to initiate the class `Solver.cpp`, so when running the makefile one has to specify at least the first seven
 - `N` number of particles :  integer > 0
 -  `D` dimentions : either 1, 2 or 3
 - `MC` number of Monte Carlo cycles : integer > 0
@@ -47,7 +49,7 @@ by running from your terminal
 make operative_system
 ```
 
-where your choose either `mac` or `linux` depending on your computers operative system.
+where your choose either `mac` or `linux` depending on your computers operative system. If the number of threads is set to 1, everything is run on a single thread. If not, the OpenMP API is used to parallelize and run the calculations on the chosen number of threads.
 
 ### Reproducing data
 We will now show examples of how to reproduce data for some of the tasks found in the problem set.
