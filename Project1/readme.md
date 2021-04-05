@@ -15,7 +15,7 @@ The main structure of our code lies in the two classes `Solver.cpp` and `Psi.cpp
 ### Running instructions
 Instruction to produce new data and/or results for the tasks listed in the problem set are as follows. The `main.cpp` file is organized to take 7-9 input arguments to initiate the class `Solver.cpp`, so when running the makefile one has to specify at least the first seven. The (ordered) input arguments are
 - `N` number of particles :  integer > 0
--  `D` dimentions : either 1, 2 or 3
+-  `D` spacial dimentions : either 1, 2 or 3
 - `MC` number of Monte Carlo cycles : integer > 0
 - `E` type of energy calculation : 0 for analytical expression, 1 for numerical differentiation
 - `S` type of Metropolis sampling : 0 for brute force, 1 for importance sampling, 2 for importance sampling + gradient descent (non-interacting particles) and 3 for importance sampling + gradient descent (interacting particles)
@@ -63,7 +63,7 @@ execute:
 ```
 
 #### 2. Interacting bosons using gradient descent and calculating one body density  
-For `N = 100` particles in `D = 3` dimentions with `MC = 1000` Monte Carlo cycles for the gradient descent using `E = 0` the analytical expression for calculating the local energy and `T = 4` threads. We also specify the learning rate `Eta = 0.001` and `OptMC = 2**18` cycles to be performed by each thread using the optimal variational parameter found by the gradient descent. The execute line in your makefile should look something like
+For `N = 100` particles in `D = 3` dimentions with `MC = 1000` Monte Carlo cycles for the gradient descent using `E = 0` (the analytical expression for calculating the local energy) and `T = 4` threads. We also specify the learning rate `Eta = 0.001` and `OptMC = 2**18` cycles to be performed by each thread using the optimal variational parameter found by the gradient descent. The execute line in your makefile should look something like
 
 ``` Ruby
 execute:
