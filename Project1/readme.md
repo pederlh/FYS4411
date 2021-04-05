@@ -11,7 +11,7 @@ In this project we tackled the problem of both non-interacting and interacting b
 - Perform gradient descent on the variational parameter alpha of the trial wave function
 
 ### Structure
-The main structure of our code lies in the two classes `Solver.cpp` and `Psi.cpp`. The first contains methods for VMC calculations, gradient descent and Metropolis sampling. The second contains functions for the trial wave function, calculation of local energy and methods for evaluating the positions of the particle and the quantum force acting on them. The `main.cpp` file is there to create instances of the Solver class and write results to file. In the scripts folder there are Python files used to generate data and plots found in the report linked at the top.
+The main structure of our code lies in the two classes `Solver.cpp` and `Psi.cpp` in the Src folder. The first contains methods for VMC calculations, gradient descent and Metropolis sampling. The second contains functions for the trial wave function, calculation of local energy and methods for evaluating the positions of the particle and the quantum force acting on them. The `main.cpp` file is there to create instances of the Solver class and write results to file. In the Scripts folder there are Python files used to generate data and plots found in the report linked at the top.
 
 ### Running instructions
 Instruction to produce new data and/or results for the tasks listed in the problem set are as follows. The `main.cpp` file is organized to take 7-9 input arguments to initiate the class `Solver.cpp`, so when running the makefile one has to specify at least the first seven. The (ordered) input arguments are
