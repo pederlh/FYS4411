@@ -46,7 +46,7 @@ def make_plots(task):
     if task == "b":
         N = [1,10,100,500]
         MC = 1e6
-        path = "./Results/1b_simple_noninteracting/"
+        path = "../Results/1b_simple_noninteracting/"
 
         t_avg_a = np.zeros(len(N))
         t_avg_n = np.zeros(len(N))
@@ -82,13 +82,13 @@ def make_plots(task):
                 for line in lines[1:]:
                     vals = line.split()
                     energies_n.append(float(vals[1]))
-                    variances_n.append(float(vals[2])) 
+                    variances_n.append(float(vals[2]))
                     times_n.append(float(vals[3]))
 
             analytical_E = (3/2)*n
 
             n_str = "%i"%n
-            plotname = "./Results/Plots/b/N_" + n_str +".pdf"
+            plotname = "../Results/Plots/b/N_" + n_str +".pdf"
             plt.figure(n)
 
             # # Dumb standard error
@@ -97,12 +97,6 @@ def make_plots(task):
             plt.errorbar(alphas, energies_a,yerr=std_a, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
             plt.errorbar(alphas, energies_n,yerr=std_n, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
 
-            # Blocking standard error
-            # std_a_block = np.sqrt(block(np.asarray(energies_a))[1])
-            # std_n_block = np.sqrt(block(np.asarray(energies_n))[1])
-            # plt.errorbar(alphas, energies_a,yerr=std_a_block, fmt= "or",capsize=5, elinewidth=1, label = "Analytical derivative", markeredgewidth=1)
-            # plt.errorbar(alphas, energies_n,yerr=std_n_block, fmt= "ok",capsize=5, elinewidth=1, label = "Numerical derivative", markeredgewidth=1)
-            
 
             plt.axhline(y=analytical_E, color='mediumblue', linestyle=':', label = "Exact solution")
             plt.xlabel(r"$\alpha$")
@@ -133,14 +127,6 @@ def make_plots(task):
             times_n = []
 
             count += 1
-        """
-        plt.plot(N,t_avg_a,"*" ,label = "Avg. CPU time w/analytical EL")
-        plt.plot(N,t_avg_n,"*" ,label = "Avg. CPU time w/numerical EL")
-        plt.xlabel("Number of particles")
-        plt.ylabel("time [s]")
-        plt.legend()
-        plt.show()
-        """
 
         print("avg time num:")
         print(t_avg_n)
@@ -155,7 +141,7 @@ def make_plots(task):
     if task == "c":
         N = [1,10,100,500]
         MC = 1e6
-        path = "./Results/1c_implementing_importance_sampling/"
+        path = "../Results/1c_implementing_importance_sampling/"
 
         t_avg_a = np.zeros(len(N))
         t_avg_n = np.zeros(len(N))
@@ -196,7 +182,7 @@ def make_plots(task):
             analytical_E = (3/2)*n
 
             n_str = "%i" % n
-            plotname = "./Results/Plots/c/N_" + n_str + ".pdf"
+            plotname = "../Results/Plots/c/N_" + n_str + ".pdf"
             plt.figure(n)
 
             # Dumb standard error
@@ -240,15 +226,6 @@ def make_plots(task):
 
             count += 1
 
-        """
-        plt.plot(N,t_avg_a,"*" ,label = "Avg. CPU time w/analytical EL")
-        plt.plot(N,t_avg_n,"*" ,label = "Avg. CPU time w/numerical EL")
-        plt.xlabel("Number of particles")
-        plt.ylabel("time [s]")
-        plt.legend()
-        plt.show()
-        """
-
         print("avg time num:")
         print("")
         print(t_avg_n)
@@ -260,7 +237,7 @@ def make_plots(task):
 
     #Plots gradient descent evolution for non-interacting bosons
     if task == "d":
-        path = "./Results/GD_alphas/"
+        path = "../Results/GD_alphas/"
         os.chdir(path)
         GD = os.listdir()
         GD.sort()
@@ -311,7 +288,7 @@ def make_plots(task):
     if task == "e":
         print("Blocking results from GD without repulsion")
 
-        path = "./Results/1e_implementing_gradient_descent_and_blocking/"
+        path = "../Results/1e_implementing_gradient_descent_and_blocking/"
         os.chdir(path)
         runs = os.listdir()
 
@@ -416,13 +393,6 @@ def make_plots(task):
         print("Files have been read, start blocking...")
         (mean, var) = block(joined_N2)
         std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_2 = pd.DataFrame(data,index=['Values'])
-        index = frame_2.index
-        index.name = "N = 2"
-        print(frame_2)
-        """
 
         print("Statistical values:\n")
         print("N=2")
@@ -432,13 +402,6 @@ def make_plots(task):
 
         (mean, var) = block(joined_N16)
         std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_16 = pd.DataFrame(data,index=['Values'])
-        index = frame_16.index
-        index.name = "N = 16"
-        print(frame_16)
-        """
 
         print("\n N=16")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N16_mean, joined_N16_std))
@@ -446,26 +409,14 @@ def make_plots(task):
 
         (mean, var) = block(joined_N32)
         std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_32 = pd.DataFrame(data,index=['Values'])
-        index = frame_32.index
-        index.name = "N = 32"
-        print(frame_32)
-        """
+
         print("\n N=32")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N32_mean, joined_N32_std))
         print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
 
         (mean, var) = block(joined_N64)
         std = np.sqrt(var)
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_64 = pd.DataFrame(data,index=['Values'])
-        index = frame_64.index
-        index.name = "N = 64"
-        print(frame_64)
-        """
+
 
         print("\n N=64")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N64_mean, joined_N64_std))
@@ -478,19 +429,13 @@ def make_plots(task):
         print("\n N=128")
         print("Naive:     Mean = %.7f        STDev = %.7f" % (joined_N128_mean, joined_N128_std))
         print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
-        """
-        data ={'Mean':[mean], 'STDev':[std]}
-        frame_128 = pd.DataFrame(data,index=['Values'])
-        index = frame_128.index
-        index.name = "N = 128"
-        print(frame_128)
-        """
+
 
     if task == "g":
 
         print("Blocking results from GD with repulsion")
 
-        path = "./Results/1g_implementing_repulsion/"
+        path = "../Results/1g_implementing_repulsion/"
         os.chdir(path)
         runs = os.listdir()
 
@@ -619,7 +564,7 @@ def make_plots(task):
 
     if task == "h":
 
-        path = "./Results/1h_one_body_densities/"
+        path = "../Results/1h_one_body_densities/"
         os.chdir(path)
         OBD_list = os.listdir()
 
@@ -747,8 +692,8 @@ def make_plots(task):
         # TEST NORMALIZATION: N = 16
         print(f"{np.trapz(r_ana**2 * rho_solution,r_ana) :3.15f}") # Should be 16
         print(f"{np.trapz(r**2*A*joined_OBD_N16,r) :3.15f}")    # Should be 16
-        print(f"{np.trapz(r**2*B*joined_OBD_N16_I,r) :3.15f}")  # Should be 16 
-        
+        print(f"{np.trapz(r**2*B*joined_OBD_N16_I,r) :3.15f}")  # Should be 16
+
         plt.plot(r[:20],A*joined_OBD_N16[:20]*r[:20]**2, "-o", ms=5, label="No interaction")
         plt.plot(r[:20],B*joined_OBD_N16_I[:20]*r[:20]**2, "-o", ms=5, label="Interaction")
 
@@ -817,17 +762,16 @@ def make_plots(task):
 
     if task =="delta_t":
 
-        path = "./Results/delta_t_comparisons/"
-        #dts = [1.0,5.0,0.1,0.5,0.01,0.05,0.001,0.005,0.0001,0.0005,0.00001,0.00005]
+        path = "../Results/delta_t_comparisons/"
         dts= ["5.0","1.0","0.5","0.1","0.05","0.01","0.005","0.001","0.0005","0.0001","0.00005","0.00001"]
 
         energy_045 = np.zeros(len(dts))     # alpha = 0.45
         energy_050 = np.zeros(len(dts))     # alpha = 0.50
         energy_055 = np.zeros(len(dts))     # alpha = 0.55
 
-        variance_045 = np.zeros(len(dts))   
-        variance_050 = np.zeros(len(dts))   
-        variance_055 = np.zeros(len(dts))   
+        variance_045 = np.zeros(len(dts))
+        variance_050 = np.zeros(len(dts))
+        variance_055 = np.zeros(len(dts))
 
         outfile_ana = path + "delta_t_comparrison_ana.txt"
 
