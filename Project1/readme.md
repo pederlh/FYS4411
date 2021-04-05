@@ -55,7 +55,7 @@ where your choose either `mac` or `linux` depending on your computers operative 
 We will now show examples of how to reproduce data for some of the tasks found in the problem set.
 
 #### 1. Non-interacting bosons for various values of alpha using VMC without importance sampling.
-For `N = 100` particles in `D = 3` dimentions with `MC = 10 000` Monte Carlo cycles using `E = 0` the analytical expression for calculating the local energy and `T = 4` threads the execute line in your makefile should look something like
+For `N = 100` particles in `D = 3` dimentions with `MC = 10 000` Monte Carlo cycles using `E = 0` (the analytical expression for calculating the local energy) and `T = 4` threads the execute line in your makefile should look something like
 
 ``` Ruby
 execute:
