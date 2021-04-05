@@ -1,4 +1,4 @@
-# Variational Monte Carlo studies of Bose gas in harmonic oscillator trap
+# VMC studies of Bose gas in harmonic oscillator trap
 ## Project 1 - Computational Physics II
 The report containing background theory, explanation of the methods and results can be found [here](https://github.com/pederlh/FYS4411/blob/main/Project1/Article/Project_1___VMC_studies_of_QM_systems_NOTFIN.pdf) and the problem set for the project can be found [here](http://compphysics.github.io/ComputationalPhysics2/doc/Projects/2021/Project1/pdf/Project1.pdf).
 
