@@ -1,6 +1,6 @@
 # VMC studies of Bose gas in harmonic oscillator trap
 ## Project 1 - Computational Physics II
-The report containing background theory, explanation of the methods and results can be found [here](https://github.com/pederlh/FYS4411/blob/main/Project1/Article/Project_1___VMC_studies_of_QM_systems_NOTFIN.pdf) and the problem set for the project can be found [here](http://compphysics.github.io/ComputationalPhysics2/doc/Projects/2021/Project1/pdf/Project1.pdf).
+The final report, containing background theory, explanation of the methods and results, can be found [here](https://github.com/pederlh/FYS4411/blob/main/Project1/Article/Project_1___VMC_studies_of_QM_systems_NOTFIN.pdf). The problem set for the project can be found [here](http://compphysics.github.io/ComputationalPhysics2/doc/Projects/2021/Project1/pdf/Project1.pdf).
 
 ### Summary
 In this project we tackled the problem of both non-interacting and interacting boson gas particles in spherical and elliptical harmonic oscillator well traps using variational Monte Carlo simulations. In summary the code contained in this repository can be used to
