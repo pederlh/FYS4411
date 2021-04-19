@@ -35,9 +35,9 @@ public:
     double tf_middle_, laplace_tf_;
 
     //Non-interacting case
-    double Initialize_positions();
+    void Initialize_positions();
     void Declare_position(int N, int D, double h, double step, int case_type);
-    double Proposed_move(int idx);
+    void Proposed_move(int idx);
     double Local_energy_analytical(double alpha);
     double Local_energy_brute_force(double alpha);
     double Update_r_sum(double sum, double r_init, double r_move);
@@ -46,8 +46,8 @@ public:
     //Importance sampling
     void Declare_quantum_force(double D_diff);
     void Initialize_quantum_force(double alpha, int idx);
-    double Proposed_move_importance(int idx);
-    void Update_quantum_force(double alpha);
+    void Proposed_move_importance(int idx);
+    void Update_quantum_force(double alpha, int idx);
 
 };
 

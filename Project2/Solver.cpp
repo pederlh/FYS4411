@@ -14,7 +14,7 @@ Solver::Solver(int N, int MC, int MC_optimal_run, int D, int type_energy, int ty
 
 
     wave.Declare_position(N_, D_,h_, step_, 0);             // Non-interacting case
-    
+
 
     MC_ = MC;                       // Number of monte carlo cycles
     OBD_check_ = true;              // "true" gives calculation of one body density
@@ -48,19 +48,10 @@ void Solver::Gradient_descent(double * shared_alphas){
         alpha_vals_GD[z] = 0;
     }
     double *values = new double[3];                     // Array to contain energy, variance and energy derivative wrt alpha;
-    double alpha_guess = 0.7;//0.55;                          // Initial guess for alpha
+    double alpha_guess = 0.7;                          // Initial guess for alpha
     double alpha_guess_std;                             // Standard deviation of mean of alpha found by all threads
     int counter = 0;                                    // Counter to keep track of actual number of iterations
-    double tol;
-    if (type_sampling_ ==3){
-        if (N_ == 64){tol=tol_GD_*pow(10,floor(log10(N_)))*100;}
-        if (N_ == 32){tol=tol_GD_*pow(10,floor(log10(N_)))*10;}
-        if (N_ == 16){tol=tol_GD_*pow(10,floor(log10(N_)));}
-        if (N_ == 2){tol = tol_GD_*1e-2;}
-    }
-    else{tol = tol_GD_;}
-
-
+    double tol = tol_GD_;
 
 
      #pragma omp master
@@ -147,11 +138,6 @@ void Solver::Gradient_descent(double * shared_alphas){
             "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
     }
 
-    if(type_sampling_==3){
-        file = "INTERACTION_OPTIMAL_ALPHA"+ to_string(N_) + "_N_stringID_" + to_string(thread_ID_) +
-            "_alpha_" + to_string(alpha_guess) + "_E_L_samples.txt";
-    }
-
     ofstream ofile;
     ofile.open(file);
     ofile << setprecision(15) << time_ << endl;
@@ -166,7 +152,7 @@ void Solver::Gradient_descent(double * shared_alphas){
 void Solver::MonteCarlo_GD_noninteracting(double *values, double alpha){
     double energy, energy_squared, DeltaE, variance, DerivateE, Derivate_WF_E, sum_r, Derivate_WF;
 
-    wave.r2_sum_old_ = wave.Initialize_positions();         //Initialize random initial matrix of positions
+    wave.Initialize_positions();         //Initialize random initial matrix of positions
 
     //Equilibration step: runs metropolis algorithm without sampling to equilibrate system
     Equilibrate(alpha);
@@ -180,7 +166,6 @@ void Solver::MonteCarlo_GD_noninteracting(double *values, double alpha){
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int n = 0; n < N_; n++){
 
-            wave.r2_sum_new_ = wave.r2_sum_old_;
             (this->*metropolis_sampling)(alpha); //Metropolis test
 
             //Calculate local energy
@@ -215,19 +200,8 @@ void Solver::MonteCarlo_GD_noninteracting(double *values, double alpha){
 //Method for running Monte Carlo simulation for one (optimized) value of variational parameter alpha (non-interacting bosons)
 void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
     double DeltaE;
-    int num_bins = 50;                     // Number of bins OBD calculation
-    double max_radi = 8.0;                  // Max radius OBD calculation
-    double *bins = new double[num_bins];    // Array of bins where each bins[i] represents i*radius for one body density calculation
 
-    //If one body density calculation is chosen: Initialize radius and bins array
-    if (OBD_check_ == true){
-        for (int i =0; i < num_bins; i++){
-            bins[i] = 0.0;
-        }
-        radi_ = max_radi/num_bins;
-    }
-
-    wave.r2_sum_old_ = wave.Initialize_positions();     // Initialize random initial matrix of positions
+    wave.Initialize_positions();     // Initialize random initial matrix of positions
 
     //Equilibration step: runs metropolis algorithm without sampling to equilibrate system
     Equilibrate(alpha);
@@ -237,8 +211,6 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
     for (int cycle = 0; cycle < MC_optimal_run_; cycle++){
         for (int n = 0; n < N_; n++){
 
-            if (OBD_check_ == true){One_body_density(bins);}       //Count particle positions for one body density calculation
-            wave.r2_sum_new_ = wave.r2_sum_old_;
             (this->*metropolis_sampling)(alpha); //Metropolis test
 
             //Calculate local energy
@@ -255,20 +227,6 @@ void Solver::MonteCarlo_optval_noninteracting(double alpha, double *energies){
     end_time_ = omp_get_wtime();
     time_ = end_time_ - start_time_;
 
-    //Write average particle distribution to file
-    if (OBD_check_ == true){
-        string OBD_file = "One_body_density_N_" + to_string(N_) + "_stringID_" + to_string(thread_ID_) + "_alpha_" + to_string(alpha) + ".txt";
-
-        ofstream ofile2;
-        double scale = (4./3)*M_PI*radi_*radi_*radi_;
-        ofile2.open(OBD_file);
-        for (int i = 0; i < num_bins; i ++){
-            bins[i] /= (MC_optimal_run_*N_*scale*(pow(i+1,3)-pow(i,3)));
-            ofile2 << setprecision(15) <<bins[i]<<endl;
-        }
-        ofile2.close();
-    }
-
 }
 
 
@@ -282,16 +240,22 @@ void Solver::Metropolis(double alpha){
     double tf_old, tf_new, P;
     int idx = RIG(gen);
 
-    wave.r2_sum_new_ = wave.Proposed_move(idx);    //Moves particle with index "idx" and calculates new sum of r^2 (for trial wave function)
+    wave.Proposed_move(idx);    //Moves particle with index "idx" and calculates new sum of r^2 (for trial wave function)
 
     tf_old = wave.Trial_func(alpha, wave.r2_sum_old_);             //Trial wave function of old position
     tf_new = wave.Trial_func(alpha, wave.r2_sum_new_);           //Trial wave function of new position
     P = (tf_new*tf_new)/(tf_old*tf_old);                         //Metropolis test
     if (RDG(gen) <= P){
         for (int k =0 ; k < D_;  k++){                   //Update initial position
-            wave.r_old_[idx][k] = wave.r_new_[k];
+            wave.r_old_[idx][k] = wave.r_new_[idx][k];
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
+    }
+    else{
+        for (int k =0 ; k < D_;  k++){
+            wave.r_new_[idx][k] = wave.r_old_[idx][k];
+        }
+        wave.r2_sum_new_ = wave.r2_sum_old_;
     }
 }
 
@@ -305,8 +269,8 @@ void Solver::Metropolis_importance(double alpha){
     int idx = RIG(gen);
 
     wave.Initialize_quantum_force(alpha,idx);                   //Calculate quantum force for particles before proposed move
-    wave.r2_sum_new_ = wave.Proposed_move_importance(idx);     //Moves particle with index "idx" and calculates new sum of r^2 (for trial wave function)
-    wave.Update_quantum_force(alpha);                          //Calculate quantum force for particles after proposed move
+    wave.Proposed_move_importance(idx);     //Moves particle with index "idx" and calculates new sum of r^2 (for trial wave function)
+    wave.Update_quantum_force(alpha,idx);                          //Calculate quantum force for particles after proposed move
     greensfunc = Greens_function(idx);                         //Calculate Greens function
 
     tf_old = wave.Trial_func(alpha, wave.r2_sum_old_);             //Trial wave function of old position
@@ -314,21 +278,25 @@ void Solver::Metropolis_importance(double alpha){
     P = greensfunc*(tf_new*tf_new)/(tf_old*tf_old);            //Metropolis-Hastings test
     if (RDG(gen) <= P){
         for (int k =0 ; k < D_;  k++){                   //Update initial position
-            wave.r_old_[idx][k] = wave.r_new_[k];
+            wave.r_old_[idx][k] = wave.r_new_[idx][k];
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
     }
+    else{
+        for (int k =0 ; k < D_;  k++){
+            wave.r_new_[idx][k] = wave.r_old_[idx][k];
+        }
+        wave.r2_sum_new_ = wave.r2_sum_old_;
+    }
 }
-
-
 
 
 //Method for evaluating Greens function
 double Solver::Greens_function(int idx){
     double old_2_new, new_2_old;
     for (int dd = 0; dd < D_; dd++){
-        old_2_new += pow((wave.r_old_[idx][dd]-wave.r_new_[dd]- D_diff_*step_*wave.quantum_force_new_[dd]),2)/(4*D_diff_*step_);
-        new_2_old += pow((wave.r_new_[dd]-wave.r_old_[idx][dd]- D_diff_*step_*wave.quantum_force_old_[dd]),2)/(4*D_diff_*step_);
+        old_2_new += pow((wave.r_old_[idx][dd]-wave.r_new_[idx][dd]- D_diff_*step_*wave.quantum_force_new_[dd]),2)/(4*D_diff_*step_);
+        new_2_old += pow((wave.r_new_[idx][dd]-wave.r_old_[idx][dd]- D_diff_*step_*wave.quantum_force_old_[dd]),2)/(4*D_diff_*step_);
     }
     old_2_new = exp(-old_2_new);
     new_2_old = exp(-new_2_old);
@@ -341,13 +309,10 @@ double Solver::Greens_function(int idx){
 void Solver::Equilibrate(double alpha){
     for (int equi_c= 0; equi_c < equi_cycles_; equi_c++){
         for (int n = 0; n< N_; n++){
-            wave.r2_sum_new_ = wave.r2_sum_old_;
-
             (this->*metropolis_sampling)(alpha); //Metropolis test
         }
     }
 }
-
 
 
 void Solver::Write_to_file(string outfilename){

@@ -91,7 +91,7 @@ int main(int argc, char const *argv[]) {
         }
 
         // When varying delta t: write to file with following lines of code
-        /* 
+        /*
         string dt = "0.005";
         outfilename = "dt_run_" + dt + "_ana.txt";
         mysolver.Write_to_file(outfilename);
