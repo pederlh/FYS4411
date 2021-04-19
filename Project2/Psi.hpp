@@ -8,8 +8,6 @@
 #include <random>
 #include <iomanip>
 #include <cstdlib>
-#include <armadillo>
-using namespace arma;
 
 using namespace std;
 
@@ -31,8 +29,8 @@ public:
     int N_, D_, case_;
     random_device rd_;
 
-    mat r_old_, r_new_;
-    vec quantum_force_old_, quantum_force_new_, rkl_;
+    double **r_old_, **r_new_;
+    double *quantum_force_old_, *quantum_force_new_;
     double r2_sum_old_, r2_sum_new_;
     double tf_middle_, laplace_tf_;
 
@@ -49,8 +47,7 @@ public:
     void Declare_quantum_force(double D_diff);
     void Initialize_quantum_force(double alpha, int idx);
     double Proposed_move_importance(int idx);
-    void Update_quantum_force(double alpha, int idx);
-
+    void Update_quantum_force(double alpha);
 
 };
 

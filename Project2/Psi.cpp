@@ -12,10 +12,15 @@ void Psi::Declare_position(int N, int D, double h, double step, int case_type){
     move_step_ = 0.005;    //Delta t in solution of Langevin equation
 
     //Declaring position
-    r_new  = mat(N_*D_).fill(0.);
-    r_old_ = mat(N_*D_).fill(0.);
+    r_new_ = new double[D_];
+    r_old_ = new double*[N_];
+    for (int i= 0; i< N_ ; i++){
+        r_old_[i] = new double[D_];
+        r_new_[i] = new double[D_];
+    }
 
 }
+
 
 
 //Function to declare quantum force, called if importance sampling is chosen.
@@ -24,8 +29,8 @@ void Psi::Declare_quantum_force(double D_diff){
     D_diff_ = D_diff;                       //Diffusion constant in Green's function and solution of Langevin eq.
 
     //Declaring quantum force
-    quantum_force_new_ = vec(D_).fill(0.);
-    quantum_force_old_ = vec(D_).fill(0.);
+    quantum_force_new_ = new double[D_];
+    quantum_force_old_ = new double[D_];
 }
 
 
@@ -40,15 +45,12 @@ double Psi::Initialize_positions(){
     for (int j = 0; j < N_; j++){
         for (int k = 0; k < D_; k++){
             r_old_[j][k] = h_ * (RDG(gen) - 0.5);
-            r_new_[j][k] = r_old_[j][k];
         }
     }
-
     //Initialize r**2 sum for non-interacting bosons
     for (int i = 0; i < N_; i++){
         for (int j =0; j <D_; j++){
             r2_sum_old_ += r_old_[i][j]*r_old_[i][j];
-            r2_sum_new_ += r_old_[i][j]*r_old_[i][j];
         }
     }
 
@@ -59,18 +61,18 @@ double Psi::Initialize_positions(){
 //  -Called if importance sampling is choosen
 void Psi::Initialize_quantum_force(double alpha, int idx){
 
-    for (int d = 0; d < D_; d++){
-        quantum_force_old_[d] = -4*alpha*r_old_[idx][d];  //Quantum force for particles before proposed move
+    for (int k = 0; k < D_; k++){
+        quantum_force_old_[k] = -4*alpha*r_old_[idx][k];  //Quantum force for particles before proposed move
     }
 
 }
 
 
 //Function to update quantum force in the case of non-interacting bosons
-void Psi::Update_quantum_force(double alpha, int idx){
+void Psi::Update_quantum_force(double alpha){
 
-    for (int d = 0; d < D_; d++){
-        quantum_force_new_[d] = -4*alpha*r_new_[idx][d];   //Quantum force for the moved particle
+    for (int dim = 0; dim < D_; dim++){
+        quantum_force_new_[dim] = -4*alpha*r_new_[dim];   //Quantum force for the moved particle
     }
 }
 
@@ -83,6 +85,7 @@ double Psi::Update_r_sum(double sum, double r_init, double r_move){
 }
 
 
+
 //Function to calculate a proposed move of one particle in the case of non-interacting bosons
 // - Called if brute force metropolis sampling is chosen
 double Psi::Proposed_move(int idx){
@@ -91,7 +94,7 @@ double Psi::Proposed_move(int idx){
 
     for (int k = 0; k < D_; k++){
         r_new_[k] = r_old_[idx][k] + h_ * (RDG(gen) - 0.5);
-        r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[idx][k]);
+        r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[k]);
     }
     return r2_sum_new_;
 }
@@ -106,10 +109,11 @@ double Psi::Proposed_move_importance(int idx){
 
     for (int k = 0; k < D_; k++){
         r_new_[k] = r_old_[idx][k] + D_diff_*quantum_force_old_[k]*move_step_ + NDG(gen)*sqrt(move_step_);
-        r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[idx][k]);
+        r2_sum_new_ = Update_r_sum(r2_sum_new_, r_old_[idx][k], r_new_[k]);
     }
     return r2_sum_new_;
 }
+
 
 
 
