@@ -8,8 +8,10 @@
 #include <random>
 #include <iomanip>
 #include <cstdlib>
+#include <armadillo>
 
 using namespace std;
+using namespace arma;
 
 /*
         Class for trial wave function and hamiltonian.
@@ -29,8 +31,8 @@ public:
     int N_, D_, case_;
     random_device rd_;
 
-    double **r_old_, **r_new_;
-    double *quantum_force_old_, *quantum_force_new_;
+    mat r_old_, r_new_;
+    vec quantum_force_old_, quantum_force_new_;
     double r2_sum_old_, r2_sum_new_;
     double tf_middle_, laplace_tf_;
 

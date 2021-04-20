@@ -8,18 +8,22 @@
 #include <random>
 #include <iomanip>
 #include <cstdlib>
+#include <armadillo>
 
 using namespace std;
+using namespace arma;
 
 
 class BoltzmannMachine {
 
 public:
-    double *a_, *b_, **w_;
-    int D_, N_, hidden_layers_;
+    cube w_;
+    mat a_;
+    vec b_;
+    int D_, N_, hidden_nodes_;
     random_device rd_;
 
-void Initialize_Parameters();
+void Initialize_Parameters(int dimentions, int num_particles);
 };
 
 #endif
