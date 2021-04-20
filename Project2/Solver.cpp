@@ -247,13 +247,13 @@ void Solver::Metropolis(double alpha){
     P = (tf_new*tf_new)/(tf_old*tf_old);                         //Metropolis test
     if (RDG(gen) <= P){
         for (int k =0 ; k < D_;  k++){                   //Update initial position
-            wave.r_old_[idx][k] = wave.r_new_[idx][k];
+            wave.r_old_(idx,k) = wave.r_new_(idx,k);
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
     }
     else{
         for (int k =0 ; k < D_;  k++){
-            wave.r_new_[idx][k] = wave.r_old_[idx][k];
+            wave.r_new_(idx,k) = wave.r_old_(idx,k);
         }
         wave.r2_sum_new_ = wave.r2_sum_old_;
     }
@@ -278,13 +278,13 @@ void Solver::Metropolis_importance(double alpha){
     P = greensfunc*(tf_new*tf_new)/(tf_old*tf_old);            //Metropolis-Hastings test
     if (RDG(gen) <= P){
         for (int k =0 ; k < D_;  k++){                   //Update initial position
-            wave.r_old_[idx][k] = wave.r_new_[idx][k];
+            wave.r_old_(idx,k) = wave.r_new_(idx,k);
         }
         wave.r2_sum_old_ = wave.r2_sum_new_;
     }
     else{
         for (int k =0 ; k < D_;  k++){
-            wave.r_new_[idx][k] = wave.r_old_[idx][k];
+            wave.r_new_(idx,k)= wave.r_old_(idx,k);
         }
         wave.r2_sum_new_ = wave.r2_sum_old_;
     }
@@ -295,8 +295,8 @@ void Solver::Metropolis_importance(double alpha){
 double Solver::Greens_function(int idx){
     double old_2_new, new_2_old;
     for (int dd = 0; dd < D_; dd++){
-        old_2_new += pow((wave.r_old_[idx][dd]-wave.r_new_[idx][dd]- D_diff_*step_*wave.quantum_force_new_[dd]),2)/(4*D_diff_*step_);
-        new_2_old += pow((wave.r_new_[idx][dd]-wave.r_old_[idx][dd]- D_diff_*step_*wave.quantum_force_old_[dd]),2)/(4*D_diff_*step_);
+        old_2_new += pow((wave.r_old_(idx,dd)-wave.r_new_(idx,dd)- D_diff_*step_*wave.quantum_force_new_(dd)),2)/(4*D_diff_*step_);
+        new_2_old += pow((wave.r_new_(idx,dd)-wave.r_old_(idx,dd)- D_diff_*step_*wave.quantum_force_old_(dd)),2)/(4*D_diff_*step_);
     }
     old_2_new = exp(-old_2_new);
     new_2_old = exp(-new_2_old);

@@ -9,6 +9,9 @@
 #include <iomanip>
 #include <cstdlib>
 #include "omp.h"
+#include <armadillo>
+
+using namespace arma;
 
 #include "Psi.hpp"
 using namespace std;
