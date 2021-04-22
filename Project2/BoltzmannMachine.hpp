@@ -39,6 +39,7 @@ public:
     random_device rd_;
 
     void Initialize_Parameters(int dimentions, int num_particles, double eta);
+    void Initialize_SGD();
 
 
 
