@@ -24,11 +24,11 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    da_ = mat(N_, D_).fill(0.0);
    db_ = vec(H_).fill(0.0);
 
-   Energy_dw_ = cube(N_, D_, H_).fill(0.0);
-   Energy_da_ = mat(N_, D_).fill(0.0);
-   Energy_db_ = vec(H_).fill(0.0);
+   E_dw_ = cube(N_, D_, H_).fill(0.0);
+   E_da_ = mat(N_, D_).fill(0.0);
+   E_db_ = vec(H_).fill(0.0);
 
-   SGD();
+   ADAM();
 }
 
 void BoltzmannMachine::Initialize()
@@ -112,9 +112,9 @@ double BoltzmannMachine::MonteCarlo()
     delta_Psi_w /= MC_*N_;
     delta_Psi_a /= MC_*N_;
     delta_Psi_b /= MC_*N_;
-    Energy_dw_ = 2*(derivative_Psi_w - delta_Psi_w*energy);
-    Energy_da_ = 2*(derivative_Psi_a - delta_Psi_a*energy);
-    Energy_db_ = 2*(derivative_Psi_b - delta_Psi_b*energy);
+    E_dw_ = 2*(derivative_Psi_w - delta_Psi_w*energy);
+    E_da_ = 2*(derivative_Psi_a - delta_Psi_a*energy);
+    E_db_ = 2*(derivative_Psi_b - delta_Psi_b*energy);
 
     return energy;
 }
@@ -176,10 +176,13 @@ double BoltzmannMachine::LocalEnergy()
     return energy;
 }
 
-
-void BoltzmannMachine::Initialize_SGD()
+/* Method for Adam optimization */
+void BoltzmannMachine::ADAM()
 {
-    epsilon_ = 1e-8;   //Value to avoid division by zero.
+    double epsilon = 1e-8;   //Value to avoid division by zero.
+    double beta1 = 0.9;      //Decay rate
+    double beta2 = 0.999;   //Decay rate
+    double alpha_it, epsilon_it;
 
     //First momentum of weights/biases for stochastic gradient descent
     mom_w_ = cube(N_, D_, H_).fill(0.0);
@@ -191,31 +194,34 @@ void BoltzmannMachine::Initialize_SGD()
     second_mom_a_ = mat(N_, D_).fill(0.0);
     second_mom_b_ = vec(H_).fill(0.0);
 
-}
+    double Energy = 0;
+    int its = 100;
+    vec Energies = vec(its).fill(0.0);
 
-/* Method for Adam optimization */
-void BoltzmannMachine::ADAM()
-{
-    dw_ *= eta_;
-    db_ *= eta_;
-    da_ *= eta_;
+    for (int i = 0; i < its;  i++){
+        Energy = MonteCarlo();
+        Energies(i) = Energy;
+        cout << "Energy = " << Energy << endl;
+        E_da_*=eta_;
+        E_db_*=eta_;
+        E_dw_*=eta_;
 
-    mom_w_ = beta1_*mom_w_ + (1-beta1_)*dw_;
-    mom_b_ = beta1_*mom_b_ + (1-beta1_)*db_;
-    mom_a_ = beta1_*mom_a_ + (1-beta1_)*da_;
+        mom_w_ = beta1*mom_w_ + (1-beta1)*E_dw_;
+        mom_b_ = beta1*mom_b_ + (1-beta1)*E_db_;
+        mom_a_ = beta1*mom_a_ + (1-beta1)*E_da_;
 
-    second_mom_w_ = beta2_*second_mom_w_ + (1-beta2_)*(dw_%dw_);
-    second_mom_b_ = beta2_*second_mom_b_ + (1-beta2_)*(db_%db_);
-    second_mom_a_ = beta2_*second_mom_a_ + (1-beta2_)*(da_%da_);
+        second_mom_w_ = beta2*second_mom_w_ + (1-beta2)*(E_dw_%E_dw_);
+        second_mom_b_ = beta2*second_mom_b_ + (1-beta2)*(E_db_%E_db_);
+        second_mom_a_ = beta2*second_mom_a_ + (1-beta2)*(E_da_%E_da_);
 
-    //alpha_batch_ = eta_*sqrt(1-pow(beta2_, batch_+1))/(1-pow(beta1_, batch_+1));
-    //epsilon_batch_ = epsilon_*sqrt(1-pow(beta2_, batch_+1));
+        alpha_it = eta_*sqrt(1-pow(beta2, i+1))/(1-pow(beta1, i+1));
+        epsilon_it = epsilon*sqrt(1-pow(beta2, i+1));
 
-    //weights_ -= mom_w_*alpha_batch_/(sqrt(second_mom_w_) + epsilon_batch_);
-    //bias_ -= mom_b_*alpha_batch_/(sqrt(second_mom_b_) + epsilon_batch_);
+        w_ -= mom_w_*alpha_it/(sqrt(second_mom_w_) + epsilon_it);
+        b_ -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
+        a_ -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
 
-    dw_.fill(0.);
-    db_.fill(0.);
+    }
 }
 
 
@@ -229,8 +235,8 @@ void BoltzmannMachine::SGD()
         Energy = MonteCarlo();
         Energies(i) = Energy;
         cout << "Energy = " << Energy << endl;
-        a_ -= eta_*Energy_da_;
-        b_ -= eta_*Energy_db_;
-        w_ -= eta_*Energy_dw_;
+        a_ -= eta_*E_da_;
+        b_ -= eta_*E_db_;
+        w_ -= eta_*E_dw_;
     }
 }
