@@ -22,6 +22,7 @@ class BoltzmannMachine {
 
 private:
     void (BoltzmannMachine::*optimizer)();
+    void (BoltzmannMachine::*MetropolisMethod)();
 
 
 public:
@@ -30,23 +31,29 @@ public:
     vec b_, db_, E_db_;
     vec Q_;
     int D_, N_, H_;
-    random_device rd_;
+    double sigma_, sigma2_;
 
-    mat r_old_, r_new_;
+    mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
-    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC);
+    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling);
     void Initialize();
     double WaveFunction(mat r);
     void Q_factor(mat r);
+
     void Metropolis();
+    void Metropolis_Hastings();
+    double tf_old_, tf_new_, P_, D_diff_, t_step_;   //Parameters for Metropolis algorithm
+
     double MonteCarlo();
-    void SGD();
     double LocalEnergy();
     void Derivate_wavefunction();
+    mat QuantumForce(mat r);
+    double GreensFunction(int idx);
 
+    void SGD();
     //For ADAM
     void ADAM();
-    double sigma_, eta_;
+    double eta_;
     cube mom_w_, second_mom_w_;
     vec mom_b_, second_mom_b_;
     mat mom_a_, second_mom_a_;

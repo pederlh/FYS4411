@@ -13,12 +13,14 @@ using namespace std;
 using namespace arma;
 
 int main(int argc, char const *argv[]) {
-    int num_part = 10;
+    int num_part = 6;
     int dim = 3;
     int MC = 10000;
-    double eta = 0.01;
+    double eta = 0.001;
 
-    BoltzmannMachine solver(num_part, dim, eta, MC);
+    //typesampling: 0 for brute force, 1 for metropolis
+
+    BoltzmannMachine solver(num_part, dim, eta, MC, 1);
 
     return 0;
 }
