@@ -1,32 +1,36 @@
 #include "BoltzmannMachine.hpp"
 
-BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling)
+BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, bool interaction)
 {
     D_ = dimentions;
     N_ = num_particles;
-    H_ = 4;
+    H_ = 2;
     MC_ = MC;
-    double std_norm_dist = 0.1;  //standard deviation of normal distribution used to initialize weights/biases.
+    double std_norm_dist = 0.001;  //standard deviation of normal distribution used to initialize weights/biases.
 
    //fill::randn = set each element to a random value from a normal/Gaussian distribution with zero mean and unit variance
    //Initializing weihgts/biases
    w_ = cube(N_, D_, H_, fill::randn)*std_norm_dist;
    a_ = mat(N_, D_, fill::randn)*std_norm_dist;
    b_ = vec(H_, fill::randn)*std_norm_dist;
-   Q_ = vec(H_).fill(0.0); //HUsk å sette denne til 0 i funksjonen sin.
-   sigma_ = 1;
+   Q_ = vec(H_).fill(0.0);
+   sigma_ = 1.0;
    sigma2_ = sigma_*sigma_;
    eta_ = eta; //Learning rate SGD.
-   t_step_ = 1e-5;
+   t_step_ = 0.5;
+   D_diff_ = 0.5;
+   interaction_ = interaction;
+   //Initializing position
+   r_old_ = mat(N_,D_, fill::randn)*sqrt(t_step_);
+   r_new_ = mat(N_,D_).fill(0.0);
+   for (int n = 0; n < N_ ; n++){
+       for (int d = 0; d <D_; d++){
+           r_new_(n,d) = r_old_(n,d);
+       }
+   }
 
-   //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
-   dw_ = cube(N_, D_, H_).fill(0.0);
-   da_ = mat(N_, D_).fill(0.0);
-   db_ = vec(H_).fill(0.0);
 
-   E_dw_ = cube(N_, D_, H_).fill(0.0);
-   E_da_ = mat(N_, D_).fill(0.0);
-   E_db_ = vec(H_).fill(0.0);
+
 
    if (type_sampling == 0)
    {
@@ -77,17 +81,21 @@ void BoltzmannMachine::Q_factor(mat r)
 
 double BoltzmannMachine::MonteCarlo()
 {
-    double energy,DeltaE;
-
-    //Declaring position
-    r_old_ = mat(N_,D_, fill::randu) - 0.5;
-    r_new_ = r_old_;
+    double energy = 0.0;
+    double DeltaE = 0.0;
 
     //Parameters for metropolis-hastings algo
     quantum_force_ = mat(N_, D_).fill(0.0);
     quantum_force_old_ = QuantumForce(r_old_);
 
-    D_diff_ = 0.5;
+    //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
+    dw_ = cube(N_, D_, H_).fill(0.0);
+    da_ = mat(N_, D_).fill(0.0);
+    db_ = vec(H_).fill(0.0);
+
+    E_dw_ = cube(N_, D_, H_).fill(0.0);
+    E_da_ = mat(N_, D_).fill(0.0);
+    E_db_ = vec(H_).fill(0.0);
 
     cube delta_Psi_w = cube(N_, D_, H_).fill(0.0);
     mat delta_Psi_a = mat(N_, D_).fill(0.0);
@@ -97,10 +105,8 @@ double BoltzmannMachine::MonteCarlo()
     mat derivative_Psi_a = mat(N_, D_).fill(0.0);
     vec derivative_Psi_b = vec(H_).fill(0.0);
 
-    energy = 0;
-
     for (int cycle = 0; cycle < MC_; cycle++){
-        for (int n = 0; n < N_; n++){
+        for (int out_n = 0; out_n < N_; out_n++){
 
             (this->*MetropolisMethod)();
             DeltaE = LocalEnergy();
@@ -136,8 +142,8 @@ void BoltzmannMachine::Derivate_wavefunction()
     Q_factor(r_old_);
     da_ = (r_old_ - a_)/sigma2_;
     db_ = 1.0/(1.0 + exp(-Q_));
-    for (int h = 0; h< H_; h++){
-        dw_.slice(h) = dw_.slice(h)/(sigma2_*(1.0 +  exp(-Q_(h))));
+    for (int h = 0; h < H_; h++){
+        dw_.slice(h) = w_.slice(h)/(sigma2_*(1.0 +  exp(-Q_(h))));
     }
 }
 
@@ -185,12 +191,13 @@ void BoltzmannMachine::Metropolis_Hastings()
     if (randu() <= P_){
         for (int d =0 ; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
-            quantum_force_old_ = quantum_force_new_;
+            quantum_force_old_(d) = quantum_force_new_(d);
         }
     }
     else{
         for (int d =0 ; d < D_;  d++){
             r_new_(idx,d) = r_old_(idx,d);
+            quantum_force_new_(d) = quantum_force_old_(d);
         }
     }
 }
@@ -221,7 +228,7 @@ double BoltzmannMachine::GreensFunction(int idx)
 
 double BoltzmannMachine::LocalEnergy()
 {
-    double energy = 0;
+    double delta_energy = 0;
     Q_factor(r_old_);
     double der1_ln_psi, der2_ln_psi;
 
@@ -234,11 +241,26 @@ double BoltzmannMachine::LocalEnergy()
                 sum2 += pow(w_(n,d,h),2)*exp(Q_(h))/pow((1.0 + exp(Q_(h))),2);
             }
             der1_ln_psi = -(r_old_(n,d) - a_(n,d))/sigma2_ + sum1/sigma2_;
-            der2_ln_psi = -1.0/sigma2_ + sum2/(sigma2_);
-            energy += 0.5*(-pow(der1_ln_psi,2) - der2_ln_psi + pow(r_old_(n,d),2));
+            der2_ln_psi = -1.0/sigma2_ + sum2/sigma2_;
+            delta_energy += 0.5*(-pow(der1_ln_psi,2) - der2_ln_psi + pow(r_old_(n,d),2));
         }
     }
-    return energy;
+
+    if (interaction_)
+    {
+        double r_norm;
+        for (int n1 = 0; n1< N_; n1++){
+            for (int n2 = 0; n2 < n1; n2++){
+                r_norm = 0.0;
+                for (int d = 0; d < D_; d++){
+                    r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
+                }
+                delta_energy += 1/sqrt(r_norm);
+            }
+        }
+    }
+
+    return delta_energy;
 }
 
 /* Method for Adam optimization */
@@ -285,7 +307,6 @@ void BoltzmannMachine::ADAM()
         w_ -= mom_w_*alpha_it/(sqrt(second_mom_w_) + epsilon_it);
         b_ -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
         a_ -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
-
     }
 }
 
@@ -293,13 +314,13 @@ void BoltzmannMachine::ADAM()
 void BoltzmannMachine::SGD()
 {
     double Energy = 0;
-    int its = 100;
+    int its = 1000;
     vec Energies = vec(its).fill(0.0);
 
     for (int i = 0; i < its;  i++){
         Energy = MonteCarlo();
         Energies(i) = Energy;
-        cout << "Energy = " << Energy << endl;
+        cout << "Energy = " << setprecision(15) << Energy << endl;
         a_ -= eta_*E_da_;
         b_ -= eta_*E_db_;
         w_ -= eta_*E_dw_;
