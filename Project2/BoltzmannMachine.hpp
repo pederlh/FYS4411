@@ -36,7 +36,6 @@ public:
     mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
     BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling);
-    void Initialize();
     double WaveFunction(mat r);
     void Q_factor(mat r);
 

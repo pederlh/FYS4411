@@ -41,19 +41,6 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    SGD();
 }
 
-void BoltzmannMachine::Initialize()
-{
-    //Declaring position
-    r_old_ = mat(N_,D_, fill::randu) - 0.5;
-    r_new_ = r_old_;
-
-    //Parameters for metropolis algo
-    quantum_force_ = mat(N_, D_).fill(0.0);
-    quantum_force_old_ = QuantumForce(r_old_);
-
-    D_diff_ = 0.5;
-
-}
 
 double BoltzmannMachine::WaveFunction(mat r)
 {
@@ -91,7 +78,16 @@ void BoltzmannMachine::Q_factor(mat r)
 double BoltzmannMachine::MonteCarlo()
 {
     double energy,DeltaE;
-    Initialize();
+
+    //Declaring position
+    r_old_ = mat(N_,D_, fill::randu) - 0.5;
+    r_new_ = r_old_;
+
+    //Parameters for metropolis-hastings algo
+    quantum_force_ = mat(N_, D_).fill(0.0);
+    quantum_force_old_ = QuantumForce(r_old_);
+
+    D_diff_ = 0.5;
 
     cube delta_Psi_w = cube(N_, D_, H_).fill(0.0);
     mat delta_Psi_a = mat(N_, D_).fill(0.0);
