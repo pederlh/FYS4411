@@ -1,8 +1,8 @@
-import numpy as np 
+import numpy as np
 
 np.random.seed(1)
 nums = 1000
-N = 1
+N = 2
 
 
 q_factors       = [str(np.random.normal()) + "\n" for i in range(nums)]

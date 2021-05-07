@@ -1,6 +1,6 @@
-#include "BoltzmannMachine.hpp"
+#include "test.hpp"
 
-BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, bool interaction)
+test::test(int num_particles,int dimentions, double eta, int MC, int type_sampling, bool interaction)
 {
     arma_rng::set_seed_random();
     D_ = dimentions;
@@ -11,9 +11,9 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
 
    //fill::randn = set each element to a random value from a normal/Gaussian distribution with zero mean and unit variance
    //Initializing weihgts/biases
-   w_ = cube(N_, D_, H_, fill::randn)*std_norm_dist;
-   a_ = mat(N_, D_, fill::randn)*std_norm_dist;
-   b_ = vec(H_, fill::randn)*std_norm_dist;
+   w_ = cube(N_, D_, H_).fill(0.001);
+   a_ = mat(N_, D_).fill(0.001);
+   b_ = vec(H_).fill(0.001);
    Q_ = vec(H_).fill(0.0);
    sigma_ = 1.0;
    sigma2_ = sigma_*sigma_;
@@ -22,8 +22,16 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    D_diff_ = 0.5;
    interaction_ = interaction;
 
+   new_p = vec(1000).fill(0.0);
+   acc = vec(1000).fill(0.0);
+   index = ivec(1000).fill(0);
+
+   new_p.load("rs.txt");
+   acc.load("acceptances.txt");
+   index.load("idxs.txt");
+
    //Initializing position
-   r_old_ = mat(N_,D_, fill::randn)*sqrt(t_step_);
+   r_old_ = mat(N_,D_).fill(0.5*sqrt(t_step_));
    r_new_ = mat(N_,D_).fill(0.0);
    for (int n = 0; n < N_ ; n++){
        for (int d = 0; d < D_; d++){
@@ -34,20 +42,20 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
 
    if (type_sampling == 0)
    {
-       MetropolisMethod = &BoltzmannMachine::Metropolis;
+       MetropolisMethod = &test::Metropolis;
    }
 
    if (type_sampling == 1)
    {
-       MetropolisMethod = &BoltzmannMachine::Metropolis_Hastings;
+       MetropolisMethod = &test::Metropolis_Hastings;
    }
 
-   ADAM();
+   SGD();
 }
 
 
 
-double BoltzmannMachine::MonteCarlo()
+double test::MonteCarlo()
 {
     double energy = 0.0;
     double DeltaE = 0.0;
@@ -55,6 +63,9 @@ double BoltzmannMachine::MonteCarlo()
     //Parameters for metropolis-hastings algo
     quantum_force_ = mat(N_, D_).fill(0.0);
     quantum_force_old_ = QuantumForce(r_old_);
+    quantum_force_new_ = QuantumForce(r_old_);
+    quantum_force_old_.print("QF OLD ");
+
 
     //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
     dw_ = cube(N_, D_, H_).fill(0.0);
@@ -76,6 +87,8 @@ double BoltzmannMachine::MonteCarlo()
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int out_n = 0; out_n < N_; out_n++){
 
+            lil_c = cycle;
+            lil_n = out_n;
             (this->*MetropolisMethod)();
             DeltaE = LocalEnergy();
             Derivate_wavefunction();
@@ -105,7 +118,7 @@ double BoltzmannMachine::MonteCarlo()
     return energy;
 }
 
-void BoltzmannMachine::Derivate_wavefunction()
+void test::Derivate_wavefunction()
 {
     Q_factor(r_old_);
     da_ = (r_old_ - a_)/sigma2_;
@@ -115,7 +128,7 @@ void BoltzmannMachine::Derivate_wavefunction()
     }
 }
 
-double BoltzmannMachine::WaveFunction(mat r)
+double test::WaveFunction(mat r)
 {
     Q_factor(r);
     double term1 = 0.0;
@@ -138,7 +151,7 @@ double BoltzmannMachine::WaveFunction(mat r)
 
 }
 
-void BoltzmannMachine::Q_factor(mat r)
+void test::Q_factor(mat r)
 {
     vec temp = vec(H_).fill(0.0);
     Q_.fill(0.0);
@@ -149,7 +162,7 @@ void BoltzmannMachine::Q_factor(mat r)
     Q_ = b_ + temp;
 }
 
-void BoltzmannMachine::Metropolis()
+void test::Metropolis()
 {
     int idx = randi<int>(distr_param(0,N_-1));
 
@@ -173,25 +186,27 @@ void BoltzmannMachine::Metropolis()
     }
 }
 
-void BoltzmannMachine::Metropolis_Hastings()
+void test::Metropolis_Hastings()
 {
-    int idx = randi<int>(distr_param(0,N_-1));    //Random integer generated from uniform distribution [0,N-1];
-    double rand_gauss = randn<double>();         //Random double generated from gaussian distribution with mean = 0, std = 1;
+    int idx = index(N_*lil_c + lil_n);    //Random integer generated from uniform distribution [0,N-1];
     double GreensFunc;
-
 
     //Proposed move of particle
     for (int d = 0; d < D_; d++){
-        r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(d)*t_step_ + rand_gauss*sqrt(t_step_);
+        r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(d)*t_step_ + new_p(N_*lil_c + lil_n)*sqrt(t_step_);
+        cout << D_diff_*quantum_force_old_(d)*t_step_ <<endl;
     }
+    r_new_.print("r new ");
     quantum_force_new_ = QuantumForce(r_new_);
+    quantum_force_new_.print("QF NEW ");
 
     GreensFunc = GreensFunction(idx);
     tf_old_ = WaveFunction(r_old_);             //Trial wave function of old position
+    Q_.print("Qfac old ");
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
     P_ = GreensFunc*(tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
-    if (randu() <= P_){
-        //cout<<"ACCEPTED"<<endl;
+    if (acc(N_*lil_c + lil_n) <= P_){
+        cout<<"ACCEPTED"<<endl;
         for (int d = 0; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
             quantum_force_old_(d) = quantum_force_new_(d);
@@ -205,7 +220,7 @@ void BoltzmannMachine::Metropolis_Hastings()
     }
 }
 
-mat BoltzmannMachine::QuantumForce(mat r)
+mat test::QuantumForce(mat r)
 {
     mat temp = mat(N_,D_).fill(0.0);
     Q_factor(r);
@@ -218,7 +233,7 @@ mat BoltzmannMachine::QuantumForce(mat r)
 }
 
 
-double BoltzmannMachine::GreensFunction(int idx)
+double test::GreensFunction(int idx)
 {
     double G = 0.0;
     for (int d = 0; d < D_; d++){
@@ -226,10 +241,11 @@ double BoltzmannMachine::GreensFunction(int idx)
     }
 
     G = exp(G);
+    cout << "Greens func " << G <<endl;
     return G;
 }
 
-double BoltzmannMachine::LocalEnergy()
+double test::LocalEnergy()
 {
     double delta_energy = 0.0;
     Q_factor(r_old_);
@@ -267,7 +283,7 @@ double BoltzmannMachine::LocalEnergy()
 }
 
 /* Method for Adam optimization */
-void BoltzmannMachine::ADAM()
+void test::ADAM()
 {
     double epsilon = 1e-12;   //Value to avoid division by zero.
     double beta1 = 0.9;      //Decay rate
@@ -285,7 +301,7 @@ void BoltzmannMachine::ADAM()
     second_mom_b_ = vec(H_).fill(0.0);
 
     double Energy = 0.0;
-    int its = 100;
+    int its = 1;
     vec Energies = vec(its).fill(0.0);
 
     for (int i = 0; i < its;  i++){
@@ -314,10 +330,10 @@ void BoltzmannMachine::ADAM()
 }
 
 
-void BoltzmannMachine::SGD()
+void test::SGD()
 {
     double Energy = 0;
-    int its = 1000;
+    int its = 1;
     vec Energies = vec(its).fill(0.0);
 
     for (int i = 0; i < its;  i++){

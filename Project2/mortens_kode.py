@@ -13,6 +13,10 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import sys
 
 
+new_p =np.loadtxt("rs.txt")
+acceptances = np.loadtxt("acceptances.txt")
+idx = np.loadtxt("idxs.txt", dtype=np.int)
+
 
 # Trial wave function for the 2-electron quantum dot in two dims
 def WaveFunction(r,a,b,w):
@@ -30,6 +34,7 @@ def WaveFunction(r,a,b,w):
         Psi2 *= (1.0 + np.exp(Q[ih]))
 
     Psi1 = np.exp(-Psi1/(2*sig2))
+    print("Q factor old ", Q)
 
     return Psi1*Psi2
 
@@ -114,7 +119,7 @@ def Qfac(r,b,w):
 # Computing the derivative of the energy and the energy
 def EnergyMinimization(a,b,w):
 
-    NumberMCcycles= 10000
+    NumberMCcycles= 1
     # Parameters in the Fokker-Planck simulation of the quantum force
     D = 0.5
     TimeStep = 0.05
@@ -144,19 +149,28 @@ def EnergyMinimization(a,b,w):
     #Initial position
     for i in range(NumberParticles):
         for j in range(Dimension):
-            PositionOld[i,j] = normalvariate(0.0,1.0)*sqrt(TimeStep)
+            PositionOld[i,j] = 0.5*sqrt(TimeStep)
+            PositionNew[i,j] = PositionOld[i,j]
+
+
     wfold = WaveFunction(PositionOld,a,b,w)
     QuantumForceOld = QuantumForce(PositionOld,a,b,w)
 
     #Loop over MC MCcycles
     for MCcycle in range(NumberMCcycles):
         #Trial position moving one particle at the time
-        for i in range(NumberParticles):
+        for n in range(NumberParticles):
+            i = idx[MCcycle*NumberParticles + n]
             for j in range(Dimension):
-                PositionNew[i,j] = PositionOld[i,j]+normalvariate(0.0,1.0)*sqrt(TimeStep)+\
-                                       QuantumForceOld[i,j]*TimeStep*D
+                PositionNew[i,j] = PositionOld[i,j]+new_p[MCcycle*NumberParticles + n]*sqrt(TimeStep)+QuantumForceOld[i,j]*TimeStep*D
+
+
+
+                print("sum del ", QuantumForceOld[i,j]*TimeStep*D)
+            print("r new ",PositionNew)
             wfnew = WaveFunction(PositionNew,a,b,w)
             QuantumForceNew = QuantumForce(PositionNew,a,b,w)
+            print("QF NEW ",QuantumForceNew )
 
             GreensFunction = 0.0
             for j in range(Dimension):
@@ -165,9 +179,11 @@ def EnergyMinimization(a,b,w):
                                       PositionNew[i,j]+PositionOld[i,j])
 
             GreensFunction = exp(GreensFunction)
+            print("Greens func ", GreensFunction)
             ProbabilityRatio = GreensFunction*wfnew**2/wfold**2
             #Metropolis-Hastings test to see whether we accept the move
-            if random() <= ProbabilityRatio:
+            if acceptances[MCcycle*NumberParticles + n] <= ProbabilityRatio:
+                print("ACCEPTED")
                 for j in range(Dimension):
                     PositionOld[i,j] = PositionNew[i,j]
                     QuantumForceOld[i,j] = QuantumForceNew[i,j]
@@ -206,22 +222,23 @@ def EnergyMinimization(a,b,w):
 
 #Here starts the main program with variable declarations
 NumberParticles = 2
-Dimension = 2
+Dimension = 1
 NumberHidden = 2
 
-interaction=False
+interaction = False
 
 # guess for parameters
-a=np.random.normal(loc=0.0, scale=0.001, size=(NumberParticles,Dimension))
-b=np.random.normal(loc=0.0, scale=0.001, size=(NumberHidden))
-w=np.random.normal(loc=0.0, scale=0.001, size=(NumberParticles,Dimension,NumberHidden))
+a=np.ones((NumberParticles,Dimension))*0.001
+b=np.ones((NumberHidden))*0.001
+w=np.ones((NumberParticles,Dimension,NumberHidden))*0.001
+
 # Set up iteration using stochastic gradient method
 Energy = 0
 EDerivative = np.empty((3,),dtype=object)
 EDerivative = [np.copy(a),np.copy(b),np.copy(w)]
 # Learning rate eta, max iterations, need to change to adaptive learning rate
 eta = 0.001
-MaxIterations = 50
+MaxIterations = 1
 iter = 0
 np.seterr(invalid='raise')
 Energies = np.zeros(MaxIterations)
