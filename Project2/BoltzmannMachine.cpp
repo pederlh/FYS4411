@@ -182,7 +182,7 @@ void BoltzmannMachine::Metropolis_Hastings()
 
     //Proposed move of particle
     for (int d = 0; d < D_; d++){
-        r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(d)*t_step_ + rand_gauss*sqrt(t_step_);
+        r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(idx,d)*t_step_ + rand_gauss*sqrt(t_step_);
     }
     quantum_force_new_ = QuantumForce(r_new_);
 
@@ -194,13 +194,13 @@ void BoltzmannMachine::Metropolis_Hastings()
         //cout<<"ACCEPTED"<<endl;
         for (int d = 0; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
-            quantum_force_old_(d) = quantum_force_new_(d);
+            quantum_force_old_(idx) = quantum_force_new_(idx);
         }
     }
     else{
         for (int d = 0; d < D_;  d++){
             r_new_(idx,d) = r_old_(idx,d);
-            quantum_force_new_(d) = quantum_force_old_(d);
+            quantum_force_new_(idx) = quantum_force_old_(idx);
         }
     }
 }

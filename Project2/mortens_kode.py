@@ -34,8 +34,6 @@ def WaveFunction(r,a,b,w):
         Psi2 *= (1.0 + np.exp(Q[ih]))
 
     Psi1 = np.exp(-Psi1/(2*sig2))
-    print("Q factor old ", Q)
-
     return Psi1*Psi2
 
 # Local energy  for the 2-electron quantum dot in two dims, using analytical local energy
@@ -66,7 +64,6 @@ def LocalEnergy(r,a,b,w):
                     distance += (r[iq1,ix] - r[iq2,ix])**2
 
                 locenergy += 1/sqrt(distance)
-
     return locenergy
 
 # Derivate of wave function ansatz as function of variational parameters
@@ -119,7 +116,7 @@ def Qfac(r,b,w):
 # Computing the derivative of the energy and the energy
 def EnergyMinimization(a,b,w):
 
-    NumberMCcycles= 1
+    NumberMCcycles= 10
     # Parameters in the Fokker-Planck simulation of the quantum force
     D = 0.5
     TimeStep = 0.05
@@ -164,13 +161,8 @@ def EnergyMinimization(a,b,w):
             for j in range(Dimension):
                 PositionNew[i,j] = PositionOld[i,j]+new_p[MCcycle*NumberParticles + n]*sqrt(TimeStep)+QuantumForceOld[i,j]*TimeStep*D
 
-
-
-                print("sum del ", QuantumForceOld[i,j]*TimeStep*D)
-            print("r new ",PositionNew)
             wfnew = WaveFunction(PositionNew,a,b,w)
             QuantumForceNew = QuantumForce(PositionNew,a,b,w)
-            print("QF NEW ",QuantumForceNew )
 
             GreensFunction = 0.0
             for j in range(Dimension):
@@ -179,11 +171,11 @@ def EnergyMinimization(a,b,w):
                                       PositionNew[i,j]+PositionOld[i,j])
 
             GreensFunction = exp(GreensFunction)
-            print("Greens func ", GreensFunction)
             ProbabilityRatio = GreensFunction*wfnew**2/wfold**2
             #Metropolis-Hastings test to see whether we accept the move
             if acceptances[MCcycle*NumberParticles + n] <= ProbabilityRatio:
                 print("ACCEPTED")
+                print(" ")
                 for j in range(Dimension):
                     PositionOld[i,j] = PositionNew[i,j]
                     QuantumForceOld[i,j] = QuantumForceNew[i,j]
