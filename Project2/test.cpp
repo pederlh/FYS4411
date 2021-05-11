@@ -1,5 +1,10 @@
 #include "test.hpp"
 
+//Det er noe med Q-faktoren? Kanskje ikke
+//Local energi utregningen (funksjonen) er prima
+//Greens er også helt fin
+//QuantumForce er helt fin
+//Mistanken er at vektene oppdateres feil
 test::test(int num_particles,int dimentions, double eta, int MC, int type_sampling, bool interaction)
 {
     arma_rng::set_seed_random();
@@ -64,7 +69,6 @@ double test::MonteCarlo()
     quantum_force_ = mat(N_, D_).fill(0.0);
     quantum_force_old_ = QuantumForce(r_old_);
     quantum_force_new_ = QuantumForce(r_old_);
-    quantum_force_old_.print("QF OLD ");
 
 
     //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
@@ -156,9 +160,11 @@ void test::Q_factor(mat r)
     vec temp = vec(H_).fill(0.0);
     Q_.fill(0.0);
 
+
     for (int h = 0; h < H_; h++){
         temp(h) = accu(r%w_.slice(h));    //sum of all elements in matrix defined by elementwise product of two other matrices
     }
+
     Q_ = b_ + temp;
 }
 
@@ -193,29 +199,27 @@ void test::Metropolis_Hastings()
 
     //Proposed move of particle
     for (int d = 0; d < D_; d++){
-        r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(d)*t_step_ + new_p(N_*lil_c + lil_n)*sqrt(t_step_);
-        cout << D_diff_*quantum_force_old_(d)*t_step_ <<endl;
+        r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(idx,d)*t_step_ + new_p(N_*lil_c + lil_n)*sqrt(t_step_);
     }
-    r_new_.print("r new ");
+
     quantum_force_new_ = QuantumForce(r_new_);
-    quantum_force_new_.print("QF NEW ");
 
     GreensFunc = GreensFunction(idx);
     tf_old_ = WaveFunction(r_old_);             //Trial wave function of old position
-    Q_.print("Qfac old ");
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
     P_ = GreensFunc*(tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
     if (acc(N_*lil_c + lil_n) <= P_){
         cout<<"ACCEPTED"<<endl;
+        cout << " " << endl;
         for (int d = 0; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
-            quantum_force_old_(d) = quantum_force_new_(d);
+            quantum_force_old_(idx,d) = quantum_force_new_(idx,d);
         }
     }
     else{
         for (int d = 0; d < D_;  d++){
             r_new_(idx,d) = r_old_(idx,d);
-            quantum_force_new_(d) = quantum_force_old_(d);
+            quantum_force_new_(idx) = quantum_force_old_(idx);
         }
     }
 }
@@ -241,7 +245,6 @@ double test::GreensFunction(int idx)
     }
 
     G = exp(G);
-    cout << "Greens func " << G <<endl;
     return G;
 }
 
@@ -278,7 +281,6 @@ double test::LocalEnergy()
             }
         }
     }
-
     return delta_energy;
 }
 
