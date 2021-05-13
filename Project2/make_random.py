@@ -1,7 +1,7 @@
 import numpy as np
 
 np.random.seed(1)
-nums = 1000
+nums = 100000
 N = 2
 
 

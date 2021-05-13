@@ -7,29 +7,29 @@
 #include <cstdlib>
 #include <armadillo>
 
-// #include "BoltzmannMachine.hpp"
-#include "test.hpp"
+#include "BoltzmannMachine.hpp"
+//#include "test.hpp"
 
 using namespace std;
 using namespace arma;
 
 
-// int main(int argc, char const *argv[]) {
-//     int num_part = 2;
-//     int dim = 2;
-//     int MC = 1000;
-//     double eta = 0.001;
+int main(int argc, char const *argv[]) {
+    int num_part = 2;
+    int dim = 2;
+    int MC = pow(2,16);
+    double eta = 0.001;
 
-//     //typesampling: 0 for brute force, 1 for metropolis
+    //typesampling: 0 for brute force, 1 for metropolis
 
-//     int interaction = 1;
+    int interaction = 1;
 
-//     BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction);
+    BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction);
 
-//     return 0;
-// }
+    return 0;
+}
 
-
+/*
 int main(int argc, char const *argv[]) {
     int num_part = 2;
     int dim = 2;
@@ -44,4 +44,4 @@ int main(int argc, char const *argv[]) {
 
     return 0;
 }
-
+*/
