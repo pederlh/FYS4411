@@ -6,7 +6,7 @@ N = 2
 
 
 q_factors       = [str(np.random.normal()) + "\n" for i in range(nums)]
-rs              = [str(np.random.rand()) + "\n" for i in range(nums)]
+rs              = [str(np.random.normal()) + "\n" for i in range(nums)]
 idxs            = [str(np.random.randint(2)) + "\n" for i in range(nums)]
 random_gausses  = [str(np.random.normal()) + "\n" for i in range(nums)]
 acceptances     = [str(np.random.rand()) + "\n" for i in range(nums)]

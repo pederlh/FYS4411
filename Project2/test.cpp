@@ -36,11 +36,12 @@ test::test(int num_particles,int dimentions, double eta, int MC, int type_sampli
    index.load("idxs.txt");
 
    //Initializing position
-   r_old_ = mat(N_,D_).fill(0.5*sqrt(t_step_));
+   r_old_ = mat(N_,D_).fill(0.0);
    r_new_ = mat(N_,D_).fill(0.0);
    for (int n = 0; n < N_ ; n++){
        for (int d = 0; d < D_; d++){
-           r_new_(n,d) = r_old_(n,d);
+            r_old_(n,d) = 0.5*(2.0*n + d)*sqrt(t_step_);
+            r_new_(n,d) = r_old_(n,d);
        }
    }
 
@@ -201,12 +202,20 @@ void test::Metropolis_Hastings()
         r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(idx,d)*t_step_ + new_p(N_*lil_c + lil_n)*sqrt(t_step_);
     }
 
+    cout << lil_c << " - " << lil_n << endl;
+    r_old_.raw_print();
+    r_new_.raw_print();
+    cout << endl << endl;
+
     quantum_force_new_ = QuantumForce(r_new_);
 
     GreensFunc = GreensFunction(idx);
-    cout << GreensFunc << endl;
+    // cout << GreensFunc << endl;
     tf_old_ = WaveFunction(r_old_);             //Trial wave function of old position
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
+    
+    // cout << setprecision(8) << tf_old_ << " " << setprecision(8) << tf_new_ << endl;
+
     P_ = GreensFunc*(tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
     if (acc(N_*lil_c + lil_n) <= P_){
         for (int d = 0; d < D_;  d++){                   //Update initial position
@@ -275,7 +284,7 @@ double test::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
-                cout << setprecision(15) <<r_norm<<endl;
+                // cout << setprecision(15) <<r_norm<<endl;
                 delta_energy += 1/sqrt(r_norm);
             }
         }

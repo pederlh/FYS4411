@@ -63,7 +63,7 @@ def LocalEnergy(r,a,b,w):
                 for ix in range(Dimension):
                     distance += (r[iq1,ix] - r[iq2,ix])**2
 
-                print(distance)
+                # print(distance)
                 locenergy += 1/sqrt(distance)
     return locenergy
 
@@ -116,7 +116,7 @@ def Qfac(r,b,w):
 # Computing the derivative of the energy and the energy
 def EnergyMinimization(a,b,w):
 
-    NumberMCcycles= 15
+    NumberMCcycles= 30
     # Parameters in the Fokker-Planck simulation of the quantum force
     D = 0.5
     TimeStep = 0.05
@@ -146,7 +146,7 @@ def EnergyMinimization(a,b,w):
     #Initial position
     for i in range(NumberParticles):
         for j in range(Dimension):
-            PositionOld[i,j] = 0.5*sqrt(TimeStep)
+            PositionOld[i,j] = 0.5*(2*i+j)*sqrt(TimeStep)
             PositionNew[i,j] = PositionOld[i,j]
 
 
@@ -161,7 +161,16 @@ def EnergyMinimization(a,b,w):
             for j in range(Dimension):
                 PositionNew[i,j] = PositionOld[i,j]+new_p[MCcycle*NumberParticles + n]*sqrt(TimeStep)+QuantumForceOld[i,j]*TimeStep*D
 
+            print(MCcycle, " - ", n)
+            print(PositionOld)
+            print(PositionNew, "\n\n")
+
+
+
             wfnew = WaveFunction(PositionNew,a,b,w)
+
+            # print(f"{wfold:.7f} {wfnew:.7f}")
+
             QuantumForceNew = QuantumForce(PositionNew,a,b,w)
 
             GreensFunction = 0.0
@@ -171,7 +180,7 @@ def EnergyMinimization(a,b,w):
                                       PositionNew[i,j]+PositionOld[i,j])
 
             GreensFunction = exp(GreensFunction)
-            print(GreensFunction)
+            # print(GreensFunction)
             ProbabilityRatio = GreensFunction*wfnew**2/wfold**2
             #Metropolis-Hastings test to see whether we accept the move
             if acceptances[MCcycle*NumberParticles + n] <= ProbabilityRatio:
@@ -179,6 +188,12 @@ def EnergyMinimization(a,b,w):
                     PositionOld[i,j] = PositionNew[i,j]
                     QuantumForceOld[i,j] = QuantumForceNew[i,j]
                 wfold = wfnew
+
+            else:
+                for j in range(Dimension):
+                    PositionNew[i,j] = PositionOld[i,j]
+                    QuantumForceNew[i,j] = QuantumForceOld[i,j]
+
         #print("wf new:        ", wfnew)
         #print("force on 1 new:", QuantumForceNew[0,:])
         #print("pos of 1 new:  ", PositionNew[0,:])
