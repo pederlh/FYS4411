@@ -325,7 +325,6 @@ void BoltzmannMachine::ADAM()
     }
 }
 
-
 void BoltzmannMachine::SGD()
 {
     double Energy = 0;
