@@ -1,7 +1,7 @@
 #include "test.hpp"
 
 //Det er noe med Q-faktoren? Kanskje ikke
-//Local energi utregningen (funksjonen) er prima
+//Local energi utregningen (funksjonen) er prima (blir riktig når ingen aksepteres, altå regner den riktig)
 //Greens er også helt fin
 //QuantumForce er helt fin
 //Mistanken er at vektene oppdateres feil
@@ -53,6 +53,10 @@ test::test(int num_particles,int dimentions, double eta, int MC, int type_sampli
    if (type_sampling == 1)
    {
        MetropolisMethod = &test::Metropolis_Hastings;
+       //Parameters for metropolis-hastings algo
+       quantum_force_ = mat(N_, D_).fill(0.0);
+       quantum_force_old_ = QuantumForce(r_old_);
+       quantum_force_new_ = QuantumForce(r_old_);
    }
 
    SGD();
@@ -64,12 +68,6 @@ double test::MonteCarlo()
 {
     double energy = 0.0;
     double DeltaE = 0.0;
-
-    //Parameters for metropolis-hastings algo
-    quantum_force_ = mat(N_, D_).fill(0.0);
-    quantum_force_old_ = QuantumForce(r_old_);
-    quantum_force_new_ = QuantumForce(r_old_);
-
 
     //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
     dw_ = cube(N_, D_, H_).fill(0.0);
@@ -87,34 +85,34 @@ double test::MonteCarlo()
     cube derivative_Psi_w = cube(N_, D_, H_).fill(0.0);
     mat derivative_Psi_a = mat(N_, D_).fill(0.0);
     vec derivative_Psi_b = vec(H_).fill(0.0);
-
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int out_n = 0; out_n < N_; out_n++){
-
             lil_c = cycle;
             lil_n = out_n;
             (this->*MetropolisMethod)();
-            DeltaE = LocalEnergy();
-            Derivate_wavefunction();
-
-            delta_Psi_w += dw_;
-            delta_Psi_a += da_;
-            delta_Psi_b += db_;
-
-            energy += DeltaE;
-
-            derivative_Psi_w += dw_*DeltaE;
-            derivative_Psi_a += da_*DeltaE;
-            derivative_Psi_b += db_*DeltaE;
         }
+
+        DeltaE = LocalEnergy();
+        Derivate_wavefunction();
+
+        delta_Psi_w += dw_;
+        delta_Psi_a += da_;
+        delta_Psi_b += db_;
+
+        energy += DeltaE;
+
+        derivative_Psi_w += dw_*DeltaE;
+        derivative_Psi_a += da_*DeltaE;
+        derivative_Psi_b += db_*DeltaE;
+
     }
-    energy/=MC_*N_;
-    derivative_Psi_w /= MC_*N_;
-    derivative_Psi_a /= MC_*N_;
-    derivative_Psi_b /= MC_*N_;
-    delta_Psi_w /= MC_*N_;
-    delta_Psi_a /= MC_*N_;
-    delta_Psi_b /= MC_*N_;
+    energy/=MC_;
+    derivative_Psi_w /= MC_;
+    derivative_Psi_a /= MC_;
+    derivative_Psi_b /= MC_;
+    delta_Psi_w /= MC_;
+    delta_Psi_a /= MC_;
+    delta_Psi_b /= MC_;
     E_dw_ = 2*(derivative_Psi_w - energy*delta_Psi_w);
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
@@ -197,6 +195,7 @@ void test::Metropolis_Hastings()
     int idx = index(N_*lil_c + lil_n);    //Random integer generated from uniform distribution [0,N-1];
     double GreensFunc;
 
+
     //Proposed move of particle
     for (int d = 0; d < D_; d++){
         r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(idx,d)*t_step_ + new_p(N_*lil_c + lil_n)*sqrt(t_step_);
@@ -205,12 +204,11 @@ void test::Metropolis_Hastings()
     quantum_force_new_ = QuantumForce(r_new_);
 
     GreensFunc = GreensFunction(idx);
+    cout << GreensFunc << endl;
     tf_old_ = WaveFunction(r_old_);             //Trial wave function of old position
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
     P_ = GreensFunc*(tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
     if (acc(N_*lil_c + lil_n) <= P_){
-        cout<<"ACCEPTED"<<endl;
-        cout << " " << endl;
         for (int d = 0; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
             quantum_force_old_(idx,d) = quantum_force_new_(idx,d);
@@ -219,7 +217,7 @@ void test::Metropolis_Hastings()
     else{
         for (int d = 0; d < D_;  d++){
             r_new_(idx,d) = r_old_(idx,d);
-            quantum_force_new_(idx) = quantum_force_old_(idx);
+            quantum_force_new_(idx,d) = quantum_force_old_(idx,d);
         }
     }
 }
@@ -277,6 +275,7 @@ double test::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
+                cout << setprecision(15) <<r_norm<<endl;
                 delta_energy += 1/sqrt(r_norm);
             }
         }

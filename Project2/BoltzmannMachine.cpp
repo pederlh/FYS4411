@@ -1,6 +1,6 @@
 #include "BoltzmannMachine.hpp"
 
-BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, bool interaction)
+BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction)
 {
     arma_rng::set_seed_random();
     D_ = dimentions;
@@ -40,9 +40,13 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    if (type_sampling == 1)
    {
        MetropolisMethod = &BoltzmannMachine::Metropolis_Hastings;
+       //Parameters for metropolis-hastings algo
+       quantum_force_ = mat(N_, D_).fill(0.0);
+       quantum_force_old_ = QuantumForce(r_old_);
+       quantum_force_new_ = QuantumForce(r_old_);
    }
 
-   ADAM();
+   SGD();
 }
 
 
@@ -52,9 +56,6 @@ double BoltzmannMachine::MonteCarlo()
     double energy = 0.0;
     double DeltaE = 0.0;
 
-    //Parameters for metropolis-hastings algo
-    quantum_force_ = mat(N_, D_).fill(0.0);
-    quantum_force_old_ = QuantumForce(r_old_);
 
     //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
     dw_ = cube(N_, D_, H_).fill(0.0);
@@ -75,29 +76,30 @@ double BoltzmannMachine::MonteCarlo()
 
     for (int cycle = 0; cycle < MC_; cycle++){
         for (int out_n = 0; out_n < N_; out_n++){
-
             (this->*MetropolisMethod)();
-            DeltaE = LocalEnergy();
-            Derivate_wavefunction();
-
-            delta_Psi_w += dw_;
-            delta_Psi_a += da_;
-            delta_Psi_b += db_;
-
-            energy += DeltaE;
-
-            derivative_Psi_w += dw_*DeltaE;
-            derivative_Psi_a += da_*DeltaE;
-            derivative_Psi_b += db_*DeltaE;
         }
+
+        DeltaE = LocalEnergy();
+        //cout << DeltaE << endl;
+        Derivate_wavefunction();
+        delta_Psi_w += dw_;
+        delta_Psi_a += da_;
+        delta_Psi_b += db_;
+
+        energy += DeltaE;
+
+        derivative_Psi_w += dw_*DeltaE;
+        derivative_Psi_a += da_*DeltaE;
+        derivative_Psi_b += db_*DeltaE;
     }
-    energy/=MC_*N_;
-    derivative_Psi_w /= MC_*N_;
-    derivative_Psi_a /= MC_*N_;
-    derivative_Psi_b /= MC_*N_;
-    delta_Psi_w /= MC_*N_;
-    delta_Psi_a /= MC_*N_;
-    delta_Psi_b /= MC_*N_;
+
+    energy/=MC_;
+    derivative_Psi_w /= MC_;
+    derivative_Psi_a /= MC_;
+    derivative_Psi_b /= MC_;
+    delta_Psi_w /= MC_;
+    delta_Psi_a /= MC_;
+    delta_Psi_b /= MC_;
     E_dw_ = 2*(derivative_Psi_w - energy*delta_Psi_w);
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
@@ -131,8 +133,6 @@ double BoltzmannMachine::WaveFunction(mat r)
     for (int h = 0; h < H_; h++){
         term2 *= (1.0 + exp(Q_(h)));
     }
-
-
 
     return term1*term2;
 
@@ -179,7 +179,6 @@ void BoltzmannMachine::Metropolis_Hastings()
     double rand_gauss = randn<double>();         //Random double generated from gaussian distribution with mean = 0, std = 1;
     double GreensFunc;
 
-
     //Proposed move of particle
     for (int d = 0; d < D_; d++){
         r_new_(idx,d) = r_old_(idx,d) + D_diff_*quantum_force_old_(idx,d)*t_step_ + rand_gauss*sqrt(t_step_);
@@ -191,16 +190,15 @@ void BoltzmannMachine::Metropolis_Hastings()
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
     P_ = GreensFunc*(tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
     if (randu() <= P_){
-        //cout<<"ACCEPTED"<<endl;
         for (int d = 0; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
-            quantum_force_old_(idx) = quantum_force_new_(idx);
+            quantum_force_old_(idx,d) = quantum_force_new_(idx,d);
         }
     }
     else{
         for (int d = 0; d < D_;  d++){
             r_new_(idx,d) = r_old_(idx,d);
-            quantum_force_new_(idx) = quantum_force_old_(idx);
+            quantum_force_new_(idx,d) = quantum_force_old_(idx,d);
         }
     }
 }
@@ -234,7 +232,7 @@ double BoltzmannMachine::LocalEnergy()
     double delta_energy = 0.0;
     Q_factor(r_old_);
     double der1_ln_psi, der2_ln_psi;
-
+    
     for (int n = 0; n < N_; n++){
         for (int d =0; d < D_; d++){
             double sum1 =0.0;
@@ -249,7 +247,8 @@ double BoltzmannMachine::LocalEnergy()
         }
     }
 
-    if (interaction_)
+
+    if (interaction_==1)
     {
         double r_norm;
         for (int n1 = 0; n1 < N_; n1++){
@@ -258,10 +257,12 @@ double BoltzmannMachine::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
-                delta_energy += 1/sqrt(r_norm);
+                //cout <<r_norm << endl;
+                delta_energy += 1.0/sqrt(r_norm);
             }
         }
     }
+    //cout <<delta_energy<<endl;
 
     return delta_energy;
 }
@@ -291,7 +292,7 @@ void BoltzmannMachine::ADAM()
     for (int i = 0; i < its;  i++){
         Energy = MonteCarlo();
         Energies(i) = Energy;
-        cout << "Energy = " << Energy << endl;
+        cout << "Energy = " << setprecision(15) << Energy << endl;
         E_da_*=eta_;
         E_db_*=eta_;
         E_dw_*=eta_;

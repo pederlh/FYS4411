@@ -13,14 +13,10 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import sys
 
 
-new_p =np.loadtxt("rs.txt")
-acceptances = np.loadtxt("acceptances.txt")
-idx = np.loadtxt("idxs.txt", dtype=np.int)
-
 
 # Trial wave function for the 2-electron quantum dot in two dims
 def WaveFunction(r,a,b,w):
-    sigma = 1.0
+    sigma=1.0
     sig2 = sigma**2
     Psi1 = 0.0
     Psi2 = 1.0
@@ -34,6 +30,7 @@ def WaveFunction(r,a,b,w):
         Psi2 *= (1.0 + np.exp(Q[ih]))
 
     Psi1 = np.exp(-Psi1/(2*sig2))
+
     return Psi1*Psi2
 
 # Local energy  for the 2-electron quantum dot in two dims, using analytical local energy
@@ -63,8 +60,9 @@ def LocalEnergy(r,a,b,w):
                 for ix in range(Dimension):
                     distance += (r[iq1,ix] - r[iq2,ix])**2
 
-                print(distance)
+                #print(distance)
                 locenergy += 1/sqrt(distance)
+    #print(locenergy)
     return locenergy
 
 # Derivate of wave function ansatz as function of variational parameters
@@ -88,6 +86,7 @@ def DerivativeWFansatz(r,a,b,w):
 
 # Setting up the quantum force for the two-electron quantum dot, recall that it is a vector
 def QuantumForce(r,a,b,w):
+
     sigma=1.0
     sig2 = sigma**2
 
@@ -111,12 +110,13 @@ def Qfac(r,b,w):
         temp[ih] = (r*w[:,:,ih]).sum()
 
     Q = b + temp
+
     return Q
 
 # Computing the derivative of the energy and the energy
 def EnergyMinimization(a,b,w):
 
-    NumberMCcycles= 15
+    NumberMCcycles= 1000
     # Parameters in the Fokker-Planck simulation of the quantum force
     D = 0.5
     TimeStep = 0.05
@@ -146,21 +146,17 @@ def EnergyMinimization(a,b,w):
     #Initial position
     for i in range(NumberParticles):
         for j in range(Dimension):
-            PositionOld[i,j] = 0.5*sqrt(TimeStep)
-            PositionNew[i,j] = PositionOld[i,j]
-
-
+            PositionOld[i,j] = normalvariate(0.0,1.0)*sqrt(TimeStep)
     wfold = WaveFunction(PositionOld,a,b,w)
     QuantumForceOld = QuantumForce(PositionOld,a,b,w)
 
     #Loop over MC MCcycles
     for MCcycle in range(NumberMCcycles):
         #Trial position moving one particle at the time
-        for n in range(NumberParticles):
-            i = idx[MCcycle*NumberParticles + n]
+        for i in range(NumberParticles):
             for j in range(Dimension):
-                PositionNew[i,j] = PositionOld[i,j]+new_p[MCcycle*NumberParticles + n]*sqrt(TimeStep)+QuantumForceOld[i,j]*TimeStep*D
-
+                PositionNew[i,j] = PositionOld[i,j]+normalvariate(0.0,1.0)*sqrt(TimeStep)+\
+                                       QuantumForceOld[i,j]*TimeStep*D
             wfnew = WaveFunction(PositionNew,a,b,w)
             QuantumForceNew = QuantumForce(PositionNew,a,b,w)
 
@@ -171,10 +167,9 @@ def EnergyMinimization(a,b,w):
                                       PositionNew[i,j]+PositionOld[i,j])
 
             GreensFunction = exp(GreensFunction)
-            print(GreensFunction)
             ProbabilityRatio = GreensFunction*wfnew**2/wfold**2
             #Metropolis-Hastings test to see whether we accept the move
-            if acceptances[MCcycle*NumberParticles + n] <= ProbabilityRatio:
+            if random() <= ProbabilityRatio:
                 for j in range(Dimension):
                     PositionOld[i,j] = PositionNew[i,j]
                     QuantumForceOld[i,j] = QuantumForceNew[i,j]
@@ -216,20 +211,19 @@ NumberParticles = 2
 Dimension = 2
 NumberHidden = 2
 
-interaction = True
+interaction=True
 
 # guess for parameters
-a=np.ones((NumberParticles,Dimension))*0.001
-b=np.ones((NumberHidden))*0.001
-w=np.ones((NumberParticles,Dimension,NumberHidden))*0.001
-
+a=np.random.normal(loc=0.0, scale=0.001, size=(NumberParticles,Dimension))
+b=np.random.normal(loc=0.0, scale=0.001, size=(NumberHidden))
+w=np.random.normal(loc=0.0, scale=0.001, size=(NumberParticles,Dimension,NumberHidden))
 # Set up iteration using stochastic gradient method
 Energy = 0
 EDerivative = np.empty((3,),dtype=object)
 EDerivative = [np.copy(a),np.copy(b),np.copy(w)]
 # Learning rate eta, max iterations, need to change to adaptive learning rate
 eta = 0.001
-MaxIterations = 1
+MaxIterations = 50
 iter = 0
 np.seterr(invalid='raise')
 Energies = np.zeros(MaxIterations)
@@ -253,7 +247,6 @@ while iter < MaxIterations:
 
     iter += 1
 
-"""
 #nice printout with Pandas
 import pandas as pd
 from pandas import DataFrame
@@ -262,4 +255,3 @@ data ={'Energy':Energies}#,'A Derivative':EnergyDerivatives1,'B Derivative':Ener
 
 frame = pd.DataFrame(data)
 print(frame)
-"""

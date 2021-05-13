@@ -32,11 +32,11 @@ public:
     vec Q_;
     int D_, N_, H_;
     double sigma_, sigma2_;
-    bool interaction_;
+    int interaction_;
 
     mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
-    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, bool interaction);
+    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction);
     double WaveFunction(mat r);
     void Q_factor(mat r);
 
