@@ -166,11 +166,6 @@ void BoltzmannMachine::Metropolis()
             r_old_(idx,d) = r_new_(idx,d);
         }
     }
-    else{
-        for (int d =0 ; d < D_;  d++){
-            r_new_(idx,d) = r_old_(idx,d);
-        }
-    }
 }
 
 void BoltzmannMachine::Metropolis_Hastings()
@@ -196,7 +191,7 @@ void BoltzmannMachine::Metropolis_Hastings()
         }
     }
     else{
-        for (int d = 0; d < D_;  d++){
+        for (int d = 0; d < D_;  d++){                   //Update initial position
             r_new_(idx,d) = r_old_(idx,d);
             quantum_force_new_(idx,d) = quantum_force_old_(idx,d);
         }
@@ -232,7 +227,7 @@ double BoltzmannMachine::LocalEnergy()
     double delta_energy = 0.0;
     Q_factor(r_old_);
     double der1_ln_psi, der2_ln_psi;
-    
+
     for (int n = 0; n < N_; n++){
         for (int d =0; d < D_; d++){
             double sum1 =0.0;
@@ -246,7 +241,6 @@ double BoltzmannMachine::LocalEnergy()
             delta_energy += 0.5*(-pow(der1_ln_psi,2) - der2_ln_psi + pow(r_old_(n,d),2));
         }
     }
-
 
     if (interaction_==1)
     {

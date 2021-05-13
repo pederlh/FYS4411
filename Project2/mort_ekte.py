@@ -16,7 +16,7 @@ import sys
 
 # Trial wave function for the 2-electron quantum dot in two dims
 def WaveFunction(r,a,b,w):
-    sigma=1.0
+    sigma = 1.0
     sig2 = sigma**2
     Psi1 = 0.0
     Psi2 = 1.0
@@ -174,6 +174,11 @@ def EnergyMinimization(a,b,w):
                     PositionOld[i,j] = PositionNew[i,j]
                     QuantumForceOld[i,j] = QuantumForceNew[i,j]
                 wfold = wfnew
+            else:
+                for j in range(Dimension):
+                    PositionNew[i,j] = PositionOld[i,j]
+                    QuantumForceNew[i,j] = QuantumForceOld[i,j]
+
         #print("wf new:        ", wfnew)
         #print("force on 1 new:", QuantumForceNew[0,:])
         #print("pos of 1 new:  ", PositionNew[0,:])
