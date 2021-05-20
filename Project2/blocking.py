@@ -50,8 +50,6 @@ with open("EnergySamples.txt") as infile:
         samples.append(float(word[0]))
 
 
-
-
 data = np.array(samples)
 print("Files has been read, start blocking...")
 (mean, var) = block(data)

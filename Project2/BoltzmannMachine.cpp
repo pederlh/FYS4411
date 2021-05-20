@@ -46,7 +46,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        quantum_force_new_ = QuantumForce(r_old_);
    }
 
-   SGD();
+   ADAM();
 }
 
 
@@ -113,6 +113,7 @@ void BoltzmannMachine::Derivate_wavefunction()
     db_ = 1.0/(1.0 + exp(-Q_));
     for (int h = 0; h < H_; h++){
         dw_.slice(h) = w_.slice(h)/(sigma2_*(1.0 +  exp(-Q_(h))));
+        //dw_.slice(h) = r_old_/(sigma2_*(1.0 +  exp(-Q_(h))));  //Fra matten
     }
 }
 
@@ -145,6 +146,8 @@ void BoltzmannMachine::Q_factor(mat r)
     for (int h = 0; h < H_; h++){
         temp(h) = accu(r%w_.slice(h));    //sum of all elements in matrix defined by elementwise product of two other matrices
     }
+
+
     Q_ = b_ + temp;
 }
 
@@ -171,8 +174,7 @@ void BoltzmannMachine::Metropolis()
 void BoltzmannMachine::Metropolis_Hastings()
 {
     int idx = randi<int>(distr_param(0,N_-1));    //Random integer generated from uniform distribution [0,N-1];
-    double rand_gauss = randn<double>()*10;         //Random double generated from gaussian distribution with mean = 0, std = 1;
-    //WHAT THE ACTUAL FUCK??????
+    double rand_gauss = randn<double>();         //Random double generated from gaussian distribution with mean = 0, std = 1;
     double GreensFunc;
 
     //Proposed move of particle
@@ -237,14 +239,12 @@ double BoltzmannMachine::LocalEnergy()
             for (int h = 0; h < H_; h++){
                 sum1 += w_(n,d,h)/(1.0+exp(-Q_(h)));
                 sum2 += pow(w_(n,d,h),2)*exp(Q_(h))/pow((1.0 + exp(Q_(h))),2);
+                //sum2 += pow(w_(n,d,h),2)*exp(-Q_(h))/pow((1.0 + exp(-Q_(h))),2); //Fra matten
             }
             der1_ln_psi = -(r_old_(n,d) - a_(n,d))/sigma2_ + sum1/sigma2_;
             der2_ln_psi = -1.0/sigma2_ + sum2/sigma2_;
             delta_energy += 0.5*(-pow(der1_ln_psi,2) - der2_ln_psi + pow(r_old_(n,d),2));
         }
-    }
-    if (delta_energy > 20){
-        cout <<"WAAACK"<< delta_energy<<endl;
     }
 
     if (interaction_==1)
@@ -256,24 +256,14 @@ double BoltzmannMachine::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
-                //cout <<r_norm << endl;
-                delta_energy += 1.0/sqrt(r_norm);
+                if (r_norm > 5e-2){ //r_norm > 5e-2
+                    delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
+                }
+
             }
+
         }
     }
-
-    /*
-    if (delta_energy > 20){
-        cout << "---------" << endl;
-        cout << "ENERGY " << delta_energy << endl;
-        r_old_.raw_print("R OLD ");
-        cout << endl;
-        Q_.print("Q factor ");
-        cout << endl;
-        cout << "---------" << endl;
-
-    }
-    */
 
     return delta_energy;
 }
@@ -297,7 +287,7 @@ void BoltzmannMachine::ADAM()
     second_mom_b_ = vec(H_).fill(0.0);
 
     double Energy = 0.0;
-    int its = 50;
+    int its = 20;
     vec Energies = vec(its).fill(0.0);
 
     for (int i = 0; i < its;  i++){
@@ -340,6 +330,4 @@ void BoltzmannMachine::SGD()
         b_ -= eta_*E_db_;
         w_ -= eta_*E_dw_;
     }
-    //DeltaE_.save("EnergySamples.txt", raw_ascii);
-
 }
