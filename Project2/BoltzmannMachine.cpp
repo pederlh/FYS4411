@@ -1,6 +1,6 @@
 #include "BoltzmannMachine.hpp"
 //Har sjekket P, er ikke probratio som er whack
-BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction)
+BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega)
 {
     arma_rng::set_seed_random();
     D_ = dimentions;
@@ -18,6 +18,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
 
    sigma_ = 1.0;
    sigma2_ = sigma_*sigma_;
+   omega2_ = omega*omega;
    eta_ = eta; //Learning rate SGD.
    t_step_ = 0.05;
    D_diff_ = 0.5;
@@ -243,7 +244,7 @@ double BoltzmannMachine::LocalEnergy()
             }
             der1_ln_psi = -(r_old_(n,d) - a_(n,d))/sigma2_ + sum1/sigma2_;
             der2_ln_psi = -1.0/sigma2_ + sum2/sigma2_;
-            delta_energy += 0.5*(-pow(der1_ln_psi,2) - der2_ln_psi + pow(r_old_(n,d),2));
+            delta_energy += 0.5*(-pow(der1_ln_psi,2) - der2_ln_psi + omega2_*pow(r_old_(n,d),2));
         }
     }
 

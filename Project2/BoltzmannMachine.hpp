@@ -31,14 +31,14 @@ public:
     vec b_, db_, E_db_;
     vec Q_;
     int D_, N_, H_;
-    double sigma_, sigma2_;
+    double sigma_, sigma2_, omega2_;
     int interaction_, it_num, its;
 
     mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
     vec DeltaE_;
 
-    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction);
+    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega);
     double WaveFunction(mat r);
     void Q_factor(mat r);
 

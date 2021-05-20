@@ -23,8 +23,10 @@ int main(int argc, char const *argv[]) {
     //typesampling: 0 for brute force, 1 for metropolis
 
     int interaction = 1;
+    double omega = 1.0; //2D
+    //double omega = 1.0/4.0; //3D
 
-    BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction);
+    BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction, omega);
 
     return 0;
 }
