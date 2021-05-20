@@ -46,7 +46,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        quantum_force_new_ = QuantumForce(r_old_);
    }
 
-   ADAM();
+  ADAM();
 }
 
 
@@ -256,7 +256,7 @@ double BoltzmannMachine::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
-                if (r_norm > 5e-2){ //r_norm > 5e-2
+                if (r_norm > 6.5e-2){ //r_norm > 6.5e-2
                     delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
                 }
 
@@ -287,10 +287,12 @@ void BoltzmannMachine::ADAM()
     second_mom_b_ = vec(H_).fill(0.0);
 
     double Energy = 0.0;
-    int its = 20;
+    it_num = 0;
+    its = 20;
     vec Energies = vec(its).fill(0.0);
 
     for (int i = 0; i < its;  i++){
+        it_num = i;
         Energy = MonteCarlo();
         Energies(i) = Energy;
         cout << "Energy = " << setprecision(15) << Energy << endl;
@@ -317,7 +319,8 @@ void BoltzmannMachine::ADAM()
 
 void BoltzmannMachine::SGD()
 {
-    double Energy = 0;
+    double Energy = 0.0;
+    it_num = 0;
     its = 20;
     vec Energies = vec(its).fill(0.0);
 
