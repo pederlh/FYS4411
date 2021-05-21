@@ -8,6 +8,8 @@ plt.style.use('seaborn')
 sns.set(font_scale=1.4)
 """ Script that performs blocking on local energy data sets """
 
+num_threads = 2;
+
 def block(x):
     # preliminaries
     n = len(x)
@@ -42,12 +44,13 @@ def block(x):
 
 
 samples = []
-
-with open("EnergySamples.txt") as infile:
-    lines = infile.readlines()
-    for line in lines:
-        word = line.split()
-        samples.append(float(word[0]))
+for i in range(num_threads):
+    filename = "EnergySamples_ID_" + str(i) + ".txt"
+    with open(filename) as infile:
+        lines = infile.readlines()
+        for line in lines:
+            word = line.split()
+            samples.append(float(word[0]))
 
 
 data = np.array(samples)
