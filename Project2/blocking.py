@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import seaborn as sns
+import sys
 
 plt.style.use('seaborn')
 sns.set(font_scale=1.4)
 """ Script that performs blocking on local energy data sets """
 
-num_threads = 2;
+type = sys.argv[1]
 
 def block(x):
     # preliminaries
@@ -42,10 +43,20 @@ def block(x):
         print("Warning: Use more data")
     return mu, s[k]/2**(d-k)
 
-
 samples = []
-for i in range(num_threads):
-    filename = "EnergySamples_ID_" + str(i) + ".txt"
+
+if type == "par":
+    num_threads = 2;
+    for i in range(num_threads):
+        filename = "EnergySamples_ID_" + str(i) + ".txt"
+        with open(filename) as infile:
+            lines = infile.readlines()
+            for line in lines:
+                word = line.split()
+                samples.append(float(word[0]))
+
+if type == "ser":
+    filename = "EnergySamples.txt"
     with open(filename) as infile:
         lines = infile.readlines()
         for line in lines:

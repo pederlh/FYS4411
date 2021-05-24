@@ -1,11 +1,11 @@
 #include "BoltzmannMachine.hpp"
 //Har sjekket P, er ikke probratio som er whack
-BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega)
+BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden)
 {
     arma_rng::set_seed_random();
     D_ = dimentions;
     N_ = num_particles;
-    H_ = 2;
+    H_ = num_hidden;
     MC_ = MC;
     double std_norm_dist = 0.001;  //standard deviation of normal distribution used to initialize weights/biases.
 
@@ -16,9 +16,11 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    b_ = vec(H_, fill::randn)*std_norm_dist;
    Q_ = vec(H_).fill(0.0);
 
-   sigma_ = 1.0;
-   sigma2_ = sigma_*sigma_;
+
+   omega_ = omega;
    omega2_ = omega*omega;
+   sigma_ = 1.0/sqrt(omega_);
+   sigma2_ = sigma_*sigma_;
    eta_ = eta; //Learning rate SGD.
    t_step_ = 0.05;
    D_diff_ = 0.5;
@@ -47,7 +49,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        quantum_force_new_ = QuantumForce(r_old_);
    }
 
-  ADAM();
+  SGD_testing();
 }
 
 
@@ -103,7 +105,8 @@ double BoltzmannMachine::MonteCarlo()
     E_dw_ = 2*(derivative_Psi_w - energy*delta_Psi_w);
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
-    if (it_num == its-1){DeltaE_.save("EnergySamples.txt", raw_ascii);}
+    //if (it_num == its-1){DeltaE_.save("EnergySamples.txt", raw_ascii);}
+    DeltaE_.save("EnergySamples.txt", raw_ascii);
     return energy;
 }
 
@@ -126,9 +129,10 @@ double BoltzmannMachine::WaveFunction(mat r)
 
     for (int n = 0; n < N_; n++){
         for (int d = 0 ; d < D_; d++){
-            term1 += pow((r(n,d)-a_(n,d)),2);
+            term1 += pow((r(n,d) - a_(n,d)),2);
         }
     }
+
     term1 = exp(-term1/(2*sigma2_));
 
     for (int h = 0; h < H_; h++){
@@ -147,7 +151,6 @@ void BoltzmannMachine::Q_factor(mat r)
     for (int h = 0; h < H_; h++){
         temp(h) = accu(r%w_.slice(h));    //sum of all elements in matrix defined by elementwise product of two other matrices
     }
-
 
     Q_ = b_ + temp;
 }
@@ -239,8 +242,8 @@ double BoltzmannMachine::LocalEnergy()
             double sum2 =0.0;
             for (int h = 0; h < H_; h++){
                 sum1 += w_(n,d,h)/(1.0+exp(-Q_(h)));
-                sum2 += pow(w_(n,d,h),2)*exp(Q_(h))/pow((1.0 + exp(Q_(h))),2);
-                //sum2 += pow(w_(n,d,h),2)*exp(-Q_(h))/pow((1.0 + exp(-Q_(h))),2); //Fra matten
+                //sum2 += pow(w_(n,d,h),2)*exp(Q_(h))/pow((1.0 + exp(Q_(h))),2);
+                sum2 += pow(w_(n,d,h),2)*exp(-Q_(h))/pow((1.0 + exp(-Q_(h))),2); //Fra matten
             }
             der1_ln_psi = -(r_old_(n,d) - a_(n,d))/sigma2_ + sum1/sigma2_;
             der2_ln_psi = -1.0/sigma2_ + sum2/sigma2_;
@@ -272,6 +275,12 @@ double BoltzmannMachine::LocalEnergy()
 /* Method for Adam optimization */
 void BoltzmannMachine::ADAM()
 {
+    cube w_new = w_;
+    mat a_new = a_;
+    vec b_new = b_;
+    double tol = 9e-5;
+    if (interaction_ == 1){tol = 9e-4;}
+
     double epsilon = 1e-12;   //Value to avoid division by zero.
     double beta1 = 0.9;      //Decay rate
     double beta2 = 0.999;   //Decay rate
@@ -289,7 +298,7 @@ void BoltzmannMachine::ADAM()
 
     double Energy = 0.0;
     it_num = 0;
-    its = 20;
+    its = 100;
     vec Energies = vec(its).fill(0.0);
 
     for (int i = 0; i < its;  i++){
@@ -312,9 +321,18 @@ void BoltzmannMachine::ADAM()
         alpha_it = eta_*sqrt(1-pow(beta2, i+1))/(1-pow(beta1, i+1));
         epsilon_it = epsilon*sqrt(1-pow(beta2, i+1));
 
-        w_ -= mom_w_*alpha_it/(sqrt(second_mom_w_) + epsilon_it);
-        b_ -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
-        a_ -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
+        w_new -= mom_w_*alpha_it/(sqrt(second_mom_w_) + epsilon_it);
+        b_new -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
+        a_new -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
+
+        cout << setprecision(15) << accu(abs(a_new-a_)) << endl;
+        if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
+            break;
+        }
+
+        w_ = w_new;
+        a_ = a_new;
+        b_ = b_new;
     }
 }
 
@@ -322,16 +340,68 @@ void BoltzmannMachine::SGD()
 {
     double Energy = 0.0;
     it_num = 0;
-    its = 20;
+    its = 100;
     vec Energies = vec(its).fill(0.0);
+    cube w_new = w_;
+    mat a_new = a_;
+    vec b_new = b_;
+    double tol = 1e-5;
+    if (interaction_ == 1){tol = 2e-5;}
 
     for (int i = 0; i < its;  i++){
         it_num = i;
         Energy = MonteCarlo();
         Energies(i) = Energy;
         cout << "Energy = " << setprecision(15) << Energy << endl;
-        a_ -= eta_*E_da_;
-        b_ -= eta_*E_db_;
-        w_ -= eta_*E_dw_;
+
+        a_new -= eta_*E_da_;
+        b_new -= eta_*E_db_;
+        w_new -= eta_*E_dw_;
+
+        cout << setprecision(15) << accu(abs(a_new-a_)) << endl;
+        if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
+            break;
+        }
+
+        a_ = a_new;
+        b_ = b_new;
+        w_ = w_new;
     }
+}
+
+void BoltzmannMachine::SGD_testing()
+{
+    double Energy = 0.0;
+    it_num = 0;
+    its = 100;
+    vec Energies = vec(its).fill(0.0);
+    cube w_new = w_;
+    mat a_new = a_;
+    vec b_new = b_;
+    double tol = 1e-5;
+    if (interaction_ == 1){tol = 1e-5;}
+
+    for (int i = 0; i < its;  i++){
+        it_num = i;
+        Energy = MonteCarlo();
+        Energies(i) = Energy;
+        //cout << "Energy = " << setprecision(15) << Energy << endl;
+
+        a_new -= eta_*E_da_;
+        b_new -= eta_*E_db_;
+        w_new -= eta_*E_dw_;
+
+        //cout << setprecision(15) << accu(abs(a_new-a_)) << endl;
+        if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
+            break;
+        }
+
+        a_ = a_new;
+        b_ = b_new;
+        w_ = w_new;
+    }
+
+    //cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << Energies(its-1) << endl;
+    cout << "Num hidden layers = " << H_ << "   " << "Energy = " << setprecision(15) << Energy << "   " << "iter = "<<it_num<<endl;
+
 }

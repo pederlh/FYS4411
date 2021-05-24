@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <armadillo>
+#include <list>
 
 #include "BoltzmannMachine.hpp"
 //#include "test.hpp"
@@ -19,14 +20,27 @@ int main(int argc, char const *argv[]) {
     int dim = 2;
     int MC = pow(2,16);
     double eta = 0.001;
+    int num_hidden = 2;
 
     //typesampling: 0 for brute force, 1 for metropolis
 
     int interaction = 1;
     double omega = 1.0; //2D
     //double omega = 1.0/4.0; //3D
+    BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction, omega, num_hidden);
 
-    BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction, omega);
+    /*
+    list<int> layers = {1,2,3,4,5,6,7,8,9, 10};
+    for (int h : layers){
+        BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction, omega, h);
+    }
+
+    list<double> omegas = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0};
+    for (double w : omegas){
+        BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction, w, num_hidden);
+    }
+    */
+
 
     return 0;
 }
