@@ -33,12 +33,13 @@ public:
     int D_, N_, H_;
     double sigma_, sigma2_, omega_, omega2_;
     int interaction_, it_num, its;
+    string filename_;
 
     mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
     vec DeltaE_;
 
-    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden);
+    BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden, string opt);
     double WaveFunction(mat r);
     void Q_factor(mat r);
 
@@ -52,7 +53,7 @@ public:
     mat QuantumForce(mat r);
     double GreensFunction(int idx);
 
-    void SGD();
+    void GD();
     //For ADAM
     void ADAM();
     double eta_;

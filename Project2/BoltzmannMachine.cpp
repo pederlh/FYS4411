@@ -1,6 +1,6 @@
 #include "BoltzmannMachine.hpp"
 //Har sjekket P, er ikke probratio som er whack
-BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden)
+BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden, string opt)
 {
     arma_rng::set_seed_random();
     D_ = dimentions;
@@ -19,7 +19,8 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
 
    omega_ = omega;
    omega2_ = omega*omega;
-   sigma_ = 1.0/sqrt(omega_);
+   //sigma_ = 1.0/sqrt(omega_);
+   sigma_ = 1.0;
    sigma2_ = sigma_*sigma_;
    eta_ = eta; //Learning rate SGD.
    t_step_ = 0.05;
@@ -49,7 +50,21 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        quantum_force_new_ = QuantumForce(r_old_);
    }
 
-  SGD_testing();
+   if (opt == "GD")
+   {
+       optimizer = &BoltzmannMachine::GD;
+       filename_ = "EnergySamples_GD";
+   }
+
+   if (opt == "ADAM")
+   {
+       optimizer = &BoltzmannMachine::GD;
+       filename_ = "EnergySamples_ADAM";
+   }
+
+   filename_ = filename_ + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_);
+
+  (this->*optimizer)();
 }
 
 
@@ -106,7 +121,7 @@ double BoltzmannMachine::MonteCarlo()
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
     //if (it_num == its-1){DeltaE_.save("EnergySamples.txt", raw_ascii);}
-    DeltaE_.save("EnergySamples.txt", raw_ascii);
+    DeltaE_.save(filename_ + ".txt", raw_ascii);
     return energy;
 }
 
@@ -116,8 +131,8 @@ void BoltzmannMachine::Derivate_wavefunction()
     da_ = (r_old_ - a_)/sigma2_;
     db_ = 1.0/(1.0 + exp(-Q_));
     for (int h = 0; h < H_; h++){
-        dw_.slice(h) = w_.slice(h)/(sigma2_*(1.0 +  exp(-Q_(h))));
-        //dw_.slice(h) = r_old_/(sigma2_*(1.0 +  exp(-Q_(h))));  //Fra matten
+        //dw_.slice(h) = w_.slice(h)/(sigma2_*(1.0 +  exp(-Q_(h))));
+        dw_.slice(h) = r_old_/(sigma2_*(1.0 +  exp(-Q_(h))));  //Fra matten
     }
 }
 
@@ -167,7 +182,6 @@ void BoltzmannMachine::Metropolis()
     tf_old_ = WaveFunction(r_old_);             //Trial wave function of old position
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
     P_ = (tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
-    //cout << P_ <<endl;
     if (randu() <= P_){
         for (int d =0 ; d < D_;  d++){                   //Update initial position
             r_old_(idx,d) = r_new_(idx,d);
@@ -189,7 +203,6 @@ void BoltzmannMachine::Metropolis_Hastings()
     quantum_force_new_ = QuantumForce(r_new_);
 
     GreensFunc = GreensFunction(idx);
-    //cout << GreensFunc <<endl;
     tf_old_ = WaveFunction(r_old_);             //Trial wave function of old position
     tf_new_ = WaveFunction(r_new_);           //Trial wave function of new position
     P_ = GreensFunc*(tf_new_*tf_new_)/(tf_old_*tf_old_);                         //Metropolis test
@@ -260,9 +273,11 @@ double BoltzmannMachine::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
+
                 if (r_norm > 6.5e-2){ //r_norm > 6.5e-2
                     delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
                 }
+
 
             }
 
@@ -281,7 +296,7 @@ void BoltzmannMachine::ADAM()
     double tol = 9e-5;
     if (interaction_ == 1){tol = 9e-4;}
 
-    double epsilon = 1e-12;   //Value to avoid division by zero.
+    double epsilon = 1e-8;   //Value to avoid division by zero.
     double beta1 = 0.9;      //Decay rate
     double beta2 = 0.999;   //Decay rate
     double alpha_it, epsilon_it;
@@ -325,8 +340,8 @@ void BoltzmannMachine::ADAM()
         b_new -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
         a_new -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
 
-        cout << setprecision(15) << accu(abs(a_new-a_)) << endl;
-        if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
+        cout << "diff a_i/a_i+1 = " <<setprecision(15) << accu(abs(a_new-a_)) << endl;
+        if ((accu(abs(a_new - a_)) < tol) && (accu(abs(b_new-b_)) < tol) && (accu(abs(w_new-w_)) < tol)){
             break;
         }
 
@@ -336,7 +351,7 @@ void BoltzmannMachine::ADAM()
     }
 }
 
-void BoltzmannMachine::SGD()
+void BoltzmannMachine::GD()
 {
     double Energy = 0.0;
     it_num = 0;
@@ -345,7 +360,7 @@ void BoltzmannMachine::SGD()
     cube w_new = w_;
     mat a_new = a_;
     vec b_new = b_;
-    double tol = 1e-5;
+    double tol = 1e-9;
     if (interaction_ == 1){tol = 2e-5;}
 
     for (int i = 0; i < its;  i++){
@@ -358,7 +373,7 @@ void BoltzmannMachine::SGD()
         b_new -= eta_*E_db_;
         w_new -= eta_*E_dw_;
 
-        cout << setprecision(15) << accu(abs(a_new-a_)) << endl;
+        cout << "diff a_i/a_i+1 = " <<setprecision(15) << accu(abs(a_new-a_)) << endl;
         if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
             break;
         }

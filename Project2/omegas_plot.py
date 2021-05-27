@@ -34,6 +34,18 @@ ener_r2 = np.array([2.9993931927932,3.00788751892436,3.00270027586509,3.01342620
 ener_r3 = np.array([3.01021273923847,3.0212124686853,3.00220894121847,3.00804653066758,3.01466829887061,3.02237800353325,3.01239784581274,3.00891824889974,3.01192817385259,3.00977545023747 ])
 ener_r4 = np.array([3.00673388584726,3.00772557521105,3.00827164054594,3.00768326744341,3.01349283624169,3.00987095018036,3.00846847742672,2.9997411534417,3.0027009141199,3.01004645784099])
 
+
+Num hidden layers = 1   Energy = 3.01678524002209   iter = 10
+Num hidden layers = 2   Energy = 3.01136779588031   iter = 2
+Num hidden layers = 3   Energy = 3.01270121301503   iter = 67
+Num hidden layers = 4   Energy = 3.02194601191945   iter = 32
+Num hidden layers = 5   Energy = 3.01251860325407   iter = 12
+Num hidden layers = 6   Energy = 3.01697310264727   iter = 7
+Num hidden layers = 7   Energy = 3.00247612638616   iter = 14
+Num hidden layers = 8   Energy = 3.00922623341146   iter = 3
+Num hidden layers = 9   Energy = 3.0197357168767   iter = 6
+Num hidden layers = 10   Energy = 3.01248881765324   iter = 12
+
 ana_ener = 3.0
 joined_ener = (ener_r1 + ener_r2 + ener_r3 + ener_r4)/4
 joined_its = (iters_r1+iters_r2+ iters_r3 + iters_r4)/4
