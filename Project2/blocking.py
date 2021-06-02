@@ -43,6 +43,7 @@ def block(x):
         print("Warning: Use more data")
     return mu, s[k]/2**(d-k)
 
+"""
 samples = []
 
 if type == "par":
@@ -62,6 +63,8 @@ if type == "ser":
         for line in lines:
             word = line.split()
             samples.append(float(word[0]))
+
+"""
 
 
 data = np.array(samples)

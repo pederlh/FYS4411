@@ -23,7 +23,6 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    omega_ = omega;
    omega2_ = omega*omega;
    sigma_ = 1.0/sqrt(omega_);
-   //sigma_ = 1.0;
    sigma2_ = sigma_*sigma_;
    eta_ = eta; //Learning rate SGD.
    t_step_ = 0.05;
@@ -66,6 +65,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    }
 
    filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_);
+   std_hastings_ = 1.0;
 
   (this->*optimizer)();
 }
@@ -124,7 +124,8 @@ double BoltzmannMachine::MonteCarlo()
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
     if (convergence_){
-        DeltaE_.save(filename_ + ".txt", raw_ascii);
+        //DeltaE_.save(filename_ + ".txt", raw_ascii);
+        DeltaE_.save(filename2_ + ".txt", raw_ascii);
     }
     return energy;
 }
@@ -196,7 +197,7 @@ void BoltzmannMachine::Metropolis()
 void BoltzmannMachine::Metropolis_Hastings()
 {
     int idx = randi<int>(distr_param(0,N_-1));    //Random integer generated from uniform distribution [0,N-1];
-    double rand_gauss = randn<double>();         //Random double generated from gaussian distribution with mean = 0, std = 1;
+    double rand_gauss = randn<double>()*std_hastings_;         //Random double generated from gaussian distribution;
     double GreensFunc;
 
     //Proposed move of particle
@@ -444,7 +445,7 @@ void BoltzmannMachine::GD()
     a_joined.save("a_joined.txt");
     b_joined.save("b_joined.txt");
     }
-    double tol = 1e-3;
+    double tol = 8e-4;
     if (interaction_ == 1){tol = 1e-3;}
 
     #pragma omp master
@@ -510,8 +511,8 @@ void BoltzmannMachine::GD()
                 //cout << "Im "<<thread_ID_<< " and my b JOINED is " << b_ << endl;
             }
             filename_ = filename_ + "_its_" + to_string(i) + "_H_" + to_string(H_) + "_omega_" + to_string(omega_);
-
-            MC_ *=pow(2,4);
+            filename2_ = "eta_" + to_string(eta_) + "_its_" + to_string(i) + "_ID_" + to_string(thread_ID_);
+            MC_ *=pow(2,2);
             final_E = MonteCarlo();
 
             #pragma omp critical
@@ -525,8 +526,9 @@ void BoltzmannMachine::GD()
         b_ = b_new;
         w_ = w_new;
     }
-    //cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << final_E << endl;
-    cout << "Num hidden layers = " << H_ << "   " << "Energy = " << setprecision(15) << final_E << "   " << "iter = "<<it_num<<endl;
+    cout << "Eta = " << eta_ << " " << "Energy = " << setprecision(15) << final_E<< " " << "iter = "<<it_num << " " << "ID = "<<thread_ID_<< endl;
+    //cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << final_E<<" "  << "iter = "<<it_num << endl;
+    //cout << "Num hidden layers = " << H_ << "   " << "Energy = " << setprecision(15) << final_E << "   " << "iter = "<<it_num<<" "<<"ID = "<<thread_ID_ <<endl;
 }
 
 void BoltzmannMachine::SGD_testing()
@@ -560,7 +562,7 @@ void BoltzmannMachine::SGD_testing()
         w_ = w_new;
     }
 
-    //cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << Energies(its-1) << endl;
-    cout << "Num hidden layers = " << H_ << "   " << "Energy = " << setprecision(15) << Energy << "   " << "iter = "<<it_num<<endl;
+    cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << Energies(its-1) << endl;
+    //cout << "Num hidden layers = " << H_ << "   " << "Energy = " << setprecision(15) << Energy << "   " << "iter = "<<it_num<<endl;
 
 }
