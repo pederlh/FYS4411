@@ -32,7 +32,7 @@ ax1.plot(h, mean_it,"-o")
 ax2.plot(h, mean_e, "-o", color="tab:orange")
 ax2.set_ylim([1.98, 2.05])
 ax2.set_ylabel(r'$\langle E_L \rangle$')
-ax2.set_xlabel('Hidden layers $N$')
+ax2.set_xlabel('Hidden nodes $N$')
 ax2.axhline(2.0, ls="--", color="tab:red", alpha=0.8)
 
 plt.tight_layout()
