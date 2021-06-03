@@ -9,7 +9,7 @@ plt.style.use('seaborn')
 sns.set(font_scale=1.4)
 """ Script that performs blocking on local energy data sets """
 
-type = sys.argv[1]
+#type = sys.argv[1]
 
 def block(x):
     # preliminaries
@@ -64,13 +64,108 @@ if type == "ser":
             word = line.split()
             samples.append(float(word[0]))
 
+
+
+mc_test =[]
+means_test = []
+stds_test = []
+
+mc_NC_test =[]
+means_NC_test = []
+stds_NC_test = []
+
+mc_chi =[]
+means_chi = []
+stds_chi = []
+
+mc_NC_chi =[]
+means_NC_chi = []
+stds_NC_chi = []
+
+files = os.listdir()
+for samples in files:
+    if "TEST_MC" in samples:
+        if "NOTCONVERGED" in samples:
+            words = samples.split("_")
+            mc_NC_test.append(int(words[2]))
+            data = np.load(samples)
+            print("Files has been read, start blocking...")
+            (mean, var) = block(data)
+            std = np.sqrt(var)
+            print("Statistical values:\n")
+            print(samples)
+            print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+            means_NC_test.append(mean)
+            stds_NC_test.append(std)
+        else:
+            words = samples.split("_")
+            mc_test.append(int(words[2]))
+            data = np.load(samples)
+            print("Files has been read, start blocking...")
+            (mean, var) = block(data)
+            std = np.sqrt(var)
+            print("Statistical values:\n")
+            print(samples)
+            print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+            means_test.append(mean)
+            stds_test.append(std)
+    elif "CHI_MC" in samples:
+        if "NOTCONVERGED" in samples:
+            words = samples.split("_")
+            mc_NC_chi.append(int(words[2]))
+            data = np.load(samples)
+            print("Files has been read, start blocking...")
+            (mean, var) = block(data)
+            std = np.sqrt(var)
+            print("Statistical values:\n")
+            print(samples)
+            print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+            means_NC_chi.append(mean)
+            stds_NC_chi.append(std)
+        else:
+            words = samples.split("_")
+            mc_chi.append(int(words[2]))
+            data = np.load(samples)
+            print("Files has been read, start blocking...")
+            (mean, var) = block(data)
+            std = np.sqrt(var)
+            print("Statistical values:\n")
+            print(samples)
+            print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+            means_chi.append(mean)
+            stds_chi.append(std)
+
+mc_test = np.array(mc_test)
+means_test = np.array(means_test)
+stds_test = np.array(stds_test)
+
+np.savetxt("mc_test.txt",mc_test)
+np.savetxt("means_test.txt",means_test)
+np.savetxt("stds_test.txt",stds_test)
+
+mc_chi = np.array(mc_chi)
+means_chi = np.array(means_chi)
+stds_chi = np.array(stds_chi)
+
+np.savetxt("mc_chi.txt",mc_chi)
+np.savetxt("means_chi.txt",means_chi)
+np.savetxt("stds_chi.txt",stds_chi)
+
+
+
+mc_NC_test = np.array(mc_NC_test)
+means_NC_test = np.array(means_NC_test)
+stds_NC_test = np.array(stds_NC_test)
+
+np.savetxt("mc_NC_test.txt",mc_NC_test)
+np.savetxt("means_NC_test.txt",means_NC_test)
+np.savetxt("stds_NC_test.txt",stds_NC_test)
+
+mc_chi = np.array(mc_chi)
+means_chi = np.array(means_chi)
+stds_chi = np.array(stds_chi)
+
+np.savetxt("mc_NC_chi.txt",mc_NC_chi)
+np.savetxt("means_NC_chi.txt",means_NC_chi)
+np.savetxt("stds_NC_chi.txt",stds_NC_chi)
 """
-
-
-data = np.array(samples)
-print("Files has been read, start blocking...")
-(mean, var) = block(data)
-std = np.sqrt(var)
-print("Statistical values:\n")
-print("N=2")
-print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))

@@ -33,7 +33,7 @@ public:
     vec Q_;
     int D_, N_, H_, thread_ID_;
     double sigma_, sigma2_, omega_, omega2_, std_hastings_;
-    int interaction_, it_num, its;
+    int interaction_, its;
     string filename_, filename2_;
     bool convergence_;
 
