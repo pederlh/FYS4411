@@ -1,5 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(font_scale=1.3, rc={'legend.facecolor': 'White', 'legend.framealpha': 0.5, 'lines.markersize':5})
+
+# Gradient descent. eta = 0.1
 
 # No interaction
 h = np.array([1,2,3,4,5,6,7,8,9,10])
@@ -16,9 +20,21 @@ e_4 = np.array([2.00364869885244,2.01358982886694,2.00554343151456,2.00980657444
 i_4 = np.array([15,14,12,9,238,8,240,394,342,480])
 
 mean_it = (i_1 + i_2 + i_3 +i_4)/(4)
+mean_e = np.mean(np.array([e_1, e_2, e_3, e_4]), axis=0 )
 
-plt.plot(h, mean_it)
-plt.title("Number of iterations to convergence")
-plt.ylabel("Iterations")
-plt.xlabel("Number of hidden layers")
+
+fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True)
+
+
+ax1.set_ylabel('Iterations')
+ax1.plot(h, mean_it,"-o")
+
+ax2.plot(h, mean_e, "-o", color="tab:orange")
+ax2.set_ylim([1.98, 2.05])
+ax2.set_ylabel(r'$\langle E_L \rangle$')
+ax2.set_xlabel('Hidden layers $N$')
+ax2.axhline(2.0, ls="--", color="tab:red", alpha=0.8)
+
+plt.tight_layout()
+plt.savefig("hidden_layers.pdf")
 plt.show()
