@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(font_scale=1.3, rc={'legend.facecolor': 'White', 'legend.framealpha': 0.5, 'lines.markersize':5})
 
 fz = 14
 #std vekter = 0.1
@@ -16,22 +18,33 @@ energies_noanasig = np.array([0.254471399107738,0.26041768811502 ,0.272792008499
 rel_diff_ana = np.abs((analytical-energies_anasig)/analytical)
 rel_diff_noana = np.abs((analytical-energies_noanasig)/analytical)
 
-
+plt.figure(1)
 plt.plot(omegas, analytical, label="Analytical solution")
-plt.plot(omegas,energies_anasig,"*" ,label="Numerical $\sigma = 1/\sqrt{\omega}$")
-plt.plot(omegas, energies_noanasig,"*" ,label="Numerical $\sigma = 1.0$")
+plt.plot(omegas,energies_anasig,"*", ms=7, label="Numerical $\sigma = 1/\sqrt{\omega}$")
+plt.plot(omegas, energies_noanasig,"*", ms=7, label="Numerical $\sigma = 1.0$")
 #plt.title("$E_L$ vs. HO-frequency (1 particle, 1D)",fontsize = fz)
-plt.xticks(fontsize = fz-2)
-plt.yticks(fontsize = fz-2)
-plt.xlabel("$\omega$",fontsize = fz+2)
-plt.ylabel("$E_L$",fontsize = fz+2)
-plt.legend(fontsize = fz)
-plt.show()
-
-plt.title("Relative error in numerical solution",fontsize = fz)
-plt.plot(omegas,rel_diff_ana, label = "$\sigma = 1/\sqrt{\omega}$")
-plt.plot(omegas, rel_diff_noana, label = "$\sigma = 1.0$")
-plt.xlabel("$\omega$", fontsize = fz)
-plt.ylabel("Relative error", fontsize = fz)
+plt.xlabel("$\omega$")
+plt.ylabel(r"$\langle E_L \rangle $")
 plt.legend()
+plt.tight_layout()
+plt.savefig("sigma_vs_EL.pdf")
+
+plt.figure(2)
+plt.semilogy(omegas, rel_diff_ana, '-o', label = "$\sigma = 1/\sqrt{\omega}$")
+plt.semilogy(omegas, rel_diff_noana, '-o', label = "$\sigma = 1.0$")
+plt.xlabel("$\omega$")
+plt.ylabel("Relative error")
+plt.legend()
+plt.tight_layout()
+plt.savefig("sigma_vs_EL_rel_error.pdf")
+
+# plt.figure(3)
+# # plt.title("Relative error in numerical solution")
+# plt.plot(omegas, rel_diff_ana, label = "$\sigma = 1/\sqrt{\omega}$")
+# plt.plot(omegas, rel_diff_noana, label = "$\sigma = 1.0$")
+# plt.xlabel("$\omega$")
+# plt.ylabel("Relative error")
+# plt.legend()
+# plt.tight_layout()
+
 plt.show()
