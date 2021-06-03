@@ -21,14 +21,14 @@ int main(int argc, char const *argv[]) {
     int dim = 2;
     int MC = pow(2,18);
     int num_hidden = 2;
-    int num_threads = 2;
+    int num_threads = 1;
     double eta = 0.1;
 
 
     //typesampling: 0 for brute force, 1 for metropolis
-    int typesampling = 1;
+    int typesampling = 0;
     //interaction: 0 for none, 1 for yes
-    int interaction = 0;
+    int interaction = 1;
 
     string optimizer = "GD";
     //if (optimizer == "GD"){eta = 0.1;}
@@ -50,9 +50,14 @@ int main(int argc, char const *argv[]) {
         int ID = omp_get_thread_num();
 
         // Initialize Solver object and perform calculations
+        list<int> cycles = {(int)pow(2,8),(int)pow(2,9),(int)pow(2,10),(int)pow(2,11),(int)pow(2,12),(int)pow(2,13),(int)pow(2,14),(int)pow(2,15),(int)pow(2,16),(int)pow(2,17),(int)pow(2,18)};
+        //list<int> cycles = {(int)pow(2,18)};
+        for (int c : cycles){
+            BoltzmannMachine solver(num_part, dim, eta, c, typesampling, interaction, omega, num_hidden, optimizer, ID);
+        }
 
 
-        BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, omega, num_hidden, optimizer,ID);
+        //BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, omega, num_hidden, optimizer,ID);
 
 
 

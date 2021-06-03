@@ -64,8 +64,9 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        filename_ = "EnergySamples_ADAM";
    }
 
-   filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_);
+   //filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_);
    std_hastings_ = 1.0;
+   filename_ = "BF_MC_" + to_string(MC_) + "_std_" + to_string(std_hastings_);
 
   (this->*optimizer)();
 }
@@ -124,7 +125,7 @@ double BoltzmannMachine::MonteCarlo()
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
     if (convergence_){
-        DeltaE_.save(filename_ + ".txt", raw_ascii);
+        DeltaE_.save(filename_ + "_.txt", raw_ascii);
         //DeltaE_.save(filename2_ + ".txt", raw_ascii);
     }
     return energy;
@@ -278,12 +279,9 @@ double BoltzmannMachine::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
-
-                if (r_norm > 6.5e-2){ //r_norm > 6.5e-2
-                    delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
+                if (r_norm > 1e-2){ //r_norm > 6.5e-2
+                delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
                 }
-
-
             }
 
         }
@@ -445,8 +443,8 @@ void BoltzmannMachine::GD()
     a_joined.save("a_joined.txt");
     b_joined.save("b_joined.txt");
     }
-    double tol = 1e-3;
-    if (interaction_ == 1){tol = 1e-3;}
+    double tol = 2e-3;
+    if (interaction_ == 1){tol = 2e-3;}
 
     #pragma omp master
      {
@@ -470,7 +468,7 @@ void BoltzmannMachine::GD()
 
         #pragma omp master
         {
-        cout << "diff a_i/a_i+1 = " <<setprecision(15) << accu(abs(a_new-a_)) << endl;
+        //cout <<setprecision(15) << accu(abs(a_new-a_)) << "  "<<setprecision(15) << accu(abs(b_new-b_))<< " " <<setprecision(15) << accu(abs(w_new-w_)) << endl;
         }
         if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
             convergence_ = true;
@@ -517,7 +515,7 @@ void BoltzmannMachine::GD()
 
             #pragma omp critical
             {
-            cout << "Im "<<thread_ID_<< " and my final energy is " << final_E << endl;
+            //cout << "Im "<<thread_ID_<< " and my final energy is " << final_E << endl;
             }
             break;
         }
@@ -525,6 +523,13 @@ void BoltzmannMachine::GD()
         a_ = a_new;
         b_ = b_new;
         w_ = w_new;
+    }
+
+    if (convergence_ == false){
+        convergence_ = true;
+        filename_ = filename_ + "_NOTCONVERGED_";
+        MC_ *=pow(2,2);
+        final_E = MonteCarlo();
     }
     //cout << "Eta = " << eta_ << " " << "Energy = " << setprecision(15) << final_E<< " " << "iter = "<<it_num << " " << "ID = "<<thread_ID_<< endl;
     //cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << final_E<<" "  << "iter = "<<it_num << endl;

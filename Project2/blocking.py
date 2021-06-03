@@ -9,7 +9,7 @@ plt.style.use('seaborn')
 sns.set(font_scale=1.4)
 """ Script that performs blocking on local energy data sets """
 
-type = sys.argv[1]
+#type = sys.argv[1]
 
 def block(x):
     # preliminaries
@@ -66,11 +66,13 @@ if type == "ser":
 
 """
 
-
-data = np.array(samples)
-print("Files has been read, start blocking...")
-(mean, var) = block(data)
-std = np.sqrt(var)
-print("Statistical values:\n")
-print("N=2")
-print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+files = os.listdir()
+for samples in files:
+    if "_.npy" in samples:
+        data = np.load(samples)
+        print("Files has been read, start blocking...")
+        (mean, var) = block(data)
+        std = np.sqrt(var)
+        print("Statistical values:\n")
+        print(samples)
+        print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
