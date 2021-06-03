@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import sys
 
+# Omega = 1.0, tol = 8e-4
 plt.style.use('seaborn')
 sns.set(font_scale=1.4)
 """ Script that performs blocking on local energy data sets """
@@ -45,7 +46,7 @@ def block(x):
 files_rand = os.listdir()
 files = []
 for f in files_rand:
-    if not f == "block_etas.py" and not f == "plot_eta.py":
+    if not f == "block_etas.py" and not f == "plot_eta.py" and not f=="etas.npy" and not f== "its.npy" and not f == "means.npy" and not f == "stds.npy":
         files.append(f)
 
 
@@ -54,12 +55,13 @@ its = np.zeros(len(files))
 means = np.zeros(len(files))
 stds = np.zeros(len(files))
 
+
 i = 0
 for fil in files:
     words = fil.split("_")
     eta.append(words[1])
     its[i] = float(words[-2])
-    samples = np.loadtxt(fil)
+    samples = np.load(fil)
     data = np.array(samples)
     print("Files has been read, start blocking...")
     (mean, var) = block(data)

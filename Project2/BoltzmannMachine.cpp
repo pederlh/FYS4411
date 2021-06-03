@@ -25,7 +25,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
    sigma_ = 1.0/sqrt(omega_);
    sigma2_ = sigma_*sigma_;
    eta_ = eta; //Learning rate SGD.
-   t_step_ = 0.05;
+   t_step_ = 0.005;
    D_diff_ = 0.5;
    interaction_ = interaction;
 
@@ -64,7 +64,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        filename_ = "EnergySamples_ADAM";
    }
 
-   filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_);
+   filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_);
    std_hastings_ = 1.0;
 
   (this->*optimizer)();
@@ -124,8 +124,8 @@ double BoltzmannMachine::MonteCarlo()
     E_da_ = 2*(derivative_Psi_a - energy*delta_Psi_a);
     E_db_ = 2*(derivative_Psi_b - energy*delta_Psi_b);
     if (convergence_){
-        //DeltaE_.save(filename_ + ".txt", raw_ascii);
-        DeltaE_.save(filename2_ + ".txt", raw_ascii);
+        DeltaE_.save(filename_ + ".txt", raw_ascii);
+        //DeltaE_.save(filename2_ + ".txt", raw_ascii);
     }
     return energy;
 }
@@ -445,14 +445,14 @@ void BoltzmannMachine::GD()
     a_joined.save("a_joined.txt");
     b_joined.save("b_joined.txt");
     }
-    double tol = 8e-4;
+    double tol = 1e-3;
     if (interaction_ == 1){tol = 1e-3;}
 
     #pragma omp master
      {
-         //if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
-         //else cout << "Start gradient descent (showing progress master thread) Dim = "<< D_ << endl << endl;
-         //cout << "--------------------------------------" << endl;
+         if (omp_get_num_threads() == 1) cout << "Start gradient descent" << endl;
+         else cout << "Start gradient descent (showing progress master thread) Dim = "<< D_ << endl << endl;
+         cout << "--------------------------------------" << endl;
      }
 
     for (int i = 0; i < its;  i++){
@@ -470,7 +470,7 @@ void BoltzmannMachine::GD()
 
         #pragma omp master
         {
-        //cout << "diff a_i/a_i+1 = " <<setprecision(15) << accu(abs(a_new-a_)) << endl;
+        cout << "diff a_i/a_i+1 = " <<setprecision(15) << accu(abs(a_new-a_)) << endl;
         }
         if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
             convergence_ = true;
@@ -510,14 +510,14 @@ void BoltzmannMachine::GD()
 
                 //cout << "Im "<<thread_ID_<< " and my b JOINED is " << b_ << endl;
             }
-            filename_ = filename_ + "_its_" + to_string(i) + "_H_" + to_string(H_) + "_omega_" + to_string(omega_);
-            filename2_ = "eta_" + to_string(eta_) + "_its_" + to_string(i) + "_ID_" + to_string(thread_ID_);
+            filename_ = filename_ + "_its_" + to_string(i);
+            //filename2_ = "eta_" + to_string(eta_) + "_its_" + to_string(i) + "_ID_" + to_string(thread_ID_);
             MC_ *=pow(2,2);
             final_E = MonteCarlo();
 
             #pragma omp critical
             {
-            //cout << "Im "<<thread_ID_<< " and my final energy is " << final_E << endl;
+            cout << "Im "<<thread_ID_<< " and my final energy is " << final_E << endl;
             }
             break;
         }
@@ -526,7 +526,7 @@ void BoltzmannMachine::GD()
         b_ = b_new;
         w_ = w_new;
     }
-    cout << "Eta = " << eta_ << " " << "Energy = " << setprecision(15) << final_E<< " " << "iter = "<<it_num << " " << "ID = "<<thread_ID_<< endl;
+    //cout << "Eta = " << eta_ << " " << "Energy = " << setprecision(15) << final_E<< " " << "iter = "<<it_num << " " << "ID = "<<thread_ID_<< endl;
     //cout << "Omega = " << omega_ << "   " << "Energy = " << setprecision(15) << final_E<<" "  << "iter = "<<it_num << endl;
     //cout << "Num hidden layers = " << H_ << "   " << "Energy = " << setprecision(15) << final_E << "   " << "iter = "<<it_num<<" "<<"ID = "<<thread_ID_ <<endl;
 }
