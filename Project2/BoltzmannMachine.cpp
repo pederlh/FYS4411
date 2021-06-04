@@ -254,6 +254,7 @@ double BoltzmannMachine::LocalEnergy()
     double delta_energy = 0.0;
     Q_factor(r_old_);
     double der1_ln_psi, der2_ln_psi;
+    count2_+=1;
 
     for (int n = 0; n < N_; n++){
         for (int d =0; d < D_; d++){
@@ -280,7 +281,8 @@ double BoltzmannMachine::LocalEnergy()
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
                 if (r_norm > 6.5e-2){ //r_norm > 6.5e-2
-                delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
+                    count_ +=1;
+                    delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
                 }
             }
         }
@@ -295,8 +297,8 @@ void BoltzmannMachine::ADAM()
     cube w_new = w_;
     mat a_new = a_;
     vec b_new = b_;
-    double tol = 3e-3;
-    if (interaction_ == 1){tol = 3e-3;}
+    double tol = 1e-4;
+    double Ana_e = 2.0;
 
     cube w_joined = cube(N_, D_, H_).fill(0.0);
     mat a_joined = mat(N_, D_).fill(0.0);
@@ -323,9 +325,13 @@ void BoltzmannMachine::ADAM()
     second_mom_a_ = mat(N_, D_).fill(0.0);
     second_mom_b_ = vec(H_).fill(0.0);
 
+
     double Energy = 0.0;
-    its = 1000;
+    its = 200;
     vec Energies = vec(its).fill(0.0);
+    double final_E = 0.0;
+    double not_accepted = 1.0;
+    double per = 0.0;
 
     #pragma omp master
      {
@@ -334,9 +340,16 @@ void BoltzmannMachine::ADAM()
          cout << "--------------------------------------" << endl;
      }
 
+
     for (int i = 0; i < its;  i++){
+        count2_ = 0;
+        count_ = 0;
         Energy = MonteCarlo();
         Energies(i) = Energy;
+        not_accepted = count2_-count_;
+        per = (not_accepted/count2_)*100.0;
+        cout << per << endl;
+
         #pragma omp master
         {
         cout << "Energy = " << setprecision(15) << Energy << endl;
@@ -360,100 +373,11 @@ void BoltzmannMachine::ADAM()
         b_new -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
         a_new -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
 
-        #pragma omp master
-        {
-        cout << "diff a_i/a_i+1 = " <<setprecision(15) << accu(abs(a_new-a_)) << endl;
-        }
-        if ((accu(abs(a_new - a_)) < tol) && (accu(abs(b_new-b_)) < tol) && (accu(abs(w_new-w_)) < tol)){
-            convergence_ = true;
-            w_ = w_new;
-            a_ = a_new;
-            b_ = b_new;
-            # pragma omp barrier
-            # pragma omp critical
-            {
-                w_joined.load("w_joined.txt");
-                a_joined.load("a_joined.txt");
-                b_joined.load("b_joined.txt");
-
-                a_joined += a_;
-                b_joined += b_;
-                w_joined += w_;
-
-                w_joined.save("w_joined.txt");
-                a_joined.save("a_joined.txt");
-                b_joined.save("b_joined.txt");
-
-            }
-            # pragma omp barrier
-            # pragma omp critical
-            {
-                w_joined.load("w_joined.txt");
-                a_joined.load("a_joined.txt");
-                b_joined.load("b_joined.txt");
-
-                a_joined/=omp_get_num_threads();
-                b_joined/=omp_get_num_threads();
-                w_joined/=omp_get_num_threads();
-
-                a_ = a_joined;
-                b_ = b_joined;
-                w_ = w_joined;
-
-                cout << "Im "<<thread_ID_<< " and my b JOINED is " << b_ << endl;
-            }
-
-            filename_ = filename_ + "_its_" + to_string(i) + "_H_" + to_string(H_) + "_omega_" + to_string(omega_);
-            MC_ *=pow(2,4);
-            double final_E = MonteCarlo();
-
-            #pragma omp critical
-            {
-            cout << "Im "<<thread_ID_<< " and my final energy is " << final_E << endl;
-            }
-            break;
-        }
-
-        w_ = w_new;
-        a_ = a_new;
-        b_ = b_new;
-    }
-}
-
-void BoltzmannMachine::GD()
-{
-    double Energy = 0.0;
-    its = 1000;
-    vec Energies = vec(its).fill(0.0);
-    cube w_new = w_;
-    mat a_new = a_;
-    vec b_new = b_;
-    double final_E = 0.0;
-
-    cube w_joined = cube(N_, D_, H_).fill(0.0);
-    mat a_joined = mat(N_, D_).fill(0.0);
-    vec b_joined = vec(H_).fill(0.0);
-    #pragma omp critical
-    {
-    w_joined.save("w_joined.txt");
-    a_joined.save("a_joined.txt");
-    b_joined.save("b_joined.txt");
-    }
-    double tol = eta_*1e-3;
-
-    for (int i = 0; i < its;  i++){
-        Energy = MonteCarlo();
-        Energies(i) = Energy;
-
         a_new -= eta_*E_da_;
         b_new -= eta_*E_db_;
         w_new -= eta_*E_dw_;
 
-        #pragma omp master
-        {
-        cout <<setprecision(15) << accu(abs(a_new-a_)) << "  "<<setprecision(15) << accu(abs(b_new-b_))<< " " <<setprecision(15) << accu(abs(w_new-w_)) << endl;
-        }
-        if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
+        if (abs(Energy-Ana_e) < tol && i > 0){
             convergence_ = true;
             a_ = a_new;
             b_ = b_new;
@@ -490,7 +414,100 @@ void BoltzmannMachine::GD()
                 w_ = w_joined;
             }
             filename_ = filename_ + "_its_" + to_string(i);
-            MC_ *=pow(2,4);
+            MC_ *=pow(2,2);
+            final_E = MonteCarlo();
+            break;
+        }
+
+        a_ = a_new;
+        b_ = b_new;
+        w_ = w_new;
+    }
+}
+
+void BoltzmannMachine::GD()
+{
+    double Energy = 0.0;
+    its = 200;
+    vec Energies = vec(its).fill(0.0);
+    cube w_new = w_;
+    mat a_new = a_;
+    vec b_new = b_;
+    double final_E = 0.0;
+
+    cube w_joined = cube(N_, D_, H_).fill(0.0);
+    mat a_joined = mat(N_, D_).fill(0.0);
+    vec b_joined = vec(H_).fill(0.0);
+    #pragma omp critical
+    {
+    w_joined.save("w_joined.txt");
+    a_joined.save("a_joined.txt");
+    b_joined.save("b_joined.txt");
+    }
+    double tol = 1e-4;
+    double Ana_e = 2.0;
+
+    #pragma omp master
+     {
+         if (omp_get_num_threads() == 1) cout << "Start GD" << endl;
+         else cout << "Start GD (showing progress master thread) Dim = "<< D_ << endl << endl;
+         cout << "--------------------------------------" << endl;
+     }
+
+    for (int i = 0; i < its;  i++){
+        count_ = 0;
+        Energy = MonteCarlo();
+        Energies(i) = Energy;
+        cout << Energy <<endl;
+        cout << count_<< endl;
+
+        a_new -= eta_*E_da_;
+        b_new -= eta_*E_db_;
+        w_new -= eta_*E_dw_;
+
+        //#pragma omp master
+        //{
+        //cout <<setprecision(15) << accu(abs(a_new-a_)) << "  "<<setprecision(15) << accu(abs(b_new-b_))<< " " <<setprecision(15) << accu(abs(w_new-w_)) << endl;
+        //}
+        //if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
+        if (abs(Energy-Ana_e) < tol && i > 0){
+            convergence_ = true;
+            a_ = a_new;
+            b_ = b_new;
+            w_ = w_new;
+            # pragma omp barrier
+            # pragma omp critical
+            {
+                w_joined.load("w_joined.txt");
+                a_joined.load("a_joined.txt");
+                b_joined.load("b_joined.txt");
+
+                a_joined += a_;
+                b_joined += b_;
+                w_joined += w_;
+
+                w_joined.save("w_joined.txt");
+                a_joined.save("a_joined.txt");
+                b_joined.save("b_joined.txt");
+
+            }
+            # pragma omp barrier
+            # pragma omp critical
+            {
+                w_joined.load("w_joined.txt");
+                a_joined.load("a_joined.txt");
+                b_joined.load("b_joined.txt");
+
+                a_joined/=omp_get_num_threads();
+                b_joined/=omp_get_num_threads();
+                w_joined/=omp_get_num_threads();
+
+                a_ = a_joined;
+                b_ = b_joined;
+                w_ = w_joined;
+            }
+            filename_ = filename_ + "_its_" + to_string(i);
+            MC_ *=pow(2,2);
             final_E = MonteCarlo();
             break;
         }
