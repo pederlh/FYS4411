@@ -1,6 +1,9 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(font_scale=1.3, rc={'legend.facecolor': 'White', 'legend.framealpha': 0.5, 'lines.markersize':5})
+
 """
 all_files = os.listdir()
 H_files =[]
@@ -91,9 +94,10 @@ M_w = M_w[2:]
 M_m = M_m[2:]
 
 
-plt.plot(1/H_w,H_m/2,"-o" ,label ="Hastings")
-plt.plot(1/M_w,M_m/2,"-o" ,label ="MC")
-plt.xlabel("1/w")
-plt.ylabel("El/2")
+plt.plot(1/H_w,H_m/2,"-o" ,label ="Metropolis-Hastings")
+plt.plot(1/M_w,M_m/2,"-o" ,label ="Metropolis")
+plt.xlabel(r"$1\, / \, \omega$")
+plt.ylabel(r"$\langle E_L \rangle\, / \, 2$")
 plt.legend()
+plt.tight_layout()
 plt.show()

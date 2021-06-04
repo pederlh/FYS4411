@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+import seaborn as sns
+sns.set_theme(font_scale=1.3, rc={'legend.facecolor': 'White', 'legend.framealpha': 0.5, 'lines.markersize':5})
+
 mc_chi = np.loadtxt("mc_chi.txt")
 means_chi = np.loadtxt("means_chi.txt")
 stds_chi = np.loadtxt("stds_chi.txt")
@@ -100,5 +103,6 @@ plt.plot(mc_NC_t,means_NC_t,"bx", label = "Test not converged")
 plt.axhline(y=3.0, color='k', linestyle='-', label = "Analytical")
 plt.legend()
 plt.xlabel("log2(MC-cycles)")
-plt.ylabel("<EL>")
+plt.ylabel(r"$\langle E_L \rangle$")
+plt.tight_layout()
 plt.show()
