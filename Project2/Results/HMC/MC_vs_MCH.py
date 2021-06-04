@@ -90,9 +90,36 @@ H_m = H_m[2:]
 M_w = M_w[2:]
 M_m = M_m[2:]
 
+Hw = np.load("Hw.npy")
+H2 = np.load("H2.npy")
+Mw = np.load("Mw.npy")
+M2 = np.load("M2.npy")
+
+Hw,H2 = zip(*sorted(zip(Hw,H2)))
+Mw,M2 = zip(*sorted(zip(Mw,M2)))
+
+Hw = np.array(Hw)
+H2 =np.array(H2)
+Mw =np.array(Mw)
+M2 =np.array(M2)
+
+Hw = Hw[2:]
+H2 = H2[2:]
+Mw = Mw[2:]
+M2 = M2[2:]
+
+
 
 plt.plot(1/H_w,H_m/2,"-o" ,label ="Hastings")
 plt.plot(1/M_w,M_m/2,"-o" ,label ="MC")
+plt.xlabel("1/w")
+plt.ylabel("El/2")
+plt.legend()
+plt.show()
+
+
+plt.plot(1/Hw,H2/2,"-o" ,label ="Hastings")
+plt.plot(1/Mw,M2/2,"-o" ,label ="MC")
 plt.xlabel("1/w")
 plt.ylabel("El/2")
 plt.legend()
