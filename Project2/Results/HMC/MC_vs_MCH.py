@@ -111,24 +111,29 @@ H2 = H2[2:]
 Mw = Mw[2:]
 M2 = M2[2:]
 
-taut_1_over_omega = np.array([4, 20, 54.7386])
-taut_
+taut_1_over_omega = np.array([4, 20, 54.7386, 115.299, 208.803])
+taut_E_half = np.array([0.6250, 0.1750, 0.0822, 0.0477, 0.0311 ])
 
 
-plt.figure(1)
-plt.plot(1/H_w,H_m/2,"-o" ,label ="Metropolis-Hastings")
-plt.plot(1/M_w,M_m/2,"-o" ,label ="Metropolis")
-plt.xlabel(r"$1\, / \, \omega$")
-plt.ylabel(r"$\langle E_L \rangle\, / \, 2$")
-plt.legend()
-plt.tight_layout()
+# plt.figure(1)
+# plt.plot(1/H_w,H_m/2,":o" ,label ="Metropolis-Hastings")
+# plt.plot(1/M_w,M_m/2,":o" ,label ="Metropolis")
+# plt.plot(taut_1_over_omega, taut_E_half,"-x" ,label ="Theoretical value (Taut)")
+
+# plt.xlabel(r"$1\, / \, \omega$")
+# plt.ylabel(r"$\langle E_L \rangle\, / \, 2$")
+# plt.legend()
+# plt.tight_layout()
 
 
 plt.figure(2)
-plt.plot(1/Hw,H2/2,"-o" ,label ="Hastings")
-plt.plot(1/Mw,M2/2,"-o" ,label ="MC")
+plt.plot(1/Hw,H2,":o", label ="Metropolis-Hastings")
+plt.plot(1/Mw,M2,":o", label ="Metropolis")
+plt.plot(taut_1_over_omega, taut_E_half*2,"-*", color="k", alpha=0.7, ms=8,label ="Theoretical value (Taut)")
+
 plt.xlabel(r"$1\, / \, \omega$")
-plt.ylabel(r"$\langle E_L \rangle\, / \, 2$")
+plt.ylabel(r"$\langle E_L \rangle$")
 plt.legend()
 plt.tight_layout()
+plt.savefig("Brute_force_Hastings_Taut_vs_omega.pdf")
 plt.show()
