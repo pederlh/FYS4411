@@ -210,6 +210,8 @@ np.save("get14", G_eta)
 np.save("aet14", A_eta)
 
 """
+"""
+
 #Tolerance = 9e-4
 ADAM = np.load("am.npy")
 GD = np.load("gm.npy")
@@ -221,7 +223,7 @@ ADAM_its = np.load("ait.npy")
 GD_its = np.load("git.npy")
 
 ADAM_eta = np.load("aet.npy")
-GD_eta = np.load("get.npy")
+GD_eta = np.load("aet.npy")
 
 
 plt.errorbar(ADAM_eta,ADAM,yerr=ADAM_std, fmt = "ob",capsize=5, elinewidth=1,markeredgewidth=1, label = "ADAM")
@@ -240,8 +242,8 @@ plt.ylabel("Iterations")
 plt.legend()
 plt.show()
 
-
-# Tolerance = 1e-4
+"""
+# Tolerance = 1e-4, N = 2, D = 2, non-interacting, MC = 2^20, H = 2, std vekter = 0.1, metropolis-HASTINGS
 ADAM = np.load("am14.npy")
 GD = np.load("gm14.npy")
 

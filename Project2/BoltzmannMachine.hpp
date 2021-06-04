@@ -31,12 +31,11 @@ public:
     mat a_, da_, E_da_;
     vec b_, db_, E_db_;
     vec Q_;
-    int D_, N_, H_, thread_ID_;
+    int D_, N_, H_, thread_ID_, MC_;
     double sigma_, sigma2_, omega_, omega2_, std_hastings_;
     int interaction_, its;
     string filename_, filename2_;
     bool convergence_;
-    int count_, count2_;
 
     mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
@@ -63,9 +62,6 @@ public:
     cube mom_w_, second_mom_w_;
     vec mom_b_, second_mom_b_;
     mat mom_a_, second_mom_a_;
-    int MC_;
-
-    void SGD_testing();
 
 };
 
