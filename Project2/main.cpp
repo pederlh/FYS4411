@@ -21,8 +21,8 @@ int main(int argc, char const *argv[]) {
     int dim = 2;
     int MC = pow(2,16);
     int num_hidden = 2;
-    int num_threads = 2;
-    double eta = 0.1;
+    int num_threads = 1;
+    double eta = 0.01;
 
 
     //typesampling: 0 for brute force, 1 for metropolis
@@ -50,12 +50,10 @@ int main(int argc, char const *argv[]) {
         int ID = omp_get_thread_num();
 
         // Initialize Solver object and perform calculations
-        list<double> omegas = {0.0, 0.001, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08, 0.085, 0.09, 0.095, 0.1};
-        for (double w : omegas){
-            BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, w, num_hidden, optimizer,ID);
+        list<double> etas = {0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08, 0.085, 0.09, 0.095, 0.1};
+        for (double e : etas){
+            BoltzmannMachine solver(num_part, dim, e, MC, typesampling, interaction, omega, num_hidden, optimizer,ID);
         }
-
-
         //BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, omega, num_hidden, optimizer,ID);
 
 
@@ -66,6 +64,11 @@ int main(int argc, char const *argv[]) {
     list<int> layers = {1,2,3,4,5,6,7,8,9, 10};
     for (int h : layers){
         BoltzmannMachine solver(num_part, dim, eta, MC, 1, interaction, omega, h);
+    }
+
+    list<double> omegas = {0.0, 0.001, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08, 0.085, 0.09, 0.095, 0.1};
+    for (double w : omegas){
+        BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, w, num_hidden, optimizer,ID);
     }
 
     list<int> cycles = {(int)pow(2,8),(int)pow(2,9),(int)pow(2,10),(int)pow(2,11),(int)pow(2,12),(int)pow(2,13),(int)pow(2,14),(int)pow(2,15),(int)pow(2,16),(int)pow(2,17),(int)pow(2,18)};

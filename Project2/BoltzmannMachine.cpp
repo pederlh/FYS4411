@@ -64,11 +64,10 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        filename_ = "EnergySamples_ADAM";
    }
 
-   //filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_);
+   filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_);
    std_hastings_ = 1.0;
    //filename_ = "CHI_MC_" + to_string(MC_) + "_std_" + to_string(std_hastings_);
-
-   filename_ = "HAST_MC_" + to_string(MC_) + "_w_" + to_string(omega_) + "_ID_" + to_string(thread_ID_);
+   //filename_ = "MC_" + to_string(MC_) + "_w_" + to_string(omega_) + "_ID_" + to_string(thread_ID_);
    (this->*optimizer)();
 }
 
@@ -280,7 +279,7 @@ double BoltzmannMachine::LocalEnergy()
                 for (int d = 0; d < D_; d++){
                     r_norm += pow((r_old_(n1,d) - r_old_(n2,d)), 2);
                 }
-                if (r_norm > 5e-2){ //r_norm > 6.5e-2
+                if (r_norm > 6.5e-2){ //r_norm > 6.5e-2
                 delta_energy += 1.0/sqrt(r_norm);              //Avoid contributions from particles that are very close
                 }
             }
@@ -424,7 +423,7 @@ void BoltzmannMachine::ADAM()
 void BoltzmannMachine::GD()
 {
     double Energy = 0.0;
-    its = 20;
+    its = 1000;
     vec Energies = vec(its).fill(0.0);
     cube w_new = w_;
     mat a_new = a_;
@@ -440,8 +439,7 @@ void BoltzmannMachine::GD()
     a_joined.save("a_joined.txt");
     b_joined.save("b_joined.txt");
     }
-    double tol = 1e-9;
-    if (interaction_ == 1){tol = 1e-9;}
+    double tol = eta_*1e-3;
 
     for (int i = 0; i < its;  i++){
         Energy = MonteCarlo();
@@ -451,10 +449,10 @@ void BoltzmannMachine::GD()
         b_new -= eta_*E_db_;
         w_new -= eta_*E_dw_;
 
-        //#pragma omp master
-        //{
-        //cout <<setprecision(15) << accu(abs(a_new-a_)) << "  "<<setprecision(15) << accu(abs(b_new-b_))<< " " <<setprecision(15) << accu(abs(w_new-w_)) << endl;
-        //}
+        #pragma omp master
+        {
+        cout <<setprecision(15) << accu(abs(a_new-a_)) << "  "<<setprecision(15) << accu(abs(b_new-b_))<< " " <<setprecision(15) << accu(abs(w_new-w_)) << endl;
+        }
         if (accu(abs(a_new - a_)) < tol && accu(abs(b_new-b_)) < tol && accu(abs(w_new-w_)) < tol){
             convergence_ = true;
             a_ = a_new;
@@ -492,7 +490,6 @@ void BoltzmannMachine::GD()
                 w_ = w_joined;
             }
             filename_ = filename_ + "_its_" + to_string(i);
-            //filename2_ = "eta_" + to_string(eta_) + "_its_" + to_string(i) + "_ID_" + to_string(thread_ID_);
             MC_ *=pow(2,4);
             final_E = MonteCarlo();
             break;
@@ -502,7 +499,7 @@ void BoltzmannMachine::GD()
         b_ = b_new;
         w_ = w_new;
     }
-
+/*
     if (convergence_ == false){
         convergence_ = true;
         filename_ = filename_ + "_NOTCONVERGED";
@@ -510,6 +507,7 @@ void BoltzmannMachine::GD()
         final_E = MonteCarlo();
     }
     cout << "IM DONE ID = " << to_string(thread_ID_)<<endl;
+*/
 }
 
 void BoltzmannMachine::SGD_testing()

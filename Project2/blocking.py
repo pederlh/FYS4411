@@ -44,6 +44,17 @@ def block(x):
     return mu, s[k]/2**(d-k)
 
 """
+data = np.load("EnergySamples_GD_N_2_D_2_H_2_eta_0.010000_MC_65536_sigma_1.000000_ID_0_interaction_1_omega_1.000000_its_70_.npy")
+print("Files has been read, start blocking...")
+(mean, var) = block(data)
+std = np.sqrt(var)
+print("Statistical values:\n")
+print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
+
+"""
+
+
+"""
 samples = []
 
 if type == "par":
@@ -168,4 +179,58 @@ stds_chi = np.array(stds_chi)
 np.savetxt("mc_NC_chi.txt",mc_NC_chi)
 np.savetxt("means_NC_chi.txt",means_NC_chi)
 np.savetxt("stds_NC_chi.txt",stds_NC_chi)
+
+
+H = []
+Hw = []
+
+M = []
+Mw = []
+
+all = os.listdir()
+all_new = []
+for file in all:
+    if "HAST_" in file:
+        w = file.split("_")
+        H.append(file)
+        Hw.append(float(w[4]))
+
+for file in all:
+    if "HAST_" not in file:
+        all_new.append(file)
+
+all = all_new
+
+
+for file in all:
+    if "MC_" in file:
+        w = file.split("_")
+        M.append(file)
+        Mw.append(float(w[3]))
+
+
+H2 =[]
+M2 =[]
+
+
+for h in H:
+    data = np.load(h)
+    (mean, var) = block(data)
+    H2.append(mean)
+
+for m in M:
+    data = np.load(m)
+    (mean, var) = block(data)
+    M2.append(mean)
+
+H2 = np.array(H2)
+M2 = np.array(M2)
+Hw = np.array(Hw)
+Mw = np.array(Mw)
+
+np.save("H2",H2)
+np.save("M2",M2)
+np.save("Hw",Hw)
+np.save("Mw",Mw)
+
 """
