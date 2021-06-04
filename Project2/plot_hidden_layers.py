@@ -33,7 +33,7 @@ ax2.plot(h, mean_e, "-o", color="tab:orange")
 ax2.set_ylim([1.98, 2.05])
 ax2.set_ylabel(r'$\langle E_L \rangle$')
 ax2.set_xlabel('Hidden nodes $N$')
-ax2.axhline(2.0, ls="--", color="tab:red", alpha=0.8)
+ax2.axhline(2.0, ls="--", color="k", alpha=0.8)
 
 plt.tight_layout()
 plt.savefig("hidden_layers.pdf")
