@@ -1,6 +1,6 @@
 #include "BoltzmannMachine.hpp"
 
-
+/* Constructor */
 BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden, string opt, int thread_ID)
 {
     arma_rng::set_seed_random();
@@ -71,11 +71,13 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
 }
 
 
+/* Method for performing Monte-Carlo simulations */
 double BoltzmannMachine::MonteCarlo()
 {
     double energy = 0.0;
     double DeltaE = 0.0;
     vec DeltaE_ = vec(MC_).fill(0.0);
+
     //Derivatives of the wave function w/respect to weights/biases for stochastic gradient descent
     dw_ = cube(N_, D_, H_).fill(0.0);
     da_ = mat(N_, D_).fill(0.0);
@@ -131,7 +133,7 @@ double BoltzmannMachine::MonteCarlo()
 }
 
 
-
+/* Method for calculating derivative of NQS trial wave function w/ reagards to variational parameters (PEDER HELP) */
 void BoltzmannMachine::Derivate_wavefunction()
 {
     Q_factor(r_old_);
@@ -142,6 +144,8 @@ void BoltzmannMachine::Derivate_wavefunction()
     }
 }
 
+
+/* Method for calculating NQS wavefunction given set of particle positions */
 double BoltzmannMachine::WaveFunction(mat r)
 {
     Q_factor(r);
@@ -164,6 +168,7 @@ double BoltzmannMachine::WaveFunction(mat r)
 
 }
 
+/* Method for calculating termn in exponential (HELP PEDER) */
 void BoltzmannMachine::Q_factor(mat r)
 {
     vec temp = vec(H_).fill(0.0);
@@ -176,6 +181,8 @@ void BoltzmannMachine::Q_factor(mat r)
     Q_ = b_ + temp;
 }
 
+
+/* Method for performing metropolis sampling */
 void BoltzmannMachine::Metropolis()
 {
     int idx = randi<int>(distr_param(0,N_-1));  //Random integer generated from uniform distribution [0,N-1];
@@ -195,6 +202,7 @@ void BoltzmannMachine::Metropolis()
     }
 }
 
+/* Method for performing metropolis-hastings sampling */
 void BoltzmannMachine::Metropolis_Hastings()
 {
     int idx = randi<int>(distr_param(0,N_-1));    //Random integer generated from uniform distribution [0,N-1];
@@ -226,6 +234,7 @@ void BoltzmannMachine::Metropolis_Hastings()
     }
 }
 
+/* Method for calculating quantum force (used in metropolis-hastings sampling) */
 mat BoltzmannMachine::QuantumForce(mat r)
 {
     mat temp = mat(N_,D_).fill(0.0);
@@ -238,7 +247,7 @@ mat BoltzmannMachine::QuantumForce(mat r)
      return quantum_force_;
 }
 
-
+/* Method for calculating greensfunction (used in metropolis-hastings sampling) */
 double BoltzmannMachine::GreensFunction(int idx)
 {
     double G = 0.0;
@@ -249,6 +258,7 @@ double BoltzmannMachine::GreensFunction(int idx)
     return G;
 }
 
+/* Method for calculating the local energy (HELP PEDER) */
 double BoltzmannMachine::LocalEnergy()
 {
     double delta_energy = 0.0;
@@ -414,6 +424,8 @@ void BoltzmannMachine::ADAM()
     }
 }
 
+
+/* Method for vanilla Gradient Descent optimization */
 void BoltzmannMachine::GD()
 {
     double Energy = 0.0;

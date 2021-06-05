@@ -18,7 +18,7 @@ using namespace arma;
 class BoltzmannMachine {
 
     /*
-    Class for NQS wave function.
+    Class for NQS wave function and gaussian-binary RBM.
     */
 
 private:
@@ -31,15 +31,16 @@ public:
     mat a_, da_, E_da_;
     vec b_, db_, E_db_;
     vec Q_;
+    mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
+    vec DeltaE_;
+
     int D_, N_, H_, thread_ID_, MC_;
-    double sigma_, sigma2_, omega_, omega2_, std_hastings_;
     int interaction_, its;
+    double sigma_, sigma2_, omega_, omega2_;
     string filename_, filename2_;
     bool convergence_;
 
-    mat r_old_, r_new_, quantum_force_, quantum_force_old_,quantum_force_new_;
 
-    vec DeltaE_;
 
     BoltzmannMachine(int num_particles,int dimentions, double eta, int MC, int type_sampling, int interaction, double omega, int num_hidden, string opt, int thread_ID);
     double WaveFunction(mat r);
@@ -47,7 +48,8 @@ public:
 
     void Metropolis();
     void Metropolis_Hastings();
-    double tf_old_, tf_new_, P_, D_diff_, t_step_;   //Parameters for Metropolis algorithm
+    //Parameters for Metropolis algorithm
+    double tf_old_, tf_new_, P_, D_diff_, t_step_;
 
     double MonteCarlo();
     double LocalEnergy();
@@ -56,7 +58,7 @@ public:
     double GreensFunction(int idx);
 
     void GD();
-    //For ADAM
+    //Parameters for ADAM optimization
     void ADAM();
     double eta_;
     cube mom_w_, second_mom_w_;
