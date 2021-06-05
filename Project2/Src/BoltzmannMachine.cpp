@@ -304,8 +304,12 @@ void BoltzmannMachine::ADAM()
     cube w_new = w_;
     mat a_new = a_;
     vec b_new = b_;
-    double tol = 1e-3;
+    double tol = 1e-4;
     double Ana_e = D_*N_*omega_/2.0;
+    if (N_ == 2  && interaction_ == 1 && D_ == 2){
+        Ana_e = 3.0;
+        tol = 1e-2;
+    }
 
     cube w_joined = cube(N_, D_, H_).fill(0.0);
     mat a_joined = mat(N_, D_).fill(0.0);
@@ -377,7 +381,7 @@ void BoltzmannMachine::ADAM()
         w_new -= eta_*E_dw_;
 
 
-        if (abs(Energy-Ana_e) < tol && i > 0){
+        if ((abs(accu(a_new - a_)) < tol && abs(accu(b_new-b_)) < tol && abs(accu(w_new-w_)) < tol) || abs(Ana_e-Energy) < tol){
             convergence_ = true;
             a_ = a_new;
             b_ = b_new;
@@ -448,6 +452,9 @@ void BoltzmannMachine::GD()
     }
     double tol = 1e-3;
     double Ana_e = D_*N_*omega_/2.0;
+    if (N_ == 2  && interaction_ == 1 && D_ == 2){
+        Ana_e = 3.0;
+    }
 
     #pragma omp master
      {
@@ -468,7 +475,7 @@ void BoltzmannMachine::GD()
         b_new -= eta_*E_db_;
         w_new -= eta_*E_dw_;
 
-        if (abs(Energy-Ana_e) < tol && i > 0){
+        if ((abs(accu(a_new - a_)) < tol && abs(accu(b_new-b_)) < tol && abs(accu(w_new-w_)) < tol) || abs(Ana_e-Energy) < tol){
             convergence_ = true;
             a_ = a_new;
             b_ = b_new;

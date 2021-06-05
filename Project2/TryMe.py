@@ -19,23 +19,22 @@ else:
 
 
 """ Choose task """
-task_prompt = input("Which task to run? Choices are '1' (1p, 1D), '2' (2p, 2D), '3' (2p, 3D)\n")
-if task_prompt not in ['1' , '2', '3']:
+task_prompt = input("Which task to run? Choices are '1' (1p, 1D), '2' (2p, 2D)\n")
+if task_prompt not in ['1' , '2']:
     print("Input not recognized. Aborting.")
     sys.exit(1)
 
 interaction = 0
 N_particles = 0
 D_dimentions = 0
-if task_prompt == "2" or task_prompt == "3":
+if task_prompt == "2":
     N_particles = 2
-    int = input("Interaction? yes [y] or no [n]\n")
-    if input == "y":
+    D_dimentions = 2
+    inter = input("Interaction? yes [y] or no [n]\n")
+    if inter == "y":
         interaction = 1
-    if task_prompt == "2":
-        D_dimentions = 2
-    if task_prompt == "3":
-        D_dimentions = 3
+
+
 
 if task_prompt == "1":
     N_particles = 1
@@ -46,8 +45,8 @@ MC_cycles = 2**18
 H_layers = 2
 T_threads = 1
 learning_rate = 0.035
-type_sampling = 0
-optimizer = 1
+type_sampling = 0  # 1 for hastings, 0 for brute force
+optimizer = 1      # 1 for ADAM, 0 for vanilla GD
 
 os.system("./main.out " + str(N_particles) + " " + str(D_dimentions) + " " + str(MC_cycles) + " " + str(H_layers) + " " + str(T_threads) + " " + str(learning_rate) + " " + str(type_sampling) + " " + str(interaction) + " " + str(optimizer) + " " + str(omega))
 
