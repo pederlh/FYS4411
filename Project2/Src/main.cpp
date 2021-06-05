@@ -16,20 +16,31 @@ using namespace arma;
 
 
 int main(int argc, char const *argv[]) {
-    int num_part = 2;
-    int dim = 3;
-    int MC = pow(2,18);
-    int num_hidden = 2;
-    int num_threads = 1;
-    double eta = 0.035;
+
+    int num_part =  atoi(argv[1]);
+    int dim =  atoi(argv[2]);
+    int MC =  atoi(argv[3]);
+    int num_hidden =  atoi(argv[4]);
+    int num_threads =  atoi(argv[5]);
+    double eta =  atof(argv[6]);
 
 
-    //typesampling: 0 for brute force, 1 for metropolis
-    int typesampling = 1;
+    //typesampling: 0 for brute force, 1 for metropolis hastings
+    int typesampling =  atoi(argv[7]);
     //interaction: 0 for none, 1 for yes
-    int interaction = 1;
-    string optimizer = "ADAM";
-    //double omega = 1.0; //2D
+    int interaction =  atoi(argv[8]);
+    //opt: 0 for GD, 1 for ADAM
+    int opt =  atoi(argv[9]);
+    string optimizer;
+
+    if (opt== 0){
+        optimizer = "GD";
+    }
+    if (opt== 1){
+        optimizer = "ADAM";
+    }
+    double omega = atoi(argv[10]);
+
 
     // Start parallelization
     if(num_threads > omp_get_max_threads()){
@@ -44,10 +55,9 @@ int main(int argc, char const *argv[]) {
         int ID = omp_get_thread_num();
 
         // Initialize Solver object and perform calculations
-        list <double> omegas = {0.25, 0.08333333, 0.05, 0.0222417, 0.01826864, 0.01163857, 0.0086731, 0.00678601, 0.00595797, 0.00531003, 0.0047892};
-        for (double w: omegas){
-            BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, w, num_hidden, optimizer,ID);
-        }
+        //list <double> omegas = {0.25, 0.08333333, 0.05, 0.0222417, 0.01826864, 0.01163857, 0.0086731, 0.00678601, 0.00595797, 0.00531003, 0.0047892};
+        BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, omega, num_hidden, optimizer,ID);
+
 
     }
     return 0;
