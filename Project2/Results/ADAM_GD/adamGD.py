@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+
+import seaborn as sns
+sns.set_theme(font_scale=1.3, rc={'legend.facecolor': 'White', 'legend.framealpha': 0.5, 'lines.markersize':5})
+
 """
 ADAM = []
 A_eta = []
@@ -257,18 +261,20 @@ ADAM_eta = np.load("aet14.npy")
 GD_eta = np.load("get14.npy")
 
 
+plt.figure(1)
 plt.errorbar(ADAM_eta,ADAM,yerr=ADAM_std, fmt = ":ob",capsize=5, elinewidth=1,markeredgewidth=1, label = "ADAM")
 plt.errorbar(GD_eta,GD,yerr=GD_std, fmt = ":or",capsize=5, elinewidth=1,markeredgewidth=1, label = "GD")
-plt.axhline(2.0,label = "Analytical")
+plt.axhline(2.0,label = "Analytical energy", color='k', ls='--', alpha=0.8)
 plt.xlabel(r"$\eta$")
 plt.ylabel(r"$\langle E_L \rangle$")
 plt.legend()
-plt.show()
+plt.tight_layout()
 
-
-plt.plot(ADAM_eta,ADAM_its,"-o", label = "ADAM")
-plt.plot(GD_eta,GD_its, "-o",label = "GD")
+plt.figure(2)
+plt.plot(ADAM_eta,ADAM_its,"-ob", label = "ADAM")
+plt.plot(GD_eta,GD_its, "-or",label = "GD")
 plt.xlabel(r"$\eta$")
 plt.ylabel("Iterations")
 plt.legend()
+plt.tight_layout()
 plt.show()
