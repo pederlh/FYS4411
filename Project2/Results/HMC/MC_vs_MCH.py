@@ -111,8 +111,16 @@ H2 = H2[2:]
 Mw = Mw[2:]
 M2 = M2[2:]
 
-taut_1_over_omega = np.array([4, 20, 54.7386, 115.299, 208.803])
-taut_E_half = np.array([0.6250, 0.1750, 0.0822, 0.0477, 0.0311 ])
+print(Hw)
+
+# 3D values!
+# taut_1_over_omega = np.array([4, 20, 54.7386, 115.299, 208.803]) 
+# taut_E_half = np.array([0.6250, 0.1750, 0.0822, 0.0477, 0.0311 ]) 
+
+# 2D values
+taut_1_over_omega = np.array([0.200e1, 0.120e2, 0.370e2, 0.844e2, 0.161e3, 0.274e3])
+taut_E_half = np.array([0.100e1, 0.250e0, 0.107e0, 0.591e-1, 0.372e-1, 0.254e-1])
+
 
 
 # plt.figure(1)
