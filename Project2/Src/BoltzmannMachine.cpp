@@ -168,7 +168,7 @@ double BoltzmannMachine::WaveFunction(mat r)
 
 }
 
-/* Method for calculating termn in exponential (HELP PEDER) */
+/* Method for calculating term in exponentials */
 void BoltzmannMachine::Q_factor(mat r)
 {
     vec temp = vec(H_).fill(0.0);
@@ -304,7 +304,7 @@ void BoltzmannMachine::ADAM()
     cube w_new = w_;
     mat a_new = a_;
     vec b_new = b_;
-    double tol = 1e-4;
+    double tol = 1e-2;
     double Ana_e = D_*N_*omega_/2.0;
 
     cube w_joined = cube(N_, D_, H_).fill(0.0);
@@ -351,7 +351,9 @@ void BoltzmannMachine::ADAM()
 
         #pragma omp master
         {
-        cout << "Energy = " << setprecision(15) << Energy << endl;
+        //cout << "Energy = " << setprecision(15) << Energy << endl;
+
+
         }
         E_da_*=eta_;
         E_db_*=eta_;
@@ -376,7 +378,10 @@ void BoltzmannMachine::ADAM()
         b_new -= eta_*E_db_;
         w_new -= eta_*E_dw_;
 
-        if (abs(Energy-Ana_e) < tol && i > 0){
+        cout << abs(accu(w_new-w_)) <<" "<< abs(accu(b_new-b_))<<" " << abs(accu(a_new-a_)) << endl;
+
+        //if (abs(Energy-Ana_e) < tol && i > 0){
+        if (abs(accu(a_new-a_)) < tol &&abs(accu(b_new-b_)) < tol &&abs(accu(w_new-w_)) < tol && i>0){
             convergence_ = true;
             a_ = a_new;
             b_ = b_new;
@@ -415,6 +420,7 @@ void BoltzmannMachine::ADAM()
             filename_ = filename_ + "_its_" + to_string(i);
             MC_ *=pow(2,2);
             final_E = MonteCarlo();
+            cout << "FINAL E= " << final_E<<endl;
             break;
         }
 
