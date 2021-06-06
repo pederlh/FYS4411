@@ -91,7 +91,7 @@ for f in all:
 for f in all:
     if "EnergySamples" in f:
         samples = np.loadtxt(f)
-        print(samples)
+        print("\nMC simulation complete. \nLocal energy samples:", samples)
         print("File has been read, start blocking...")
         (mean,var) = block(samples)
         std = np.sqrt(var)
