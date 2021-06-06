@@ -1,6 +1,6 @@
 # The restricted Boltzmannn machine applied to the quantum many body problem
 ## Project 2 - Computational Physics II
- The final report, containing background theory, explanation of the methods and results, can be found [here](Project2/Article/Project_2___VMC_studies_using_restricted_Boltzmannn_machines (2).pdf).
+ The final report, containing background theory, explanation of the methods and results, can be found [here](https://github.com/pederlh/FYS4411/blob/main/Project2/Article/Project_2___VMC_studies_using_restricted_Boltzmannn_machines%20(2).pdf).
 
 #### Summary
 In this project we apply a Gaussian-Binary RBM to the problem of two interacting bosons confined to a harmonic oscillator trap. We used Monte-Carlo simulations together with Metropolis-Hastings sampling to estimate the expectation value of the local energy. We implemented methods for performing gradient descent on the variational parameters of the NQS wave function. In summary the code contained in this repository can be used to
