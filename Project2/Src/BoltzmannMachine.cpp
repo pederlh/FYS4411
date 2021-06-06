@@ -376,10 +376,6 @@ void BoltzmannMachine::ADAM()
         b_new -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
         a_new -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
 
-        a_new -= eta_*E_da_;
-        b_new -= eta_*E_db_;
-        w_new -= eta_*E_dw_;
-
 
         if ((abs(accu(a_new - a_)) < tol && abs(accu(b_new-b_)) < tol && abs(accu(w_new-w_)) < tol) || abs(Ana_e-Energy) < tol){
             convergence_ = true;
