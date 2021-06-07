@@ -355,7 +355,7 @@ void BoltzmannMachine::ADAM()
 
         #pragma omp master
         {
-        cout << "Energy = " << setprecision(15) << Energy << endl;
+            cout << "Iteration: " << i << ", Energy = " << setprecision(15) << Energy << endl;
         }
         E_da_*=eta_;
         E_db_*=eta_;
@@ -468,7 +468,7 @@ void BoltzmannMachine::GD()
         Energies(i) = Energy;
         #pragma omp master
         {
-        cout << "Energy = " << setprecision(15) << Energy << endl;
+        cout << "Iteration:" << i << ", Energy = " << setprecision(15) << Energy << endl;
         }
 
         a_new -= eta_*E_da_;
