@@ -39,9 +39,12 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        }
    }
 
+   string ts;
+
    if (type_sampling == 0)
    {
        MetropolisMethod = &BoltzmannMachine::Metropolis;
+       ts = "BF";
    }
 
    if (type_sampling == 1)
@@ -51,6 +54,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        quantum_force_ = mat(N_, D_).fill(0.0);
        quantum_force_old_ = QuantumForce(r_old_);
        quantum_force_new_ = QuantumForce(r_old_);
+       ts = "Hast";
    }
 
    if (opt == "GD")
@@ -65,7 +69,7 @@ BoltzmannMachine::BoltzmannMachine(int num_particles,int dimentions, double eta,
        filename_ = "EnergySamples_ADAM";
    }
 
-   filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_);
+   filename_ = filename_ +"_N_"+ to_string(N_) + "_D_"+ to_string(D_)+ "_H_" + to_string(H_) + "_eta_" + to_string(eta_) + "_MC_" + to_string(MC_) + "_sigma_" + to_string(sigma_) + "_ID_" + to_string(thread_ID_) + "_interaction_" + to_string(interaction_) +  "_omega_" + to_string(omega_) + "_ts_" + ts;
 
    (this->*optimizer)();
 }
@@ -338,7 +342,7 @@ void BoltzmannMachine::ADAM()
 
 
     double Energy = 0.0;
-    its = 200;
+    its = 1000;
     vec Energies = vec(its).fill(0.0);
     double final_E = 0.0;
 
@@ -375,10 +379,6 @@ void BoltzmannMachine::ADAM()
         w_new -= mom_w_*alpha_it/(sqrt(second_mom_w_) + epsilon_it);
         b_new -= mom_b_*alpha_it/(sqrt(second_mom_b_) + epsilon_it);
         a_new -= mom_a_*alpha_it/(sqrt(second_mom_a_) + epsilon_it);
-
-        a_new -= eta_*E_da_;
-        b_new -= eta_*E_db_;
-        w_new -= eta_*E_dw_;
 
 
         if ((abs(accu(a_new - a_)) < tol && abs(accu(b_new-b_)) < tol && abs(accu(w_new-w_)) < tol) || abs(Ana_e-Energy) < tol){
@@ -454,6 +454,7 @@ void BoltzmannMachine::GD()
     double Ana_e = D_*N_*omega_/2.0;
     if (N_ == 2  && interaction_ == 1 && D_ == 2){
         Ana_e = 3.0;
+        tol = 1e-2;
     }
 
     #pragma omp master

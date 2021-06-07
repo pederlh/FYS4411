@@ -2,7 +2,6 @@
 import numpy as np
 import os, sys
 
-
 print("Note: This program will produce data and perform bootstrapping on samples before \ndeleting the dataset.")
 
 """ Compilation """
@@ -45,8 +44,8 @@ MC_cycles = 2**18
 H_layers = 2
 T_threads = 1
 learning_rate = 0.035
-type_sampling = 0  # 1 for hastings, 0 for brute force
-optimizer = 1      # 1 for ADAM, 0 for vanilla GD
+type_sampling = 1  # 1 for hastings, 0 for brute force
+optimizer = 1    # 1 for ADAM, 0 for vanilla GD
 
 os.system("./main.out " + str(N_particles) + " " + str(D_dimentions) + " " + str(MC_cycles) + " " + str(H_layers) + " " + str(T_threads) + " " + str(learning_rate) + " " + str(type_sampling) + " " + str(interaction) + " " + str(optimizer) + " " + str(omega))
 
@@ -91,13 +90,12 @@ for f in all:
 for f in all:
     if "EnergySamples" in f:
         samples = np.loadtxt(f)
-        print("\nMC simulation complete. \nLocal energy samples:", samples)
+        print(samples)
         print("File has been read, start blocking...")
         (mean,var) = block(samples)
         std = np.sqrt(var)
         print("Statistical values:\n")
         print("Blocking:  Mean = %.7f        STDev = %.7f" % (mean,std))
-
 
 for f in all:
     if "EnergySamples" in f:
