@@ -55,7 +55,6 @@ int main(int argc, char const *argv[]) {
         int ID = omp_get_thread_num();
 
         // Initialize Solver object and perform calculations
-        //list <double> omegas = {0.25, 0.08333333, 0.05, 0.0222417, 0.01826864, 0.01163857, 0.0086731, 0.00678601, 0.00595797, 0.00531003, 0.0047892};
         BoltzmannMachine solver(num_part, dim, eta, MC, typesampling, interaction, omega, num_hidden, optimizer,ID);
 
 
