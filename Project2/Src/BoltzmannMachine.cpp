@@ -137,7 +137,7 @@ double BoltzmannMachine::MonteCarlo()
 }
 
 
-/* Method for calculating derivative of NQS trial wave function w/ reagards to variational parameters (PEDER HELP) */
+/* Method for calculating derivative of NQS trial wave function w/ reagards to variational parameters  */
 void BoltzmannMachine::Derivate_wavefunction()
 {
     Q_factor(r_old_);
@@ -262,7 +262,7 @@ double BoltzmannMachine::GreensFunction(int idx)
     return G;
 }
 
-/* Method for calculating the local energy (HELP PEDER) */
+/* Method for calculating the local energy  */
 double BoltzmannMachine::LocalEnergy()
 {
     double delta_energy = 0.0;
